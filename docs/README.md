@@ -12,13 +12,13 @@ Here you can find links to all neccessary documentation for each of the mileston
 ### Milestone 1 - Initialization
 >**Documents**
 >
->[Design Document](M1_Initialization/SyncLand_Design_Report.pdf) - information about initial design, including infrastructure setup
+>[Setup Report](M1_Initialization/Setup_Report_Web3_Artist_Portal_Afrocharts_x_Awen.pdf) - information about initial design, including Afrocharts.com platform analysis setup
 >
->[Project Status Report](M1_Initialization/SyncLand_Project_Status.pdf) - Current project status
+>[Project Status Report](M1_Initialization/Awen_x_AfroCharts_Project_Status_Report.pdf) - Current project status
 >
->[Project Timeline](M1_Initialization/SyncLand_Project_Timeline.pdf) - project roadmap, timeline, and responsibilities
+>[Project Timeline](M1_Initialization/Awen_x_AfroCharts_Project_Timeline.pdf) - project roadmap, timeline, and responsibilities
 >
->[Notion Kanban Board](https://awen-online.notion.site/2196b85886f941cf9f1d951b59ea230c?v=e71479497a5a4ea1810e4bf2c1018451) - board of all tasks, stories, and epics for this project
+>[Notion Kanban Board](https://awen-online.notion.site/3519bb544b96476ea2baef08991e7644?v=575936b18fe94d4dba30037ca464be9f&pvs=32) - board of all tasks, stories, and epics for this project
 
 
 ### Milestone 2 - Development
