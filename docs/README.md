@@ -14,7 +14,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >[Setup Report](M1_Initialization/Setup_Report_Web3_Artist_Portal_Afrocharts_x_Awen.pdf) - information about initial design, including Afrocharts.com platform analysis setup
 >
->[Afrocharts Partner API Doc](docs/M1_Initialization/AfroCharts_Partners_API_Documentation_V1.pdf) - documentation to integrate with Afrocharts.com platform via permissioned API
+>[Afrocharts Partner API Doc](M1_Initialization/AfroCharts_Partners_API_Documentation_V1.pdf) - documentation to integrate with Afrocharts.com platform via permissioned API
 >
 >[Project Status Report](M1_Initialization/Awen_x_AfroCharts_Project_Status_Report.pdf) - Current project status
 >
