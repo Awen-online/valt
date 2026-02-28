@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://objects-us-east-1.dream.io/website-backup-wsc/Assets/github/1-f531f7.png" alt="Afrocharts Web3 Portal / Bakpak">
+  <img src="https://objects-us-east-1.dream.io/website-backup-wsc/Assets/github/1-f531f7.png" alt="Afrocharts Web3 Portal / Valt">
 </p>
 
 # Afrocharts | Web3 Artist Portal (Awen)
-## aka Bakpak
-Visit our domain: https://bakpak.fan (coming soon)
+## aka Valt
+Visit our domain: https://valt.digital
 
 ## Documentation
 

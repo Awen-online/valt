@@ -1,0 +1,64 @@
+# valt-theme
+
+Custom WordPress child theme for [valt.digital](https://valt.digital) — a Cardano blockchain-integrated platform for managing NFTs, digital assets, artists, albums, and songs.
+
+## Overview
+
+`valt-theme` is a child theme of [Hello Elementor](https://elementor.com/hello-theme/), extending it with:
+
+- Cardano wallet connection and delegation UI (via [CardanoPress](https://cardanopress.io/))
+- Custom content types for Artists, Albums, and Songs (via [Pods](https://pods.io/))
+- Dynamic Elementor query filters driven by Pods relationships
+- Subscriber access restrictions (no backend access, no admin bar)
+- Custom CSS and JavaScript for the site's visual design
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| CMS | WordPress |
+| Parent theme | Hello Elementor |
+| Page builder | Elementor Pro |
+| Data layer | Pods framework |
+| Blockchain | CardanoPress (Cardano) |
+| Local dev | Local by Flywheel |
+
+## Project Structure
+
+```
+valt-theme/
+├── style.css                    # Theme header (declares parent: Hello Elementor)
+├── functions.php                # Core setup: assets, subscriber restrictions
+├── assets/
+│   ├── css/
+│   │   ├── main.css             # Primary custom styles
+│   │   └── cardanopress_styles.css  # Cardano wallet UI styles
+│   └── js/
+│       └── regal-particles.js   # Three.js particle animation (optional)
+├── functions/
+│   ├── elementor.php            # Elementor query filters via Pods relationships
+│   ├── pods.php                 # Pods framework integration
+│   └── shortcodes/
+│       └── pods_artist_featured_image.php  # Artist featured image shortcode
+└── cardanopress/                # Cardano template overrides
+```
+
+## Development
+
+This theme is developed locally using **Local by Flywheel** (Nginx + PHP-FPM + MySQL).
+
+### Asset Versioning
+
+CSS files use a `$style_version` constant in `functions.php`. Bump this string when deploying CSS changes to bust the browser cache.
+
+### Adding Styles / Scripts
+
+Enqueue new assets in the `wp_enqueue_scripts` hook inside `functions.php`.
+
+### Elementor + Pods
+
+`functions/elementor.php` hooks into Elementor's dynamic query system to filter content by Pods relationships — for example, filtering Songs or Albums by a related Artist.
+
+## Deployment
+
+Push changes to this repository. The production site pulls from the `main` branch.
