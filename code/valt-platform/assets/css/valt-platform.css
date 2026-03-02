@@ -1,0 +1,456 @@
+/* ============================================================
+   Valt Platform Plugin Styles
+   Palette: #E8C48B (gold) | #817269 (mid-brown) | #C5AD90 (tan)
+            #493D3C (dark-brown) | #3D3C56 (navy)
+   Font: Ruda
+   ============================================================ */
+
+/* --- Badges -------------------------------------------------------------- */
+
+.valt-badge {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.4px;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+.valt-badge--grey {
+	background: #e0e0e0;
+	color: #555;
+}
+
+.valt-badge--amber {
+	background: #f0a500;
+	color: #fff;
+}
+
+.valt-badge--gold {
+	background: #E8C48B;
+	color: #493D3C;
+}
+
+/* --- Tags ----------------------------------------------------------------- */
+
+.valt-tag {
+	display: inline-block;
+	padding: 2px 9px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	background: #C5AD90;
+	color: #493D3C;
+	margin-right: 4px;
+}
+
+/* --- Artist Profile ------------------------------------------------------- */
+
+.valt-artist-profile {
+	display: flex;
+	gap: 24px;
+	align-items: flex-start;
+	margin-bottom: 24px;
+}
+
+.valt-artist-profile__photo-wrap img {
+	width: 120px;
+	height: 120px;
+	object-fit: cover;
+	border-radius: 8px;
+}
+
+.valt-artist-profile__name {
+	margin-top: 0;
+	margin-bottom: 8px;
+	color: #493D3C;
+}
+
+.valt-artist-profile__meta {
+	margin-bottom: 10px;
+}
+
+.valt-artist-profile__bio {
+	color: #817269;
+	line-height: 1.7;
+}
+
+/* --- Artist Valt Zone ----------------------------------------------------- */
+
+.valt-artist-valt {
+	margin: 0 auto;
+}
+
+.valt-artist-valt__zone {
+	margin-top: 32px;
+}
+
+/* --- Gated Content -------------------------------------------------------- */
+
+.valt-gated {
+	border: 1px solid #C5AD90;
+	border-radius: 8px;
+	padding: 32px 24px;
+	text-align: center;
+	background: #faf8f5;
+}
+
+.valt-gated--unlocked {
+	border: none;
+	padding: 0;
+	background: transparent;
+	text-align: left;
+}
+
+.valt-gated__lock {
+	font-size: 36px;
+	margin-bottom: 12px;
+	line-height: 1;
+}
+
+.valt-gated__message {
+	color: #817269;
+	margin-bottom: 20px;
+	font-size: 15px;
+}
+
+/* --- Connect Prompt ------------------------------------------------------- */
+
+.valt-connect-prompt {
+	text-align: center;
+	padding: 16px;
+}
+
+.valt-connect-prompt__message {
+	color: #817269;
+	margin-bottom: 12px;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.valt-btn {
+	display: inline-block;
+	padding: 10px 22px;
+	border-radius: 6px;
+	font-weight: 600;
+	font-size: 14px;
+	text-decoration: none;
+	cursor: pointer;
+	border: none;
+	transition: opacity 0.2s, transform 0.1s;
+	line-height: 1.4;
+}
+
+.valt-btn:hover {
+	opacity: 0.85;
+}
+
+.valt-btn:active {
+	transform: translateY(1px);
+}
+
+.valt-btn--primary {
+	background: #E8C48B;
+	color: #493D3C;
+}
+
+.valt-btn--secondary {
+	background: #C5AD90;
+	color: #493D3C;
+}
+
+.valt-btn--danger {
+	background: #c0392b;
+	color: #fff;
+}
+
+/* --- Notices -------------------------------------------------------------- */
+
+.valt-notice {
+	color: #817269;
+	font-style: italic;
+}
+
+.valt-error {
+	color: #c0392b;
+	font-style: italic;
+	padding: 8px 12px;
+	background: #fdf2f2;
+	border-left: 3px solid #c0392b;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+.valt-dashboard__notice {
+	padding: 12px 16px;
+	border-radius: 6px;
+	margin-bottom: 16px;
+	font-size: 14px;
+}
+
+.valt-dashboard__notice--success {
+	background: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
+}
+
+.valt-dashboard__notice--error {
+	background: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c6cb;
+}
+
+/* --- Dashboard ------------------------------------------------------------ */
+
+.valt-dashboard {
+	font-family: 'Ruda', sans-serif;
+	max-width: 900px;
+	margin: 0 auto;
+}
+
+/* Tabs */
+.valt-tabs {
+	display: flex;
+	border-bottom: 2px solid #C5AD90;
+	margin-bottom: 28px;
+}
+
+.valt-tab-btn {
+	background: none;
+	border: none;
+	border-bottom: 3px solid transparent;
+	padding: 12px 28px;
+	font-size: 15px;
+	font-weight: 600;
+	font-family: inherit;
+	color: #817269;
+	cursor: pointer;
+	margin-bottom: -2px;
+	transition: color 0.2s, border-color 0.2s;
+}
+
+.valt-tab-btn:hover {
+	color: #493D3C;
+}
+
+.valt-tab-btn--active {
+	color: #493D3C;
+	border-bottom-color: #E8C48B;
+}
+
+/* Tab Panels */
+.valt-tab-panel {
+	display: none;
+}
+
+.valt-tab-panel--active {
+	display: block;
+}
+
+/* Dashboard Sections */
+.valt-dashboard__section {
+	margin-bottom: 40px;
+}
+
+.valt-dashboard__section-title {
+	font-size: 18px;
+	color: #493D3C;
+	border-bottom: 1px solid #C5AD90;
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	margin-top: 0;
+}
+
+/* --- Form ----------------------------------------------------------------- */
+
+.valt-form {
+	max-width: 640px;
+}
+
+.valt-form__group {
+	margin-bottom: 20px;
+}
+
+.valt-form__row {
+	display: flex;
+	gap: 16px;
+}
+
+.valt-form__row .valt-form__group {
+	flex: 1;
+}
+
+.valt-form__label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+	color: #493D3C;
+	font-size: 14px;
+}
+
+.valt-form__input,
+.valt-form__textarea,
+.valt-form__select {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #C5AD90;
+	border-radius: 6px;
+	font-size: 14px;
+	font-family: inherit;
+	color: #493D3C;
+	background: #fff;
+	box-sizing: border-box;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.valt-form__input:focus,
+.valt-form__textarea:focus,
+.valt-form__select:focus {
+	border-color: #E8C48B;
+	box-shadow: 0 0 0 3px rgba(232, 196, 139, 0.2);
+	outline: none;
+}
+
+.valt-form__input--mono {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 13px;
+}
+
+.valt-form__input--sm {
+	max-width: 120px;
+}
+
+.valt-form__textarea {
+	resize: vertical;
+	min-height: 100px;
+}
+
+.valt-form__help {
+	font-size: 12px;
+	color: #817269;
+	margin-top: 5px;
+	margin-bottom: 0;
+}
+
+.valt-form__actions {
+	margin-top: 24px;
+	padding-top: 16px;
+	border-top: 1px solid #C5AD90;
+}
+
+/* Photo Preview */
+.valt-form__group--photo {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: 24px;
+}
+
+.valt-photo-preview {
+	width: 80px;
+	height: 80px;
+	border: 2px dashed #C5AD90;
+	border-radius: 8px;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #faf8f5;
+	flex-shrink: 0;
+}
+
+.valt-photo-preview__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.valt-photo-preview__placeholder {
+	font-size: 11px;
+	color: #817269;
+	text-align: center;
+	padding: 8px;
+	line-height: 1.3;
+}
+
+/* Audio Upload */
+.valt-audio-upload {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.valt-audio-upload__name {
+	font-size: 13px;
+	color: #817269;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* --- Table ---------------------------------------------------------------- */
+
+.valt-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.valt-table th,
+.valt-table td {
+	text-align: left;
+	padding: 11px 14px;
+	border-bottom: 1px solid #C5AD90;
+}
+
+.valt-table th {
+	font-weight: 700;
+	color: #493D3C;
+	background: #faf8f5;
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.valt-table tbody tr:hover {
+	background: #fdf6ed;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 640px) {
+	.valt-artist-profile {
+		flex-direction: column;
+	}
+
+	.valt-form__row {
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.valt-form__input--sm {
+		max-width: 100%;
+	}
+
+	.valt-table {
+		font-size: 12px;
+	}
+
+	.valt-table th,
+	.valt-table td {
+		padding: 8px 10px;
+	}
+
+	.valt-tabs {
+		overflow-x: auto;
+	}
+
+	.valt-tab-btn {
+		padding: 10px 16px;
+		font-size: 14px;
+	}
+}
