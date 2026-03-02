@@ -12,6 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+define( 'VALT_PLATFORM_VERSION', '1.0.0' );
 define( 'VALT_PLATFORM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'VALT_PLATFORM_URL',  plugin_dir_url( __FILE__ ) );
 
@@ -20,6 +21,7 @@ require VALT_PLATFORM_PATH . 'includes/rest-meta.php';
 require VALT_PLATFORM_PATH . 'includes/artist-dashboard.php';
 require VALT_PLATFORM_PATH . 'includes/shortcodes.php';
 require VALT_PLATFORM_PATH . 'includes/admin-meta.php';
+require VALT_PLATFORM_PATH . 'includes/admin-docs.php';
 
 add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style(

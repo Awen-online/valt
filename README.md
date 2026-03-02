@@ -28,14 +28,70 @@ Valt embodies a streamlined vision for a more connected and financially equitabl
 
 **A Community-Driven Marketplace:** At its core, Valt features a marketplace driven by its community, allowing fans to buy, sell, and trade music licenses. This not only supports artists but also offers fans a way to monetize their collections, creating a lively ecosystem where music assets circulate, benefiting all participants.
 
+---
+
 ## Repository Structure
 
-This repository is your go-to source for all information, code, and resources related to the Valt project.
+```
+/code     Source code for WordPress theme and platform plugin
+/docs     Project documentation, reports, and API references
+```
 
->[/docs](docs/README.md) - Contains comprehensive documentation, including technical details, user guides, and design overviews.
+> [/docs](docs/README.md) — Comprehensive documentation including technical details, user guides, and design overviews.
 >
->[/code](code/README.md) - Hosts the source code for our platform and key software components that drive the Valt experience.
->
+> [/code](code/README.md) — Source code for the WordPress theme and platform plugin.
+
+---
+
+## Codebase Overview
+
+The platform runs on **WordPress** and is split into two custom components:
+
+### [valt-theme](code/valt-theme/)
+WordPress child theme of Hello Elementor. Responsibilities:
+- Elementor Pro page templates and dynamic query hooks
+- Pods CPT integration (Artists, Albums, Songs — relationships, fields, dynamic tags)
+- CardanoPress template overrides (collection page, dashboard)
+- Frontend asset pipeline (Ruda font, Valt colour palette)
+- Afrocharts data sync script
+
+### [valt-platform](code/valt-platform/)
+Standalone WordPress plugin. Responsibilities:
+- **Server-side NFT token-gating** via CardanoPress policy ID check — content is withheld on the server, never just CSS-hidden
+- **Artist Valt** — per-artist gated fan-club zone configurable from the artist dashboard
+- **Artist Dashboard** — frontend profile editor and release manager with `wp.media()` uploaders
+- Six Elementor-droppable shortcodes
+- Admin meta boxes (Song release status, Artist policy ID column)
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| CMS | WordPress 6+ |
+| Parent Theme | Hello Elementor |
+| Page Builder | Elementor Pro |
+| Data Layer | Pods (CPTs: Artists, Albums, Songs) |
+| Blockchain | CardanoPress (Cardano wallet, delegation, NFT assets) |
+| Token-Gating | valt-platform plugin (server-side, CardanoPress API) |
+| Local Dev | Local by Flywheel |
+
+---
+
+## Shortcodes at a Glance
+
+The `valt-platform` plugin exposes these shortcodes (full reference in [code/valt-platform/README.md](code/valt-platform/README.md) and in the **Valt Platform → Shortcode Reference** page in wp-admin):
+
+| Shortcode | Type | Purpose |
+|-----------|------|---------|
+| `[valt_gated_content]` | Enclosing | Server-side NFT gate — non-holders never receive the HTML |
+| `[valt_connect_prompt]` | Self-closing | CardanoPress wallet connect button; silent if already connected |
+| `[valt_artist_profile]` | Self-closing | Public artist card: photo, name, genre, country, bio |
+| `[valt_artist_valt]` | Enclosing | Public artist header + gated fan-club zone |
+| `[valt_artist_dashboard]` | Self-closing | Full frontend artist profile & release management dashboard |
+| `[valt_release_status]` | Self-closing | Inline badge: Uploaded / In NFT Collection / Minted |
+
+---
+
 ## Join the Movement
 
 Valt is more than just a project; it's a pioneering movement aimed at elevating the presence and impact of African music in digital spaces worldwide. Whether you're an artist aspiring to globalize your music, a developer in search of unique soundtracks for your projects, or an enthusiast passionate about the convergence of music and technology, we welcome you to join us.
