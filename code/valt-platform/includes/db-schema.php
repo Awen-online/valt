@@ -63,5 +63,17 @@ function valt_create_tables(): void {
 add_action( 'admin_init', function () {
 	if ( get_option( 'valt_db_version' ) !== '2.0.0' ) {
 		valt_create_tables();
+
+		// Set default feature flags — campaigns/gamification/leaderboard OFF.
+		if ( ! get_option( 'valt_feature_flags' ) ) {
+			update_option( 'valt_feature_flags', [
+				'nmkr'         => true,
+				'stripe'       => true,
+				'discovery'    => true,
+				'leaderboard'  => false,
+				'gamification' => false,
+				'campaigns'    => false,
+			] );
+		}
 	}
 } );

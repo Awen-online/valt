@@ -34,14 +34,18 @@ add_action( 'admin_init', function () {
 	// Gamification settings.
 	register_setting( 'valt_settings_gamification', 'valt_points_config' );
 	register_setting( 'valt_settings_gamification', 'valt_level_thresholds' );
+
+	// Feature flags.
+	register_setting( 'valt_settings_features', 'valt_feature_flags' );
 } );
 
 function valt_render_settings_page(): void {
-	$tab = sanitize_text_field( $_GET['tab'] ?? 'nmkr' );
+	$tab = sanitize_text_field( $_GET['tab'] ?? 'features' );
 	?>
 	<div class="wrap">
 		<h1>Valt Platform Settings</h1>
 		<nav class="nav-tab-wrapper">
+			<a href="?page=valt-settings&tab=features" class="nav-tab <?php echo $tab === 'features' ? 'nav-tab-active' : ''; ?>">Features</a>
 			<a href="?page=valt-settings&tab=nmkr" class="nav-tab <?php echo $tab === 'nmkr' ? 'nav-tab-active' : ''; ?>">NMKR</a>
 			<a href="?page=valt-settings&tab=stripe" class="nav-tab <?php echo $tab === 'stripe' ? 'nav-tab-active' : ''; ?>">Stripe</a>
 			<a href="?page=valt-settings&tab=gamification" class="nav-tab <?php echo $tab === 'gamification' ? 'nav-tab-active' : ''; ?>">Gamification</a>
@@ -49,6 +53,9 @@ function valt_render_settings_page(): void {
 		<div style="margin-top:20px;">
 		<?php
 		switch ( $tab ) {
+			case 'nmkr':
+				valt_render_nmkr_settings();
+				break;
 			case 'stripe':
 				valt_render_stripe_settings();
 				break;
@@ -56,7 +63,7 @@ function valt_render_settings_page(): void {
 				valt_render_gamification_settings();
 				break;
 			default:
-				valt_render_nmkr_settings();
+				valt_render_features_settings();
 		}
 		?>
 		</div>
@@ -179,6 +186,47 @@ function valt_render_gamification_settings(): void {
 		<?php endforeach; ?>
 		</table>
 		<?php submit_button( 'Save Gamification Settings' ); ?>
+	</form>
+	<?php
+}
+
+function valt_render_features_settings(): void {
+	$flags = wp_parse_args( get_option( 'valt_feature_flags', [] ), [
+		'gamification' => false,
+		'campaigns'    => false,
+		'leaderboard'  => false,
+		'discovery'    => true,
+		'stripe'       => true,
+		'nmkr'         => true,
+	] );
+
+	$features = [
+		'nmkr'         => [ 'NMKR Minting',      'NFT minting via NMKR API (CIP-25). Required for M2.' ],
+		'stripe'       => [ 'Stripe Payments',    'USD checkout via Stripe. Enables fiat-to-NFT purchases.' ],
+		'discovery'    => [ 'Artist Discovery',   'Browse/search/filter artists page.' ],
+		'leaderboard'  => [ 'Leaderboard',        'Ranked fan tables. Requires gamification.' ],
+		'gamification' => [ 'Gamification',       'Points, badges, levels. Phase 2 feature — disable for now.' ],
+		'campaigns'    => [ 'Album Campaigns',    'Proto-tokenomics pledge system. Phase 2 feature — disable for now.' ],
+	];
+	?>
+	<form method="post" action="options.php">
+		<?php settings_fields( 'valt_settings_features' ); ?>
+		<h2>Feature Flags</h2>
+		<p>Enable or disable major subsystems. Disabled features hide their nav links, shortcodes, and admin pages.</p>
+		<table class="form-table">
+		<?php foreach ( $features as $key => [ $label, $desc ] ) : ?>
+			<tr>
+				<th><?php echo esc_html( $label ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="valt_feature_flags[<?php echo esc_attr( $key ); ?>]" value="1" <?php checked( ! empty( $flags[ $key ] ) ); ?>>
+						<?php echo esc_html( $desc ); ?>
+					</label>
+				</td>
+			</tr>
+		<?php endforeach; ?>
+		</table>
+		<?php submit_button( 'Save Feature Flags' ); ?>
 	</form>
 	<?php
 }

@@ -71,6 +71,7 @@ add_shortcode( 'valt_trending_artists', function ( $atts ) {
 // ─── 3. [valt_leaderboard] ──────────────────────────────────────────
 
 add_shortcode( 'valt_leaderboard', function ( $atts ) {
+	if ( ! valt_feature_enabled( 'leaderboard' ) ) return '';
 	$atts = shortcode_atts( [ 'scope' => 'global', 'artist_id' => 0, 'limit' => 50, 'period' => 'all' ], $atts );
 	$scope = $atts['period'] === 'monthly' ? 'monthly' : $atts['scope'];
 	$data  = valt_get_leaderboard( $scope, (int) $atts['artist_id'], (int) $atts['limit'] );
@@ -101,6 +102,7 @@ add_shortcode( 'valt_leaderboard', function ( $atts ) {
 // ─── 4. [valt_user_points] ──────────────────────────────────────────
 
 add_shortcode( 'valt_user_points', function () {
+	if ( ! valt_feature_enabled( 'gamification' ) ) return '';
 	if ( ! is_user_logged_in() ) {
 		return '<p class="valt-gated valt-gated--disconnected">Log in to see your points.</p>';
 	}
@@ -125,6 +127,7 @@ add_shortcode( 'valt_user_points', function () {
 // ─── 5. [valt_user_badges] ──────────────────────────────────────────
 
 add_shortcode( 'valt_user_badges', function ( $atts ) {
+	if ( ! valt_feature_enabled( 'gamification' ) ) return '';
 	if ( ! is_user_logged_in() ) {
 		return '';
 	}
@@ -222,6 +225,7 @@ add_shortcode( 'valt_checkout_button', function ( $atts ) {
 // ─── 9. [valt_campaign_card] ────────────────────────────────────────
 
 add_shortcode( 'valt_campaign_card', function ( $atts ) {
+	if ( ! valt_feature_enabled( 'campaigns' ) ) return '';
 	$atts     = shortcode_atts( [ 'album_id' => 0 ], $atts );
 	$album_id = (int) $atts['album_id'];
 	$progress = valt_get_campaign_progress( $album_id );
@@ -256,6 +260,7 @@ add_shortcode( 'valt_campaign_card', function ( $atts ) {
 // ─── 10. [valt_active_campaigns] ────────────────────────────────────
 
 add_shortcode( 'valt_active_campaigns', function ( $atts ) {
+	if ( ! valt_feature_enabled( 'campaigns' ) ) return '';
 	$atts      = shortcode_atts( [ 'limit' => 12 ], $atts );
 	$campaigns = valt_get_active_campaigns( (int) $atts['limit'] );
 	if ( empty( $campaigns ) ) return '<p>No active campaigns.</p>';
@@ -272,6 +277,7 @@ add_shortcode( 'valt_active_campaigns', function ( $atts ) {
 // ─── 11. [valt_fan_dashboard] ───────────────────────────────────────
 
 add_shortcode( 'valt_fan_dashboard', function () {
+	if ( ! valt_feature_enabled( 'gamification' ) ) return '';
 	if ( ! is_user_logged_in() ) {
 		return '<p class="valt-gated valt-gated--disconnected">Log in to see your fan dashboard.</p>';
 	}
@@ -326,6 +332,7 @@ add_shortcode( 'valt_fan_dashboard', function () {
 // ─── 12. [valt_artist_fans] ─────────────────────────────────────────
 
 add_shortcode( 'valt_artist_fans', function ( $atts ) {
+	if ( ! valt_feature_enabled( 'leaderboard' ) ) return '';
 	$atts      = shortcode_atts( [ 'artist_id' => 0, 'limit' => 10 ], $atts );
 	$artist_id = (int) $atts['artist_id'];
 	if ( ! $artist_id ) return '';
