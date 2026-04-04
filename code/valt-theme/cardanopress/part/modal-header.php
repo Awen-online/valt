@@ -1,33 +1,19 @@
 <?php
-
 /**
- * The template for displaying the header of the connect-modal popup.
- *
- * This can be overridden by copying it to yourtheme/cardanopress/part/modal-header.php.
- *
- * @package ThemePlate
- * @since   0.1.0
+ * Modal header — Valt styled.
  */
-
 ?>
 
-<div class="px-6 py-4 flex items-center justify-between">
-    <h2 class="mb-0 mr-2">
-        <span x-text="isConnected ? 'Reconnect' : 'Connect'">Connect</span>
-
-        Wallet
-    </h2>
-
-    <button type="button" class="z-50 cursor-pointer p-0" x-on:click="showModal = false">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-        >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
+<div class="valt-modal__header">
+	<div class="valt-modal__title">
+		<?php echo valt_svg_wallet( 24 ); ?>
+		<h2>
+			<span x-text="isConnected ? 'Reconnect' : 'Connect'">Connect</span> Wallet
+		</h2>
+	</div>
+	<button type="button" class="valt-modal__close" x-on:click="showModal = false" aria-label="Close">
+		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M18 6L6 18M6 6l12 12"/>
+		</svg>
+	</button>
 </div>

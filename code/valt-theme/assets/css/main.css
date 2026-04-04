@@ -391,9 +391,194 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-gated--disconnected { background: rgba(232,196,139,0.08); border: 1px dashed rgba(232,196,139,0.2); }
 .valt-gated--locked { background: rgba(255,145,145,0.08); border: 1px dashed rgba(255,145,145,0.2); }
 
+/* ─── Nav: Wallet Connect Button (prominent, top-right) ───────────── */
+.valt-nav__right {
+	display: flex; align-items: center; gap: 0.75rem;
+}
+.valt-nav__connect-btn {
+	display: flex; align-items: center; gap: 0.5rem;
+	padding: 0.45rem 1.1rem; border-radius: var(--valt-radius);
+	background: var(--valt-gold); color: var(--valt-brown);
+	font-weight: 600; font-size: 0.85rem; text-decoration: none;
+	transition: all 0.2s; white-space: nowrap;
+}
+.valt-nav__connect-btn:hover { background: var(--valt-tan); color: var(--valt-brown); }
+.valt-nav__connect-btn .valt-icon { stroke: var(--valt-brown); }
+
+.valt-nav__wallet-btn {
+	display: flex; align-items: center; gap: 0.5rem;
+	padding: 0.45rem 1rem; border-radius: var(--valt-radius);
+	border: 1px solid var(--valt-gold); color: var(--valt-gold);
+	font-weight: 600; font-size: 0.85rem; text-decoration: none;
+	transition: all 0.2s; position: relative; white-space: nowrap;
+}
+.valt-nav__wallet-btn:hover { background: rgba(232,196,139,0.1); color: var(--valt-gold); }
+.valt-nav__wallet-dot {
+	width: 8px; height: 8px; border-radius: 50%; background: #4ade80;
+	position: absolute; top: 6px; right: 6px;
+}
+
+/* ─── SVG Icons ───────────────────────────────────────────────────── */
+.valt-icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.valt-nav__links a .valt-icon { margin-right: 0.25rem; opacity: 0.7; }
+
+/* ─── Wallet Connect Modal ────────────────────────────────────────── */
+.valt-modal-overlay {
+	position: fixed; inset: 0; z-index: 9999;
+	display: flex; align-items: center; justify-content: center;
+	background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+}
+.valt-modal {
+	width: 100%; max-width: 420px; margin: 1rem;
+	background: var(--valt-dark); border: 1px solid rgba(232,196,139,0.15);
+	border-radius: 12px; overflow: hidden;
+	box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.valt-modal-box-enter { transition: all 0.2s ease-out; }
+.valt-modal-box-start { opacity: 0; transform: scale(0.9) translateY(10px); }
+.valt-modal-box-end { opacity: 1; transform: scale(1) translateY(0); }
+.valt-modal-box-leave { transition: all 0.15s ease-in; }
+.valt-modal-enter { transition: opacity 0.2s; }
+.valt-modal-leave { transition: opacity 0.15s; }
+
+.valt-modal__header {
+	display: flex; align-items: center; justify-content: space-between;
+	padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(232,196,139,0.1);
+}
+.valt-modal__title {
+	display: flex; align-items: center; gap: 0.6rem;
+}
+.valt-modal__title h2 { margin: 0; font-size: 1.15rem; color: var(--valt-gold); }
+.valt-modal__title .valt-icon { stroke: var(--valt-gold); }
+.valt-modal__close {
+	background: none; border: none; color: var(--valt-mid); cursor: pointer;
+	padding: 4px; border-radius: 4px; transition: color 0.2s;
+}
+.valt-modal__close:hover { color: var(--valt-gold); }
+
+.valt-modal__body { padding: 1.25rem 1.5rem; }
+.valt-modal__hint { font-size: 0.8rem; color: var(--valt-mid); margin-bottom: 1rem; }
+
+.valt-wallet-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* ─── Wallet Buttons (inside modal) ───────────────────────────────── */
+.valt-wallet-btn {
+	display: flex; align-items: center; justify-content: space-between;
+	width: 100%; padding: 0.75rem 1rem; border-radius: var(--valt-radius);
+	border: 1px solid rgba(232,196,139,0.12); background: var(--valt-navy);
+	color: var(--valt-tan); font-family: var(--valt-font); font-size: 0.9rem;
+	cursor: pointer; transition: all 0.2s; text-align: left;
+}
+.valt-wallet-btn:hover { border-color: var(--valt-gold); background: rgba(232,196,139,0.06); }
+.valt-wallet-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.valt-wallet-btn--available {
+	border-color: rgba(232,196,139,0.25); background: rgba(232,196,139,0.06);
+}
+.valt-wallet-btn--available .valt-wallet-btn__name { color: var(--valt-gold); font-weight: 600; }
+.valt-wallet-btn--unavailable { opacity: 0.55; }
+.valt-wallet-btn--unavailable:hover { opacity: 0.75; }
+
+.valt-wallet-btn__name { flex: 1; }
+.valt-wallet-btn__status { font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
+.valt-wallet-btn__status--installed { color: #4ade80; }
+.valt-wallet-btn__status--installed svg { stroke: #4ade80; }
+.valt-wallet-btn__status--missing { color: var(--valt-mid); }
+.valt-wallet-btn__vespr { font-size: 0.7rem; color: var(--valt-mid); font-style: italic; margin-left: 0.5rem; }
+
+/* ─── Connect Trigger Button ──────────────────────────────────────── */
+.valt-connect-trigger { display: inline-flex; align-items: center; gap: 0.5rem; }
+.valt-connect-trigger .valt-icon { stroke: var(--valt-brown); }
+
+/* ─── Wallet Prompt (empty state) ─────────────────────────────────── */
+.valt-wallet-prompt {
+	text-align: center; padding: 4rem 2rem;
+	max-width: 480px; margin: 0 auto;
+}
+.valt-wallet-prompt--compact { padding: 2rem; }
+.valt-wallet-prompt__icon { margin-bottom: 1.5rem; }
+.valt-wallet-prompt__icon .valt-icon { stroke: var(--valt-gold); opacity: 0.6; }
+.valt-wallet-prompt h1 { font-size: 1.75rem; }
+.valt-wallet-prompt p { color: var(--valt-mid); margin-bottom: 1.5rem; }
+
+/* ─── Welcome Banner ──────────────────────────────────────────────── */
+.valt-welcome {
+	display: flex; align-items: center; justify-content: space-between;
+	padding: 1rem 0; margin-bottom: 1.5rem;
+	border-bottom: 1px solid rgba(232,196,139,0.1);
+}
+.valt-welcome__greeting {
+	display: flex; align-items: center; gap: 0.6rem;
+}
+.valt-welcome__greeting h2 { margin: 0; font-size: 1.15rem; }
+.valt-welcome__greeting em { font-style: normal; color: var(--valt-coral); }
+.valt-welcome__greeting .valt-icon { stroke: var(--valt-gold); }
+
+/* ─── Dashboard Grid ──────────────────────────────────────────────── */
+.valt-dashboard-grid {
+	display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: var(--valt-gap); margin-bottom: 2rem;
+}
+.valt-card {
+	padding: 1.5rem; background: var(--valt-dark);
+	border-radius: var(--valt-radius); border: 1px solid rgba(232,196,139,0.1);
+}
+.valt-card h3 {
+	display: flex; align-items: center; gap: 0.5rem;
+	font-size: 1rem; margin-bottom: 1rem; color: var(--valt-gold);
+}
+.valt-card h3 .valt-icon { stroke: var(--valt-gold); opacity: 0.7; }
+.valt-dashboard-links { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* ─── Section Header ──────────────────────────────────────────────── */
+.valt-section-header { margin-bottom: 2rem; }
+.valt-section-header h1 { margin-bottom: 0.25rem; }
+.valt-section-header p { color: var(--valt-mid); margin: 0; }
+
+/* ─── Collection Grid (CardanoPress NFTs) ─────────────────────────── */
+.valt-collection-grid {
+	display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: var(--valt-gap); list-style: none; padding: 0;
+}
+.valt-collection-actions { margin-bottom: 1.5rem; }
+
+/* ─── NFT Card (Collection item) ──────────────────────────────────── */
+.valt-nft-card {
+	background: var(--valt-dark); border-radius: var(--valt-radius);
+	border: 1px solid rgba(232,196,139,0.1); overflow: hidden;
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+.valt-nft-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+.valt-nft-card__image img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-nft-card__body { padding: 1rem; }
+.valt-nft-card__name { font-size: 0.95rem; color: var(--valt-gold); margin-bottom: 0.25rem; }
+.valt-nft-card__qty { font-size: 0.8rem; color: var(--valt-mid); display: block; margin-bottom: 0.5rem; }
+.valt-nft-card__meta { display: flex; flex-direction: column; gap: 0.3rem; }
+.valt-nft-card__field { display: flex; gap: 0.5rem; font-size: 0.8rem; }
+.valt-nft-card__label { color: var(--valt-mid); font-weight: 500; min-width: 70px; }
+.valt-nft-card__value { color: var(--valt-tan); }
+
+/* ─── CardanoPress Profile Connection override ────────────────────── */
+.valt-card table { width: 100%; }
+.valt-card table td { padding: 0.4rem 0; font-size: 0.85rem; color: var(--valt-tan); border: none; }
+.valt-card table td:first-child { color: var(--valt-mid); font-weight: 500; width: 100px; }
+.valt-card code { font-size: 0.75rem; color: var(--valt-gold); word-break: break-all; }
+
+/* ─── Dropdown Menu ───────────────────────────────────────────────── */
+.valt-dropdown__link {
+	display: block; padding: 0.4rem 0.8rem; color: var(--valt-tan);
+	font-size: 0.85rem; transition: color 0.2s;
+}
+.valt-dropdown__link:hover { color: var(--valt-gold); }
+
 /* ─── Utility ─────────────────────────────────────────────────────── */
 .text-center { text-align: center; }
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
 .mt-3 { margin-top: 2rem; }
 .mb-2 { margin-bottom: 1rem; }
+
+/* ─── Override CardanoPress Tailwind resets ────────────────────────── */
+.valt-site .container { max-width: var(--valt-container); margin: 0 auto; padding: 0 var(--valt-gap); }
+.valt-site h2.mb-0 { margin-bottom: 0; }
+.valt-site .wallet-button { display: none; } /* Hide old CardanoPress buttons, we use valt-wallet-btn */

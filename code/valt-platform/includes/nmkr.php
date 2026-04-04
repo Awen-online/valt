@@ -251,25 +251,63 @@ function valt_do_mint_nft( int $song_id ): void {
 	// Build CIP25 metadata.
 	$cip25      = valt_build_cip25_metadata( $song_id, $image_cid, $audio_cid );
 	$asset_name = valt_generate_asset_name( get_the_title( $song_id ), $song_id );
+	$policy_id  = $config['policy_id'];
 
-	// Call NMKR MintAndSendSpecific.
-	$result = valt_nmkr_request( 'POST', "MintAndSendSpecific/{$config['project_uid']}/1/{$wallet}", [
-		'tokenname'   => $asset_name,
-		'displayname' => get_the_title( $song_id ),
-		'metadata'    => $cip25,
-	] );
+	// Step 1: Upload NFT to NMKR project.
+	$upload_body = [
+		'tokenname'        => $asset_name,
+		'displayname'      => get_the_title( $song_id ),
+		'metadataOverride' => wp_json_encode( $cip25 ),
+		'priceInLovelace'  => 5000000, // 5 ADA default
+	];
 
-	if ( is_wp_error( $result ) ) {
+	// Attach cover art as base64 (skip Pinata, use NMKR's IPFS).
+	$file_path = get_attached_file( $image_id );
+	if ( $file_path && file_exists( $file_path ) ) {
+		$mime = get_post_mime_type( $image_id ) ?: 'image/jpeg';
+		$upload_body['previewImageNft'] = [
+			'mimetype'       => $mime,
+			'fileFromBase64' => base64_encode( file_get_contents( $file_path ) ),
+		];
+	}
+
+	$upload_result = valt_nmkr_request( 'POST', "UploadNft/{$config['project_uid']}", $upload_body );
+	if ( is_wp_error( $upload_result ) ) {
 		update_post_meta( $song_id, 'valt_nft_status', 'failed' );
-		valt_log_event( 'mint_error', "NMKR mint failed for song {$song_id}", [
-			'error' => $result->get_error_message(),
+		valt_log_event( 'mint_error', "NMKR upload failed for song {$song_id}", [
+			'error' => $upload_result->get_error_message(),
 		] );
 		return;
 	}
 
-	// Store NMKR response.
-	$nft_uid = $result['nftUid'] ?? $result['nftId'] ?? '';
+	$nft_uid = $upload_result['nftUid'] ?? '';
+	if ( empty( $nft_uid ) ) {
+		update_post_meta( $song_id, 'valt_nft_status', 'failed' );
+		valt_log_event( 'mint_error', "NMKR upload returned no nftUid for song {$song_id}" );
+		return;
+	}
+
 	update_post_meta( $song_id, 'valt_nft_uid', $nft_uid );
+	if ( ! empty( $upload_result['ipfsHashMainnft'] ) ) {
+		update_post_meta( $song_id, 'valt_nft_ipfs_hash', $upload_result['ipfsHashMainnft'] );
+	}
+
+	valt_log_event( 'nft_uploaded', "NFT uploaded to NMKR for song {$song_id}", [
+		'nft_uid' => $nft_uid,
+	] );
+
+	// Step 2: Mint and send via GET request.
+	// Format: /v2/MintAndSendSpecific/{projectUid}/{nftUid}/{tokencount}/{receiverAddress}
+	$mint_result = valt_nmkr_request( 'GET', "MintAndSendSpecific/{$config['project_uid']}/{$nft_uid}/1/{$wallet}" );
+
+	if ( is_wp_error( $mint_result ) ) {
+		update_post_meta( $song_id, 'valt_nft_status', 'failed' );
+		valt_log_event( 'mint_error', "NMKR mint failed for song {$song_id}", [
+			'error' => $mint_result->get_error_message(),
+		] );
+		return;
+	}
+
 	update_post_meta( $song_id, 'valt_nft_status', 'processing' );
 
 	valt_log_event( 'mint_submitted', "NMKR mint submitted for song {$song_id}", [

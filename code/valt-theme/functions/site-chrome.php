@@ -20,31 +20,36 @@ function valt_render_nav(): void {
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="VALT" width="40" height="40">
 				<span>VALT</span>
 			</a>
-			<button class="valt-nav__toggle" aria-label="Menu" data-nav-toggle>
-				<span></span><span></span><span></span>
-			</button>
+
 			<div class="valt-nav__links" data-nav-menu>
 				<a href="<?php echo esc_url( $home ); ?>">Home</a>
 				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'discovery' ) ) : ?>
-					<a href="<?php echo esc_url( home_url( '/discover/' ) ); ?>">Discover</a>
-				<?php endif; ?>
-				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'leaderboard' ) ) : ?>
-					<a href="<?php echo esc_url( home_url( '/leaderboard/' ) ); ?>">Leaderboard</a>
-				<?php endif; ?>
-				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'campaigns' ) ) : ?>
-					<a href="<?php echo esc_url( home_url( '/campaigns/' ) ); ?>">Campaigns</a>
+					<a href="<?php echo esc_url( home_url( '/discover/' ) ); ?>"><?php echo valt_svg_search( 16 ); ?> Discover</a>
 				<?php endif; ?>
 				<?php if ( is_user_logged_in() ) : ?>
-					<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'gamification' ) ) : ?>
-						<a href="<?php echo esc_url( home_url( '/fan-dashboard/' ) ); ?>">My Dashboard</a>
-					<?php endif; ?>
-					<a href="<?php echo esc_url( home_url( '/collection/' ) ); ?>">My Collection</a>
+					<a href="<?php echo esc_url( home_url( '/collection/' ) ); ?>"><?php echo valt_svg_collection( 16 ); ?> Collection</a>
 				<?php endif; ?>
+				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'leaderboard' ) ) : ?>
+					<a href="<?php echo esc_url( home_url( '/leaderboard/' ) ); ?>"><?php echo valt_svg_trophy( 16 ); ?> Leaderboard</a>
+				<?php endif; ?>
+			</div>
+
+			<div class="valt-nav__right">
 				<?php if ( $connected ) : ?>
-					<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-nav__wallet">Wallet</a>
+					<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-nav__wallet-btn">
+						<?php echo valt_svg_wallet( 18 ); ?>
+						<span>Wallet</span>
+						<span class="valt-nav__wallet-dot"></span>
+					</a>
 				<?php else : ?>
-					<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-btn valt-btn--small">Connect Wallet</a>
+					<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-nav__connect-btn">
+						<?php echo valt_svg_wallet( 18 ); ?>
+						<span>Connect</span>
+					</a>
 				<?php endif; ?>
+				<button class="valt-nav__toggle" aria-label="Menu" data-nav-toggle>
+					<span></span><span></span><span></span>
+				</button>
 			</div>
 		</div>
 	</nav>

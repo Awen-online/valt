@@ -1,42 +1,47 @@
 <?php
-
 /**
- * Page template for displaying the user's personal Valt — their collection
- * of Cardano NFTs / digital collectables.
- *
- * This can be overridden by copying it to yourtheme/cardanopress/page/Collection.php.
- *
- * @package ThemePlate
- * @since   0.1.0
+ * NFT Collection page — restyled for Valt design system.
  */
-
-cardanoPress()->compatibleHeader();
-
+get_header();
 ?>
 
-<main class="container mx-auto px-4">
-    <div class="py-8">
+<div class="valt-site">
+	<?php valt_render_nav(); ?>
 
-        <?php cardanoPress()->template('welcome-banner'); ?>
+	<main class="valt-main">
+		<div class="valt-container">
 
-        <div class="mb-8 border-b pb-6" style="border-color: #493D3C;">
-            <h1 class="text-3xl font-bold mb-1" style="color: #E8C48B;">
-                Your Valt
-            </h1>
-            <p class="text-sm" style="color: #C5AD90;">
-                Your personal collection of digital collectables. Share it with the world or keep it private — it&rsquo;s yours.
-            </p>
-        </div>
+			<?php cardanoPress()->template('welcome-banner'); ?>
 
-        <?php the_content(); ?>
+			<div class="valt-section-header">
+				<h1>Your Valt</h1>
+				<p>Your personal collection of digital music collectables.</p>
+			</div>
 
-        <ul class="flex flex-wrap -mx-4 list-none p-0">
-            <?php cardanoPress()->template('collection-list'); ?>
-        </ul>
+			<?php the_content(); ?>
 
-    </div>
-</main>
+			<template x-if="!isConnected">
+				<div class="valt-wallet-prompt valt-wallet-prompt--compact">
+					<p>Connect your wallet to view your collection.</p>
+					<?php cardanoPress()->template('part/modal-trigger', ['text' => 'Connect Wallet']); ?>
+				</div>
+			</template>
 
-<?php
+			<template x-if="isConnected">
+				<div>
+					<div class="valt-collection-actions">
+						<?php cardanoPress()->template('part/asset-sync'); ?>
+					</div>
+					<div class="valt-collection-grid">
+						<?php cardanoPress()->template('collection-list'); ?>
+					</div>
+				</div>
+			</template>
 
-cardanoPress()->compatibleFooter();
+		</div>
+	</main>
+
+	<?php valt_render_footer(); ?>
+</div>
+
+<?php get_footer(); ?>

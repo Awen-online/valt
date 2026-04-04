@@ -55,6 +55,7 @@ function valt_seed_data_page(): void {
 	update_post_meta( $cullah_id, 'valt_social_instagram', 'cullah' );
 	update_post_meta( $cullah_id, 'valt_social_spotify', 'https://open.spotify.com/artist/4jgvPxSOf35LRGJ5XMISIA' );
 	update_post_meta( $cullah_id, 'valt_featured', 1 );
+	valt_seed_set_image( $cullah_id, 'https://www.cullah.com/wp-content/uploads/2025/04/Cu-Chulainn-cover_final-1024x1024.jpg', 'Cullah' );
 	echo "Artist: Cullah (ID: {$cullah_id})\n";
 
 	$mie_id = valt_seed_find_or_create( 'artist', 'Mie', [
@@ -66,6 +67,7 @@ function valt_seed_data_page(): void {
 	update_post_meta( $mie_id, 'valt_social_x', 'therealmie' );
 	update_post_meta( $mie_id, 'valt_social_instagram', 'therealmie' );
 	update_post_meta( $mie_id, 'valt_featured', 1 );
+	valt_seed_set_image( $mie_id, 'https://therealmie.com/wp-content/uploads/elementor/thumbs/Mie_The-Cave_Cover-rcmfkdq3mhr85otgt30q5gjp4y6ttndkw6jdt3nrbk.jpg', 'Mie' );
 	echo "Artist: Mie (ID: {$mie_id})\n";
 
 	// ─── Create Albums ───────────────────────────────────────────────
@@ -75,6 +77,7 @@ function valt_seed_data_page(): void {
 		'post_author'  => valt_seed_get_author( $cullah_id ),
 	] );
 	update_post_meta( $cuchulainn_id, 'artist', $cullah_id );
+	valt_seed_set_image( $cuchulainn_id, 'https://www.cullah.com/wp-content/uploads/2025/04/Cu-Chulainn-cover_final-1024x1024.jpg', 'Cú Chulainn cover' );
 	echo "Album: Cú Chulainn (ID: {$cuchulainn_id})\n";
 
 	$cave_id = valt_seed_find_or_create( 'album', 'The Cave EP', [
@@ -82,6 +85,7 @@ function valt_seed_data_page(): void {
 		'post_author'  => valt_seed_get_author( $mie_id ),
 	] );
 	update_post_meta( $cave_id, 'artist', $mie_id );
+	valt_seed_set_image( $cave_id, 'https://therealmie.com/wp-content/uploads/elementor/thumbs/Mie_The-Cave_Cover-rcmfkdq3mhr85otgt30q5gjp4y6ttndkw6jdt3nrbk.jpg', 'The Cave EP cover' );
 
 	// Set up The Cave EP as a demo campaign.
 	update_post_meta( $cave_id, 'valt_campaign_active', 1 );
@@ -183,6 +187,44 @@ function valt_seed_find_or_create( string $post_type, string $title, array $extr
 function valt_seed_get_author( int $artist_id ): int {
 	$artist = get_post( $artist_id );
 	return $artist ? (int) $artist->post_author : get_current_user_id();
+}
+
+/**
+ * Download an external image and attach it to a post as featured image.
+ * Skips if post already has a featured image.
+ */
+function valt_seed_set_image( int $post_id, string $url, string $desc = '' ): void {
+	if ( get_post_thumbnail_id( $post_id ) ) {
+		return; // Already has one.
+	}
+
+	require_once ABSPATH . 'wp-admin/includes/media.php';
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	require_once ABSPATH . 'wp-admin/includes/image.php';
+
+	$tmp = download_url( $url, 30 );
+	if ( is_wp_error( $tmp ) ) {
+		echo "  ⚠ Image download failed for post {$post_id}: {$tmp->get_error_message()}\n";
+		return;
+	}
+
+	$ext      = pathinfo( parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) ?: 'jpg';
+	$filename = sanitize_file_name( get_the_title( $post_id ) ) . '.' . $ext;
+
+	$file_array = [
+		'name'     => $filename,
+		'tmp_name' => $tmp,
+	];
+
+	$attach_id = media_handle_sideload( $file_array, $post_id, $desc );
+	if ( is_wp_error( $attach_id ) ) {
+		@unlink( $tmp );
+		echo "  ⚠ Image sideload failed for post {$post_id}: {$attach_id->get_error_message()}\n";
+		return;
+	}
+
+	set_post_thumbnail( $post_id, $attach_id );
+	echo "  ✓ Image set for post {$post_id} (attachment {$attach_id})\n";
 }
 
 // ─── Page Seeder ─────────────────────────────────────────────────────
