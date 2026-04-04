@@ -41,6 +41,7 @@ $hero_cta_url = get_post_meta( get_the_ID(), '_valt_hero_cta_url', true );
 		<?php endif; ?>
 		<div class="valt-hero__overlay"></div>
 		<div class="valt-hero__content">
+			<div class="valt-hero__logo"><?php echo valt_svg_logo_animated( 120 ); ?></div>
 			<?php if ( $hero_title ) : ?>
 				<h1 class="valt-hero__title"><?php echo esc_html( $hero_title ); ?></h1>
 			<?php endif; ?>

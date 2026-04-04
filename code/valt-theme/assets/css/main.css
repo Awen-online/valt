@@ -30,8 +30,9 @@
 	--valt-tan:        #C5AD90;   /* body text — 6.2:1 on navy */
 
 	/* ── Semantic ── */
-	--valt-coral:      #FF9191;   /* links, errors, secondary CTA — 5.8:1 on navy */
+	--valt-coral:      #D4A574;   /* warm link color — gold-adjacent, not red. 5.5:1 on navy */
 	--valt-green:      #4ADE80;   /* success, connected states */
+	--valt-red:        #E87C7C;   /* errors, danger buttons only — not used for links */
 
 	/* ── Typography ── */
 	--valt-font:       'Ruda', sans-serif;
@@ -179,6 +180,8 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-hero__cta {
 	margin-top: 2rem;
 }
+.valt-hero__logo { margin-bottom: 1.5rem; }
+
 .valt-hero__cta.valt-btn--primary {
 	padding: 0.9rem 2.5rem; font-size: 1.05rem; border-radius: var(--valt-radius-lg);
 	box-shadow: 0 4px 25px rgba(201,166,107,0.3);
@@ -229,10 +232,10 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 
 /* Danger — coral. */
 .valt-btn--danger {
-	background: var(--valt-coral); color: var(--valt-cream);
-	border-color: var(--valt-coral);
+	background: var(--valt-red); color: var(--valt-cream);
+	border-color: var(--valt-red);
 }
-.valt-btn--danger:hover { background: #ff7070; border-color: #ff7070; }
+.valt-btn--danger:hover { background: #d06060; border-color: #d06060; }
 
 /* Sizes */
 .valt-btn--small { padding: 0.45rem 1rem; font-size: var(--valt-fs-small); border-radius: var(--valt-radius-sm); }
@@ -276,7 +279,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 /* ─── Notices ─────────────────────────────────────────────────────── */
 .valt-notice { padding: 0.75rem 1rem; border-radius: var(--valt-radius); margin-bottom: 1rem; font-size: 0.9rem; }
 .valt-notice--success { background: rgba(100,180,100,0.2); color: #8fc; border: 1px solid rgba(100,180,100,0.3); }
-.valt-notice--error { background: rgba(255,100,100,0.15); color: var(--valt-coral); border: 1px solid rgba(255,100,100,0.3); }
+.valt-notice--error { background: rgba(232,124,124,0.12); color: var(--valt-red); border: 1px solid rgba(232,124,124,0.25); }
 
 /* ─── Tables ──────────────────────────────────────────────────────── */
 .valt-table { width: 100%; border-collapse: collapse; }
@@ -430,7 +433,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-campaign h3 { margin-bottom: 0.25rem; }
 .valt-campaign__artist { color: var(--valt-mid); font-size: 0.9rem; margin-bottom: 0.75rem; }
 .valt-campaign__bar { height: 8px; background: rgba(232,196,139,0.15); border-radius: 4px; margin: 1rem 0; overflow: hidden; }
-.valt-campaign__fill { height: 100%; background: linear-gradient(90deg, var(--valt-gold), var(--valt-coral)); border-radius: 4px; transition: width 0.5s; }
+.valt-campaign__fill { height: 100%; background: linear-gradient(90deg, var(--valt-gold-dark), var(--valt-gold)); border-radius: 4px; transition: width 0.5s; }
 .valt-campaign__stats { display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--valt-mid); flex-wrap: wrap; }
 .valt-campaign__stats strong { color: var(--valt-gold); }
 .valt-campaign__deadline { font-size: 0.8rem; color: var(--valt-mid); margin-top: 0.5rem; }
@@ -572,6 +575,21 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 .valt-nav__links a .valt-icon { margin-right: 0.25rem; opacity: 0.7; }
 
+/* Animated logo — spokes spin, grooves pulse */
+@keyframes valt-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes valt-breathe { 0%,40% { transform: scale(1); } 70% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes valt-groove { 0%,100% { opacity: 0.15; } 50% { opacity: 0.35; } }
+.valt-logo-animated .valt-spokes { transform-origin: center; animation: valt-spin 8s linear infinite; }
+.valt-logo-animated .valt-outer { transform-origin: center; animation: valt-breathe 8s ease-in-out infinite; }
+.valt-logo-animated .valt-groove { animation: valt-groove 4s ease-in-out infinite; }
+.valt-logo-animated .valt-groove:nth-child(3) { animation-delay: 0.4s; }
+.valt-logo-animated .valt-groove:nth-child(4) { animation-delay: 0.8s; }
+.valt-logo-animated .valt-groove:nth-child(5) { animation-delay: 1.2s; }
+.valt-logo-animated .valt-groove:nth-child(6) { animation-delay: 1.6s; }
+.valt-logo-animated .valt-groove:nth-child(7) { animation-delay: 2.0s; }
+.valt-logo-animated .valt-groove:nth-child(8) { animation-delay: 2.4s; }
+.valt-logo-animated .valt-groove:nth-child(9) { animation-delay: 2.8s; }
+
 /* ─── Wallet Connect Modal ────────────────────────────────────────── */
 .valt-modal-overlay {
 	position: fixed; inset: 0; z-index: 9999;
@@ -661,7 +679,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	display: flex; align-items: center; gap: 0.6rem;
 }
 .valt-welcome__greeting h2 { margin: 0; font-size: 1.15rem; }
-.valt-welcome__greeting em { font-style: normal; color: var(--valt-coral); }
+.valt-welcome__greeting em { font-style: normal; color: var(--valt-gold-light); }
 .valt-welcome__greeting .valt-icon { stroke: var(--valt-gold); }
 
 /* ─── Dashboard Grid ──────────────────────────────────────────────── */
