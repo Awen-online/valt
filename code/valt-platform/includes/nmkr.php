@@ -207,14 +207,18 @@ function valt_do_mint_nft( int $song_id ): void {
 		return;
 	}
 
-	// Upload cover art to IPFS.
+	// Upload cover art — fallback chain: song NFT image → song thumb → album thumb → artist thumb.
 	$image_id = (int) get_post_meta( $song_id, 'valt_nft_image_id', true );
 	if ( ! $image_id ) {
-		// Fall back to song featured image.
 		$image_id = (int) get_post_thumbnail_id( $song_id );
 	}
 	if ( ! $image_id ) {
-		// Fall back to artist featured image.
+		$album_id = (int) get_post_meta( $song_id, 'album', true );
+		if ( $album_id ) {
+			$image_id = (int) get_post_thumbnail_id( $album_id );
+		}
+	}
+	if ( ! $image_id ) {
 		$artist_id = (int) get_post_meta( $song_id, 'artist', true );
 		if ( $artist_id ) {
 			$image_id = (int) get_post_thumbnail_id( $artist_id );
