@@ -2,7 +2,17 @@
 /**
  * Single Artist template — shortcode-driven, no Elementor.
  */
-get_header();
+?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
+<?php
 $artist_id = get_the_ID();
 $name      = get_the_title();
 $bio       = get_post_meta( $artist_id, 'bio', true );
@@ -62,4 +72,6 @@ $social_sp = get_post_meta( $artist_id, 'valt_social_spotify', true );
 	<?php valt_render_footer(); ?>
 </div>
 
-<?php get_footer(); ?>
+<?php wp_footer(); ?>
+</body>
+</html>
