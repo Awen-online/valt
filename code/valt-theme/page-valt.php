@@ -2,11 +2,21 @@
 /**
  * Template Name: Valt Full Page
  *
- * Shortcode-driven page template. No Elementor dependency.
- * Renders: nav → optional hero → post_content (shortcodes) → footer.
+ * Self-contained page template. Renders its own <html> shell.
+ * Does NOT call get_header()/get_footer() to avoid Elementor templates.
  */
-get_header();
+?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
 
+<?php
 $show_hero   = get_post_meta( get_the_ID(), '_valt_hero', true );
 $hero_video  = get_post_meta( get_the_ID(), '_valt_hero_video', true );
 $hero_image  = get_post_meta( get_the_ID(), '_valt_hero_image', true );
@@ -59,4 +69,6 @@ $hero_cta_url = get_post_meta( get_the_ID(), '_valt_hero_cta_url', true );
 
 </div>
 
-<?php get_footer(); ?>
+<?php wp_footer(); ?>
+</body>
+</html>
