@@ -29,6 +29,15 @@ add_action('wp_enqueue_scripts', function() {
     wp_enqueue_style('custom-style', get_stylesheet_directory_uri() . '/assets/css/main.css', array(), $style_version);
     wp_enqueue_style('cardano-press-style', get_stylesheet_directory_uri() . '/assets/css/cardanopress_styles.css', array(), $style_version);
     // wp_enqueue_style('my-account-style', get_stylesheet_directory_uri() . '/assets/css/my-account.css', array(), $style_version);
+
+    // Pass current post ID to music player on CPT single pages so it can
+    // fetch the contextual playlist from the REST endpoint.
+    if ( is_singular( [ 'song', 'album', 'artist' ] ) ) {
+        wp_localize_script( 'music-player', 'fmlPlayer', [
+            'contextId' => get_the_ID(),
+            'restUrl'   => rest_url( 'fml-music-player/v1/a/' ),
+        ] );
+    }
 //    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css', array(), '6.4.2');
 
     

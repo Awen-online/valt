@@ -21,3 +21,14 @@ function filter_songs_by_artist( $query ) {
     }
 }
 add_action( 'elementor/query/songs_filter', 'filter_songs_by_artist' );
+
+add_action( 'elementor/query/songs_by_album', 'filter_songs_by_album' );
+function filter_songs_by_album( $query ) {
+    if ( is_singular( 'album' ) ) {
+        $query->set( 'meta_query', [ [
+            'key'     => 'album',
+            'value'   => get_the_ID(),
+            'compare' => '=',
+        ] ] );
+    }
+}
