@@ -1,27 +1,14 @@
 <?php
-
 /**
- * The template for displaying the list of navigation items for the menu dropdown.
- *
- * This can be overridden by copying it to yourtheme/cardanopress/part/menu-items.php.
- *
- * @package ThemePlate
- * @since   0.1.0
+ * Menu dropdown items — Valt styled.
  */
-
-// if (empty($list)) {
-//     $list = cardanoPress()->getPages();
-// }
-
-$list = [];
-$list['Dashboard'] = "/dashboard";
-$list['Collection'] = "/collection";
-$list['Disconnect'] = wp_logout_url(get_permalink());
-
+$list = [
+	'Dashboard'  => home_url('/dashboard/'),
+	'Collection' => home_url('/collection/'),
+	'Disconnect' => wp_logout_url(home_url()),
+];
 ?>
 
 <?php foreach ($list as $label => $link) : ?>
-    <li>
-        <a href="<?php echo esc_url($link); ?>" class='block py-1 px-2'><?php echo esc_html($label); ?></a>
-    </li>
+	<li><a href="<?php echo esc_url($link); ?>" class="valt-dropdown__link"><?php echo esc_html($label); ?></a></li>
 <?php endforeach; ?>

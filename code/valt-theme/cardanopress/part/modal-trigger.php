@@ -1,18 +1,13 @@
 <?php
-
 /**
- * The template for displaying the modal popup trigger button.
- *
- * This can be overridden by copying it to yourtheme/cardanopress/part/modal-trigger.php.
- *
- * @package ThemePlate
- * @since   0.1.0
+ * Modal trigger button — Valt styled with wallet icon.
  */
-
 if (empty($text)) {
-    $text = 'Connect';
+	$text = 'Connect Wallet';
 }
-
 ?>
 
-<button type='button' x-on:click='showModal = true'><?php echo esc_html($text); ?></button>
+<button type="button" class="valt-btn valt-btn--primary valt-connect-trigger" x-on:click="showModal = true">
+	<?php echo valt_svg_wallet( 18 ); ?>
+	<?php echo esc_html($text); ?>
+</button>

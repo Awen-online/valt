@@ -1,22 +1,15 @@
 <?php
-
 /**
- * The template for displaying the welcome banner.
- *
- * This can be overridden by copying it to yourtheme/cardanopress/welcome-banner.php.
- *
- * @package ThemePlate
- * @since   0.1.0
+ * Welcome banner — Valt styled.
  */
-
 $userProfile = cardanoPress()->userProfile();
-
+$username = $userProfile->getData('user_login');
 ?>
 
-<div class="flex items-center justify-between pb-6">
-    <h2 class="mb-0 mr-2">
-        Welcome <span class="italic"><?php echo esc_html($userProfile->getData('user_login')); ?></span>!
-    </h2>
-
-     <?php //cardanoPress()->template('menu-dropdown'); ?> 
+<div class="valt-welcome">
+	<div class="valt-welcome__greeting">
+		<?php echo valt_svg_user( 24 ); ?>
+		<h2>Welcome, <em><?php echo esc_html($username); ?></em></h2>
+	</div>
+	<a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="valt-btn valt-btn--small valt-btn--secondary">Disconnect</a>
 </div>

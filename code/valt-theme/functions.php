@@ -90,4 +90,5 @@ add_action('wp_enqueue_scripts', function() {
 require get_stylesheet_directory().'/functions/elementor.php';
 require get_stylesheet_directory().'/functions/pods.php';
 require get_stylesheet_directory().'/functions/shortcodes/pods_artist_featured_image.php';
+require get_stylesheet_directory().'/functions/svg-icons.php';
 require get_stylesheet_directory().'/functions/site-chrome.php';

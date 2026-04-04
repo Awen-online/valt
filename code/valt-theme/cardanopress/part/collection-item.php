@@ -1,39 +1,33 @@
 <?php
-
 /**
- * The template for displaying the single item in collection.
- *
- * This can be overridden by copying it to yourtheme/cardanopress/part/collection-item.php.
- *
- * @package ThemePlate
- * @since   0.1.0
+ * Single NFT collection item — Valt styled card.
  */
-
 if (empty($asset)) {
-    return;
+	return;
 }
-
 ?>
 
-<li class="p-4 w-full sm:w-1/2 lg:w-1/4">
-    <?php cardanoPress()->template('part/asset-image', compact('asset')); ?>
+<div class="valt-nft-card">
+	<div class="valt-nft-card__image">
+		<?php cardanoPress()->template('part/asset-image', compact('asset')); ?>
+	</div>
+	<div class="valt-nft-card__body">
+		<h3 class="valt-nft-card__name"><?php cardanoPress()->template('part/asset-name', compact('asset')); ?></h3>
+		<span class="valt-nft-card__qty">Qty: <?php echo esc_html($asset['quantity']); ?></span>
 
-    <h2><?php cardanoPress()->template('part/asset-name', compact('asset')); ?></h2>
-    <p class="mb-1"><b>Quantity:</b> <?php echo esc_html($asset['quantity']); ?></p>
-
-    <?php if (! empty($asset['onchain_metadata'])) : ?>
-        <?php foreach ($asset['onchain_metadata'] as $key => $value) : ?>
-            <?php if (! in_array($key, ['name', 'image', 'arweaveId'])) : ?>
-                <p class="mb-1">
-                    <b><?php echo esc_html(ucfirst($key)); ?>:</b>
-
-                    <?php if (is_array($value)) : ?>
-                        <?php echo esc_html(implode(', ', $value)); ?>
-                    <?php else : ?>
-                        <?php echo esc_html($value); ?>
-                    <?php endif; ?>
-                </p>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</li>
+		<?php if (! empty($asset['onchain_metadata'])) : ?>
+			<div class="valt-nft-card__meta">
+				<?php foreach ($asset['onchain_metadata'] as $key => $value) : ?>
+					<?php if (! in_array($key, ['name', 'image', 'arweaveId', 'files', 'music_metadata_version'])) : ?>
+						<div class="valt-nft-card__field">
+							<span class="valt-nft-card__label"><?php echo esc_html(ucfirst(str_replace('_', ' ', $key))); ?></span>
+							<span class="valt-nft-card__value">
+								<?php echo is_array($value) ? esc_html(implode(', ', $value)) : esc_html($value); ?>
+							</span>
+						</div>
+					<?php endif; ?>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+	</div>
+</div>
