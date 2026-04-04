@@ -26,7 +26,11 @@ $social_sp = get_post_meta( $artist_id, 'valt_social_spotify', true );
 
 // Check gate status.
 $gate_state = 'no-policy'; // no-policy | disconnected | needs-sync | locked | unlocked
-if ( $policy_id && function_exists( 'cardanoPress' ) ) {
+
+// Admin preview: ?valt_preview=unlocked or ?valt_preview=locked
+if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
+	$gate_state = sanitize_text_field( $_GET['valt_preview'] );
+} elseif ( $policy_id && function_exists( 'cardanoPress' ) ) {
 	$profile = cardanoPress()->userProfile();
 	if ( ! $profile->isConnected() ) {
 		$gate_state = 'disconnected';
@@ -69,9 +73,6 @@ if ( $policy_id && function_exists( 'cardanoPress' ) ) {
 
 	<main class="valt-main">
 		<div class="valt-container">
-
-			<h2>Releases</h2>
-			<?php echo do_shortcode( '[valt_song_grid artist_id="' . $artist_id . '"]' ); ?>
 
 			<?php // ── THE VALT — token-gated section ────────────────────── ?>
 			<?php if ( $policy_id ) : ?>
@@ -140,6 +141,9 @@ if ( $policy_id && function_exists( 'cardanoPress' ) ) {
 				<?php endif; ?>
 			</section>
 			<?php endif; ?>
+
+			<h2>Releases</h2>
+			<?php echo do_shortcode( '[valt_song_grid artist_id="' . $artist_id . '"]' ); ?>
 
 		</div>
 	</main>

@@ -546,7 +546,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-vault__header { margin-bottom: 2rem; }
 .valt-vault__title {
-	font-size: var(--valt-fs-h1); font-weight: 700; color: var(--valt-cream);
+	font-size: var(--valt-fs-h1); font-weight: 700; color: var(--valt-gold);
 	letter-spacing: 0.06em; margin-bottom: 0.25rem;
 }
 .valt-vault__sub { color: var(--valt-mid); font-size: var(--valt-fs-body); margin: 0; }
@@ -555,7 +555,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-vault__door {
 	position: relative; display: flex; flex-direction: column; align-items: center;
 	padding: 3rem 2rem; margin: 0 auto; max-width: 500px;
-	background: var(--valt-dark); border-radius: var(--valt-radius-lg);
+	background: var(--valt-darker); border-radius: var(--valt-radius-lg);
 	border: var(--valt-border); overflow: hidden;
 }
 .valt-vault__door::before {
@@ -617,18 +617,21 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	from { opacity: 0; transform: translateY(20px); }
 	to { opacity: 1; transform: translateY(0); }
 }
-.valt-vault__inner { padding: 2rem; background: var(--valt-dark); border-radius: var(--valt-radius); border: var(--valt-border); }
-.valt-vault__inner h3 { color: var(--valt-gold); }
-.valt-vault__inner > p { color: var(--valt-mid); }
+.valt-vault__inner { padding: 2rem; background: var(--valt-darker); border-radius: var(--valt-radius); border: var(--valt-border); }
+.valt-vault__inner h3 { color: var(--valt-cream); }
+.valt-vault__inner > p { color: var(--valt-tan); }
 .valt-vault__grid {
 	display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	gap: var(--valt-gap); margin-top: 1.5rem;
 }
+.valt-vault__grid .valt-card {
+	background: var(--valt-dark); border: var(--valt-border);
+}
 .valt-vault__grid .valt-card h4 {
 	display: flex; align-items: center; gap: 0.5rem;
-	font-size: var(--valt-fs-h3); color: var(--valt-gold); margin-bottom: 0.5rem;
+	font-size: var(--valt-fs-h3); color: var(--valt-cream); margin-bottom: 0.5rem;
 }
-.valt-vault__grid .valt-card h4 .valt-icon { stroke: var(--valt-gold); opacity: 0.7; }
+.valt-vault__grid .valt-card h4 .valt-icon { stroke: var(--valt-gold-light); }
 .valt-vault__grid .valt-card p { color: var(--valt-tan); font-size: var(--valt-fs-small); }
 
 /* ─── Nav: Wallet Connect Button (prominent, top-right) ───────────── */
@@ -780,7 +783,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-card {
 	padding: 1.5rem; background: var(--valt-dark);
-	border-radius: var(--valt-radius); border: 1px solid rgba(232,196,139,0.1);
+	border-radius: var(--valt-radius); border: var(--valt-border);
 }
 .valt-card h3 {
 	display: flex; align-items: center; gap: 0.5rem;
@@ -789,10 +792,53 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-card h3 .valt-icon { stroke: var(--valt-gold); opacity: 0.7; }
 .valt-dashboard-links { display: flex; flex-direction: column; gap: 0.5rem; }
 
+/* ─── Dashboard Overview Stats ────────────────────────────────────── */
+.valt-dash-overview {
+	display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 1rem; margin-bottom: 2rem;
+}
+.valt-dash-stat {
+	padding: 1.25rem; background: var(--valt-dark); border-radius: var(--valt-radius);
+	border: var(--valt-border); text-align: center;
+}
+.valt-dash-stat__label {
+	display: block; font-size: var(--valt-fs-xs); color: var(--valt-mid);
+	text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; margin-bottom: 0.4rem;
+}
+.valt-dash-stat__value {
+	display: block; font-size: 1.75rem; font-weight: 700; color: var(--valt-cream);
+}
+.valt-dash-stat__value small { font-size: 0.8rem; font-weight: 400; color: var(--valt-mid); margin-left: 0.25rem; }
+.valt-dash-stat__value--sm { font-size: 1rem; }
+
+/* ─── Dashboard Wallet Details ────────────────────────────────────── */
+.valt-dash-wallet { margin-bottom: 2rem; }
+.valt-dash-table { width: 100%; border-collapse: collapse; }
+.valt-dash-table tr { border-bottom: 1px solid rgba(232,196,139,0.06); }
+.valt-dash-table tr:last-child { border-bottom: none; }
+.valt-dash-table td { padding: 0.6rem 0; font-size: var(--valt-fs-small); color: var(--valt-tan); vertical-align: top; }
+.valt-dash-table__label { color: var(--valt-mid); font-weight: 500; width: 100px; white-space: nowrap; }
+.valt-dash-addr {
+	font-size: var(--valt-fs-xs); color: var(--valt-gold); word-break: break-all;
+	background: var(--valt-darker); padding: 0.2rem 0.4rem; border-radius: 4px;
+}
+.valt-dash-wallet__actions {
+	display: flex; gap: 0.75rem; margin-top: 1rem; align-items: center;
+}
+
+/* ─── Dashboard Other Assets Toggle ───────────────────────────────── */
+.valt-dash-other-assets { margin-top: 1.5rem; }
+.valt-dash-other-assets summary { cursor: pointer; list-style: none; }
+.valt-dash-other-assets summary::-webkit-details-marker { display: none; }
+
 /* ─── Section Header ──────────────────────────────────────────────── */
-.valt-section-header { margin-bottom: 2rem; }
-.valt-section-header h1 { margin-bottom: 0.25rem; }
-.valt-section-header p { color: var(--valt-mid); margin: 0; }
+.valt-section-header { margin-bottom: 1.5rem; }
+.valt-section-header h1, .valt-section-header h2 {
+	display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;
+}
+.valt-section-header h2 .valt-icon { stroke: var(--valt-gold); opacity: 0.7; }
+.valt-section-header p { color: var(--valt-mid); margin: 0; font-size: var(--valt-fs-small); }
+.valt-section-header a { color: var(--valt-coral); }
 
 /* ─── Collection Grid (CardanoPress NFTs) ─────────────────────────── */
 .valt-collection-grid {
