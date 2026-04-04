@@ -23,6 +23,24 @@ $thumb_url = get_the_post_thumbnail_url( $artist_id, 'large' );
 $social_x  = get_post_meta( $artist_id, 'valt_social_x', true );
 $social_ig = get_post_meta( $artist_id, 'valt_social_instagram', true );
 $social_sp = get_post_meta( $artist_id, 'valt_social_spotify', true );
+
+// Check gate status.
+$gate_state = 'no-policy'; // no-policy | disconnected | needs-sync | locked | unlocked
+if ( $policy_id && function_exists( 'cardanoPress' ) ) {
+	$profile = cardanoPress()->userProfile();
+	if ( ! $profile->isConnected() ) {
+		$gate_state = 'disconnected';
+	} else {
+		$assets = $profile->storedAssets();
+		if ( empty( $assets ) ) {
+			$gate_state = 'needs-sync';
+		} elseif ( valt_user_holds_policy( $policy_id ) ) {
+			$gate_state = 'unlocked';
+		} else {
+			$gate_state = 'locked';
+		}
+	}
+}
 ?>
 
 <div class="valt-site">
@@ -55,15 +73,72 @@ $social_sp = get_post_meta( $artist_id, 'valt_social_spotify', true );
 			<h2>Releases</h2>
 			<?php echo do_shortcode( '[valt_song_grid artist_id="' . $artist_id . '"]' ); ?>
 
+			<?php // ── THE VALT — token-gated section ────────────────────── ?>
 			<?php if ( $policy_id ) : ?>
-				<h2>Fan Club</h2>
-				<?php echo do_shortcode( '[valt_artist_fans artist_id="' . $artist_id . '"]' ); ?>
-
-				<div class="valt-section">
-					<?php echo do_shortcode( '[valt_gated_content artist_id="' . $artist_id . '"]' );
-					echo '<p>Welcome to the inner circle. Exclusive content coming soon.</p>';
-					echo do_shortcode( '[/valt_gated_content]' ); ?>
+			<section class="valt-vault" data-state="<?php echo esc_attr( $gate_state ); ?>">
+				<div class="valt-vault__header">
+					<h2 class="valt-vault__title">The Valt</h2>
+					<p class="valt-vault__sub">Exclusive content for NFT holders</p>
 				</div>
+
+				<div class="valt-vault__door">
+					<?php // Door animation: spins when locked, opens when unlocked ?>
+					<div class="valt-vault__door-inner">
+						<?php echo valt_svg_logo_animated( 160 ); ?>
+					</div>
+
+					<?php if ( $gate_state === 'unlocked' ) : ?>
+						<?php // ── UNLOCKED — vault opens ── ?>
+						<div class="valt-vault__status valt-vault__status--open">
+							<?php echo valt_svg_wallet( 18 ); ?>
+							<span>Vault Open</span>
+						</div>
+					<?php elseif ( $gate_state === 'disconnected' ) : ?>
+						<div class="valt-vault__status valt-vault__status--locked">
+							<p>Connect your wallet to enter</p>
+							<?php cardanoPress()->template( 'part/modal-trigger', [ 'text' => 'Connect Wallet' ] ); ?>
+						</div>
+					<?php elseif ( $gate_state === 'needs-sync' ) : ?>
+						<div class="valt-vault__status valt-vault__status--locked">
+							<p>Wallet connected — sync your NFTs</p>
+							<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-btn valt-btn--primary">Sync Wallet</a>
+						</div>
+					<?php else : ?>
+						<?php // locked ?>
+						<div class="valt-vault__status valt-vault__status--locked">
+							<p>Collect an NFT to unlock this artist's Valt</p>
+							<?php
+							// Find a song to buy.
+							$songs = get_posts( [ 'post_type' => 'song', 'posts_per_page' => 1, 'meta_query' => [ [ 'key' => 'artist', 'value' => $artist_id ] ] ] );
+							if ( $songs ) : ?>
+								<a href="<?php echo get_permalink( $songs[0]->ID ); ?>" class="valt-btn valt-btn--primary">
+									<?php echo valt_svg_music( 16 ); ?> Collect a Song
+								</a>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+
+				<?php if ( $gate_state === 'unlocked' ) : ?>
+				<div class="valt-vault__content">
+					<div class="valt-vault__inner">
+						<h3>Welcome to <?php echo esc_html( $name ); ?>'s Valt</h3>
+						<p>You hold the key. Here's what's inside.</p>
+
+						<div class="valt-vault__grid">
+							<div class="valt-card">
+								<h4><?php echo valt_svg_music( 18 ); ?> Exclusive Tracks</h4>
+								<p>Unreleased demos, acoustic versions, and studio sessions — coming soon.</p>
+							</div>
+							<div class="valt-card">
+								<h4><?php echo valt_svg_user( 18 ); ?> Behind the Scenes</h4>
+								<p>Studio photos, creative process, and direct messages from the artist.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<?php endif; ?>
+			</section>
 			<?php endif; ?>
 
 		</div>
