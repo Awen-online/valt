@@ -259,17 +259,181 @@
 	}
 
 	// -----------------------------------------------------------------------
-	// Boot
+	// Boot (artist dashboard)
 	// -----------------------------------------------------------------------
 
 	$( document ).ready( function () {
-		if ( ! $( '.valt-dashboard' ).length ) return;
+		if ( $( '.valt-dashboard' ).length ) {
+			initTabs();
+			initPhotoUpload();
+			initProfileForm();
+			initAudioUpload();
+			initReleaseForm();
+		}
 
-		initTabs();
-		initPhotoUpload();
-		initProfileForm();
-		initAudioUpload();
-		initReleaseForm();
+		// ── Site-wide: nav toggle ────────────────────────────────────
+		$( '[data-nav-toggle]' ).on( 'click', function () {
+			$( '[data-nav-menu]' ).toggleClass( 'is-open' );
+		} );
+
+		// ── Site-wide: generic tabs (leaderboard, fan dashboard, etc.) ─
+		$( document ).on( 'click', '.valt-tab-btn', function () {
+			var $btn   = $( this );
+			var tab    = $btn.data( 'tab' );
+			var $wrap  = $btn.closest( '.valt-tabs' ).parent();
+
+			$btn.siblings( '.valt-tab-btn' ).removeClass( 'valt-tab-btn--active' );
+			$btn.addClass( 'valt-tab-btn--active' );
+
+			$wrap.find( '.valt-tab-panel' ).removeClass( 'valt-tab-panel--active' );
+			$wrap.find( '[data-panel="' + tab + '"]' ).addClass( 'valt-tab-panel--active' );
+		} );
+
+		// ── Discovery: AJAX search/filter ────────────────────────────
+		var discoveryTimer;
+		$( '.valt-discovery' ).each( function () {
+			var $disc    = $( this );
+			var $grid    = $disc.find( '.valt-discovery__grid' );
+			var perPage  = $disc.data( 'per-page' ) || 12;
+			var page     = 1;
+
+			function loadArtists( append ) {
+				if ( ! append ) page = 1;
+				var params = {
+					search:   $disc.find( '[data-filter="search"]' ).val() || '',
+					genre:    $disc.find( '[data-filter="genre"]' ).val() || '',
+					country:  $disc.find( '[data-filter="country"]' ).val() || '',
+					sort:     $disc.find( '[data-filter="sort"]' ).val() || 'trending',
+					page:     page,
+					per_page: perPage,
+				};
+
+				$.getJSON( valtPlatform.restUrl + 'discover/artists', params, function ( data ) {
+					var artists = data.artists || data || [];
+					var html = '';
+					$.each( artists, function ( i, a ) {
+						html += '<a href="' + escHtml( a.url ) + '" class="valt-song-grid__item">'
+							+ '<div class="valt-song-grid__art">'
+							+ ( a.thumbnail_url ? '<img src="' + escHtml( a.thumbnail_url ) + '" alt="' + escHtml( a.name ) + '" loading="lazy">' : '<div class="valt-song-grid__placeholder"></div>' )
+							+ '</div>'
+							+ '<div class="valt-song-grid__info">'
+							+ '<strong class="valt-song-grid__title">' + escHtml( a.name ) + '</strong>'
+							+ ( a.genre ? '<span class="valt-song-grid__artist">' + escHtml( a.genre ) + '</span>' : '' )
+							+ '<span class="valt-song-grid__meta">' + ( a.fan_count || 0 ) + ' fans' + ( a.country ? ' &middot; ' + escHtml( a.country ) : '' ) + '</span>'
+							+ '</div></a>';
+					} );
+
+					if ( append ) { $grid.append( html ); }
+					else { $grid.html( html || '<p>No artists found.</p>' ); }
+
+					var $more = $disc.find( '.valt-discovery__load-more' );
+					$more.toggle( ( data.pages || 0 ) > page );
+				} );
+			}
+
+			// Initial load.
+			loadArtists();
+
+			// Filter changes.
+			$disc.find( '[data-filter]' ).on( 'change', function () { loadArtists(); } );
+			$disc.find( '[data-filter="search"]' ).on( 'input', function () {
+				clearTimeout( discoveryTimer );
+				discoveryTimer = setTimeout( function () { loadArtists(); }, 400 );
+			} );
+
+			// Load more.
+			$disc.find( '.valt-discovery__load-more' ).on( 'click', 'button', function () {
+				page++;
+				loadArtists( true );
+			} );
+		} );
+
+		// ── Mint button ──────────────────────────────────────────────
+		$( document ).on( 'click', '[data-action="mint"]', function () {
+			var $wrap   = $( this ).closest( '.valt-mint' );
+			var songId  = $wrap.data( 'song-id' );
+			var wallet  = $wrap.find( '[data-wallet]' ).val();
+			var $status = $wrap.find( '[data-mint-status]' );
+
+			if ( ! wallet ) { $status.text( 'Please enter your wallet address.' ); return; }
+
+			$( this ).prop( 'disabled', true ).text( 'Minting...' );
+			$status.text( 'Scheduling mint...' );
+
+			$.post( valtPlatform.ajaxUrl, {
+				action: 'valt_mint_song_nft',
+				nonce:  valtPlatform.nonce,
+				song_id: songId,
+				wallet_address: wallet,
+			}, function ( r ) {
+				$status.text( r.success ? 'Mint scheduled! Check back soon.' : ( r.data || 'Error' ) );
+			} ).fail( function () { $status.text( 'Network error.' ); } );
+		} );
+
+		// ── Checkout button ──────────────────────────────────────────
+		$( document ).on( 'click', '[data-action="checkout"]', function () {
+			var $wrap  = $( this ).closest( '.valt-checkout' );
+			var songId = $wrap.data( 'song-id' );
+			var wallet = $wrap.find( '[data-wallet]' ).val() || '';
+
+			$( this ).prop( 'disabled', true ).text( 'Redirecting...' );
+
+			$.ajax( {
+				url:  valtPlatform.restUrl + 'stripe/create-checkout',
+				method: 'POST',
+				data: JSON.stringify( { song_id: songId, wallet_address: wallet } ),
+				contentType: 'application/json',
+				beforeSend: function ( xhr ) { xhr.setRequestHeader( 'X-WP-Nonce', valtPlatform.restNonce ); },
+				success: function ( data ) { window.location.href = data.checkout_url; },
+				error: function ( xhr ) {
+					var msg = xhr.responseJSON ? xhr.responseJSON.error : 'Error';
+					alert( msg );
+					$( this ).prop( 'disabled', false ).text( 'Buy Now' );
+				},
+			} );
+		} );
+
+		// ── Campaign pledge ──────────────────────────────────────────
+		$( document ).on( 'click', '[data-action="pledge"]', function () {
+			var $wrap   = $( this ).closest( '.valt-campaign' );
+			var albumId = $wrap.data( 'album-id' );
+			var pts     = parseInt( $wrap.find( '[data-pledge-amount]' ).val(), 10 );
+
+			if ( ! pts || pts < 1 ) { alert( 'Enter a valid number of points.' ); return; }
+
+			$( this ).prop( 'disabled', true ).text( 'Pledging...' );
+
+			$.post( valtPlatform.ajaxUrl, {
+				action: 'valt_pledge_points',
+				nonce:  valtPlatform.nonce,
+				album_id: albumId,
+				points: pts,
+			}, function ( r ) {
+				if ( r.success ) {
+					alert( r.data.message );
+					location.reload();
+				} else {
+					alert( r.data || 'Error' );
+				}
+			} ).always( function () {
+				$( '[data-action="pledge"]' ).prop( 'disabled', false ).text( 'Pledge' );
+			} );
+		} );
+
+		// ── Daily points claim ───────────────────────────────────────
+		$( document ).on( 'click', '[data-action="claim-daily"]', function () {
+			var $btn = $( this );
+			var $msg = $( '[data-daily-msg]' );
+			$btn.prop( 'disabled', true );
+
+			$.post( valtPlatform.ajaxUrl, {
+				action: 'valt_claim_daily_points',
+				nonce:  valtPlatform.nonce,
+			}, function ( r ) {
+				$msg.text( r.success ? r.data.message : ( r.data || 'Already claimed today.' ) );
+			} ).fail( function () { $msg.text( 'Network error.' ); } );
+		} );
+
 	} );
 
 } )( jQuery );

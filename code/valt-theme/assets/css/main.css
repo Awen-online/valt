@@ -1,0 +1,399 @@
+/*
+ * VALT — main.css
+ * Design system: Navy (#3D3C56) + Gold (#E8C48B) + Ruda font
+ * Replaces Elementor layout dependency.
+ */
+
+/* ─── Variables ───────────────────────────────────────────────────── */
+:root {
+	--valt-gold:      #E8C48B;
+	--valt-brown:     #493D3C;
+	--valt-mid:       #817269;
+	--valt-tan:       #C5AD90;
+	--valt-navy:      #3D3C56;
+	--valt-coral:     #FF9191;
+	--valt-dark:      #2A2940;
+	--valt-white:     #F5F0E8;
+	--valt-font:      'Ruda', sans-serif;
+	--valt-radius:    8px;
+	--valt-gap:       24px;
+	--valt-container: 1200px;
+}
+
+/* ─── Reset & Base ────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Ruda:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+	font-family: var(--valt-font);
+	background: var(--valt-navy);
+	color: var(--valt-gold);
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--valt-coral); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--valt-gold); }
+
+img { max-width: 100%; height: auto; display: block; }
+
+h1, h2, h3, h4 { font-weight: 600; color: var(--valt-gold); line-height: 1.2; margin-bottom: 0.5em; }
+h1 { font-size: 2.5rem; }
+h2 { font-size: 1.75rem; margin-top: 2rem; }
+h3 { font-size: 1.25rem; }
+
+p { color: var(--valt-tan); margin-bottom: 1em; }
+
+/* ─── Container ───────────────────────────────────────────────────── */
+.valt-container {
+	max-width: var(--valt-container);
+	margin: 0 auto;
+	padding: 0 var(--valt-gap);
+}
+
+/* ─── Site wrapper ────────────────────────────────────────────────── */
+.valt-site { min-height: 100vh; display: flex; flex-direction: column; }
+.valt-main { flex: 1; padding: 3rem 0; }
+
+/* ─── Navigation ──────────────────────────────────────────────────── */
+.valt-nav {
+	background: var(--valt-dark);
+	border-bottom: 1px solid rgba(232,196,139,0.1);
+	position: sticky;
+	top: 0;
+	z-index: 1000;
+}
+.valt-nav__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 64px;
+}
+.valt-nav__logo {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--valt-gold);
+	font-weight: 700;
+	font-size: 1.25rem;
+	text-decoration: none;
+}
+.valt-nav__logo img { border-radius: 50%; }
+.valt-nav__links {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+}
+.valt-nav__links a {
+	color: var(--valt-tan);
+	font-size: 0.9rem;
+	font-weight: 500;
+	transition: color 0.2s;
+}
+.valt-nav__links a:hover { color: var(--valt-gold); }
+.valt-nav__wallet { color: var(--valt-gold) !important; font-weight: 600; }
+.valt-nav__toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+.valt-nav__toggle span {
+	display: block; width: 24px; height: 2px; background: var(--valt-gold); margin: 5px 0; transition: 0.3s;
+}
+
+@media (max-width: 768px) {
+	.valt-nav__toggle { display: block; }
+	.valt-nav__links {
+		display: none; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0;
+		background: var(--valt-dark); padding: 1rem var(--valt-gap); gap: 0.75rem;
+		border-bottom: 1px solid rgba(232,196,139,0.1);
+	}
+	.valt-nav__links.is-open { display: flex; }
+}
+
+/* ─── Hero ────────────────────────────────────────────────────────── */
+.valt-hero {
+	position: relative;
+	height: 70vh;
+	min-height: 400px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	background: var(--valt-dark);
+}
+.valt-hero__bg {
+	position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;
+	background-size: cover; background-position: center;
+}
+.valt-hero__overlay {
+	position: absolute; inset: 0; background: linear-gradient(180deg, rgba(61,60,86,0.4) 0%, rgba(42,41,64,0.9) 100%); z-index: 1;
+}
+.valt-hero__content {
+	position: relative; z-index: 2; text-align: center; max-width: 600px; padding: var(--valt-gap);
+}
+.valt-hero__title { font-size: 3.5rem; color: var(--valt-gold); text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
+.valt-hero__subtitle { font-size: 1.25rem; color: var(--valt-tan); margin-top: 0.5rem; }
+.valt-hero__cta { margin-top: 1.5rem; display: inline-block; }
+
+@media (max-width: 640px) {
+	.valt-hero { height: 50vh; min-height: 300px; }
+	.valt-hero__title { font-size: 2rem; }
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────── */
+.valt-btn {
+	display: inline-block; padding: 0.65rem 1.5rem; border-radius: var(--valt-radius);
+	font-family: var(--valt-font); font-weight: 600; font-size: 0.9rem;
+	cursor: pointer; border: none; transition: all 0.2s; text-align: center;
+}
+.valt-btn--primary { background: var(--valt-gold); color: var(--valt-brown); }
+.valt-btn--primary:hover { background: var(--valt-tan); color: var(--valt-brown); }
+.valt-btn--secondary { background: transparent; border: 1px solid var(--valt-gold); color: var(--valt-gold); }
+.valt-btn--secondary:hover { background: var(--valt-gold); color: var(--valt-brown); }
+.valt-btn--small { padding: 0.4rem 1rem; font-size: 0.8rem; }
+.valt-btn--danger { background: var(--valt-coral); color: #fff; }
+
+/* ─── Tags & Badges ───────────────────────────────────────────────── */
+.valt-tag {
+	display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+	background: rgba(232,196,139,0.15); color: var(--valt-gold);
+}
+.valt-badge {
+	display: inline-block; padding: 0.25rem 0.75rem; border-radius: var(--valt-radius); font-size: 0.75rem; font-weight: 600;
+}
+.valt-badge--grey   { background: rgba(129,114,105,0.3); color: var(--valt-mid); }
+.valt-badge--amber  { background: rgba(232,196,139,0.25); color: var(--valt-gold); }
+.valt-badge--gold   { background: var(--valt-gold); color: var(--valt-brown); }
+.valt-badge--level  { background: rgba(232,196,139,0.15); color: var(--valt-gold); }
+
+/* ─── Forms ───────────────────────────────────────────────────────── */
+.valt-form { max-width: 500px; }
+.valt-form__group { margin-bottom: 1rem; }
+.valt-form__label { display: block; font-size: 0.85rem; color: var(--valt-tan); margin-bottom: 0.3rem; font-weight: 500; }
+.valt-form__input, .valt-form__textarea, .valt-form__select {
+	width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(232,196,139,0.2); border-radius: var(--valt-radius);
+	background: var(--valt-dark); color: var(--valt-gold); font-family: var(--valt-font); font-size: 0.9rem;
+	transition: border-color 0.2s;
+}
+.valt-form__input:focus, .valt-form__textarea:focus, .valt-form__select:focus {
+	outline: none; border-color: var(--valt-gold);
+}
+.valt-form__textarea { resize: vertical; }
+
+/* ─── Notices ─────────────────────────────────────────────────────── */
+.valt-notice { padding: 0.75rem 1rem; border-radius: var(--valt-radius); margin-bottom: 1rem; font-size: 0.9rem; }
+.valt-notice--success { background: rgba(100,180,100,0.2); color: #8fc; border: 1px solid rgba(100,180,100,0.3); }
+.valt-notice--error { background: rgba(255,100,100,0.15); color: var(--valt-coral); border: 1px solid rgba(255,100,100,0.3); }
+
+/* ─── Tables ──────────────────────────────────────────────────────── */
+.valt-table { width: 100%; border-collapse: collapse; }
+.valt-table th { text-align: left; padding: 0.6rem 0.8rem; font-size: 0.8rem; color: var(--valt-mid); border-bottom: 1px solid rgba(232,196,139,0.15); }
+.valt-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(232,196,139,0.08); font-size: 0.9rem; color: var(--valt-tan); }
+.valt-table tr:hover td { background: rgba(232,196,139,0.05); }
+
+/* ─── Song Grid ───────────────────────────────────────────────────── */
+.valt-song-grid {
+	display: grid; gap: var(--valt-gap);
+}
+.valt-song-grid--cols-2 { grid-template-columns: repeat(2, 1fr); }
+.valt-song-grid--cols-3 { grid-template-columns: repeat(3, 1fr); }
+.valt-song-grid--cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.valt-song-grid__item {
+	display: block; background: var(--valt-dark); border-radius: var(--valt-radius);
+	overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none;
+	border: 1px solid rgba(232,196,139,0.08);
+}
+.valt-song-grid__item:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+.valt-song-grid__art img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-song-grid__placeholder {
+	width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, var(--valt-navy), var(--valt-dark));
+}
+.valt-song-grid__info { padding: 0.75rem 1rem; }
+.valt-song-grid__title { display: block; color: var(--valt-gold); font-size: 0.95rem; }
+.valt-song-grid__artist { display: block; color: var(--valt-mid); font-size: 0.8rem; margin-top: 0.15rem; }
+.valt-song-grid__meta { display: block; color: var(--valt-mid); font-size: 0.75rem; margin-top: 0.3rem; }
+
+@media (max-width: 768px) {
+	.valt-song-grid--cols-3, .valt-song-grid--cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+	.valt-song-grid--cols-2, .valt-song-grid--cols-3, .valt-song-grid--cols-4 { grid-template-columns: 1fr; }
+}
+
+/* ─── Song Card (single) ─────────────────────────────────────────── */
+.valt-song-card {
+	background: var(--valt-dark); border-radius: var(--valt-radius); overflow: hidden;
+	border: 1px solid rgba(232,196,139,0.1);
+}
+.valt-song-card__img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-song-card__info { padding: 1rem; }
+.valt-song-card__artist { color: var(--valt-mid); font-size: 0.9rem; }
+.valt-song-card__actions { padding: 0 1rem 1rem; }
+
+/* ─── Artist Hero ─────────────────────────────────────────────────── */
+.valt-artist-hero {
+	padding: 4rem 0; background-size: cover; background-position: center; background-color: var(--valt-dark);
+}
+.valt-artist-hero__inner { display: flex; align-items: center; gap: 2rem; }
+.valt-artist-hero__photo {
+	width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 3px solid var(--valt-gold);
+	flex-shrink: 0;
+}
+.valt-artist-hero__info { flex: 1; }
+.valt-artist-hero__tags { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
+.valt-artist-hero__bio { color: var(--valt-tan); max-width: 600px; }
+.valt-artist-hero__social { display: flex; gap: 1rem; margin-top: 1rem; }
+.valt-artist-hero__social a {
+	color: var(--valt-gold); font-weight: 600; font-size: 0.85rem;
+	padding: 0.3rem 0.8rem; border: 1px solid var(--valt-gold); border-radius: 20px;
+}
+.valt-artist-hero__social a:hover { background: var(--valt-gold); color: var(--valt-brown); }
+
+@media (max-width: 640px) {
+	.valt-artist-hero__inner { flex-direction: column; text-align: center; }
+	.valt-artist-hero__photo { width: 120px; height: 120px; }
+	.valt-artist-hero__tags { justify-content: center; }
+	.valt-artist-hero__social { justify-content: center; }
+}
+
+/* ─── Song Hero ───────────────────────────────────────────────────── */
+.valt-song-hero {
+	padding: 4rem 0; background-size: cover; background-position: center; background-color: var(--valt-dark);
+}
+.valt-song-hero__inner { display: flex; align-items: flex-start; gap: 2rem; }
+.valt-song-hero__art {
+	width: 250px; height: 250px; border-radius: var(--valt-radius); object-fit: cover; flex-shrink: 0;
+	box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+.valt-song-hero__info { flex: 1; }
+.valt-song-hero__artist { font-size: 1.1rem; }
+.valt-song-hero__artist a { color: var(--valt-coral); }
+.valt-song-hero__meta { display: flex; gap: 1.5rem; color: var(--valt-mid); font-size: 0.9rem; margin: 0.75rem 0; flex-wrap: wrap; }
+.valt-song-hero__meta a { color: var(--valt-coral); }
+.valt-song-hero__badges { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+.valt-song-actions { margin: 2rem 0; padding: 2rem; background: var(--valt-dark); border-radius: var(--valt-radius); border: 1px solid rgba(232,196,139,0.1); }
+
+@media (max-width: 640px) {
+	.valt-song-hero__inner { flex-direction: column; align-items: center; text-align: center; }
+	.valt-song-hero__art { width: 200px; height: 200px; }
+	.valt-song-hero__meta { justify-content: center; }
+	.valt-song-hero__badges { justify-content: center; }
+}
+
+/* ─── Discovery ───────────────────────────────────────────────────── */
+.valt-discovery__filters {
+	display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap;
+}
+.valt-discovery__search { flex: 2; min-width: 200px; }
+.valt-discovery__select { flex: 1; min-width: 140px; }
+
+/* ─── Trending ────────────────────────────────────────────────────── */
+.valt-trending__scroll {
+	display: flex; gap: var(--valt-gap); overflow-x: auto; padding-bottom: 1rem;
+	scrollbar-width: thin; scrollbar-color: var(--valt-mid) transparent;
+}
+.valt-trending__card {
+	flex-shrink: 0; width: 200px; background: var(--valt-dark); border-radius: var(--valt-radius);
+	overflow: hidden; text-decoration: none; border: 1px solid rgba(232,196,139,0.08); transition: transform 0.2s;
+}
+.valt-trending__card:hover { transform: translateY(-3px); }
+.valt-trending__img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-trending__info { padding: 0.75rem; }
+.valt-trending__info strong { color: var(--valt-gold); font-size: 0.9rem; display: block; }
+.valt-trending__fans { color: var(--valt-mid); font-size: 0.75rem; }
+
+/* ─── Leaderboard ─────────────────────────────────────────────────── */
+.valt-leaderboard__avatar { width: 32px; height: 32px; border-radius: 50%; vertical-align: middle; margin-right: 0.5rem; }
+.valt-leaderboard__me td { background: rgba(232,196,139,0.08) !important; }
+
+/* ─── User Points ─────────────────────────────────────────────────── */
+.valt-user-points { padding: 1.5rem; background: var(--valt-dark); border-radius: var(--valt-radius); border: 1px solid rgba(232,196,139,0.1); }
+.valt-user-points__total { font-size: 2rem; font-weight: 700; color: var(--valt-gold); }
+.valt-user-points__total small { font-size: 0.9rem; font-weight: 400; color: var(--valt-mid); }
+.valt-user-points__level { margin: 0.5rem 0; display: flex; align-items: center; gap: 0.75rem; }
+.valt-user-points__next { font-size: 0.8rem; color: var(--valt-mid); }
+.valt-user-points__bar { height: 6px; background: rgba(232,196,139,0.15); border-radius: 3px; margin-top: 0.5rem; overflow: hidden; }
+.valt-user-points__fill { height: 100%; background: var(--valt-gold); border-radius: 3px; transition: width 0.5s; }
+
+/* ─── Badges Grid ─────────────────────────────────────────────────── */
+.valt-badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+.valt-badge-card {
+	padding: 1rem; border-radius: var(--valt-radius); text-align: center; border: 1px solid rgba(232,196,139,0.1);
+}
+.valt-badge-card--earned { background: rgba(232,196,139,0.1); }
+.valt-badge-card--locked { background: var(--valt-dark); opacity: 0.5; }
+.valt-badge-card__icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.valt-badge-card strong { display: block; color: var(--valt-gold); font-size: 0.85rem; }
+.valt-badge-card small { display: block; color: var(--valt-mid); font-size: 0.75rem; margin-top: 0.25rem; }
+
+/* ─── Campaigns ───────────────────────────────────────────────────── */
+.valt-campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--valt-gap); }
+.valt-campaign { padding: 1.5rem; background: var(--valt-dark); border-radius: var(--valt-radius); border: 1px solid rgba(232,196,139,0.1); }
+.valt-campaign h3 { margin-bottom: 0.25rem; }
+.valt-campaign__artist { color: var(--valt-mid); font-size: 0.9rem; margin-bottom: 0.75rem; }
+.valt-campaign__bar { height: 8px; background: rgba(232,196,139,0.15); border-radius: 4px; margin: 1rem 0; overflow: hidden; }
+.valt-campaign__fill { height: 100%; background: linear-gradient(90deg, var(--valt-gold), var(--valt-coral)); border-radius: 4px; transition: width 0.5s; }
+.valt-campaign__stats { display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--valt-mid); flex-wrap: wrap; }
+.valt-campaign__stats strong { color: var(--valt-gold); }
+.valt-campaign__deadline { font-size: 0.8rem; color: var(--valt-mid); margin-top: 0.5rem; }
+.valt-campaign__pledge { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.valt-campaign__pledge input { flex: 1; }
+
+/* ─── Mint / Checkout ─────────────────────────────────────────────── */
+.valt-mint { margin: 1rem 0; }
+.valt-mint__prices { font-size: 1.1rem; color: var(--valt-gold); margin-bottom: 0.75rem; display: flex; gap: 1rem; }
+.valt-mint__wallet { margin-bottom: 0.75rem; }
+.valt-mint__status { margin-top: 0.5rem; font-size: 0.85rem; color: var(--valt-mid); }
+.valt-checkout { margin: 1rem 0; }
+
+/* ─── Artist Fans (mini leaderboard) ──────────────────────────────── */
+.valt-artist-fans__item {
+	display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0;
+	border-bottom: 1px solid rgba(232,196,139,0.08); font-size: 0.9rem;
+}
+.valt-artist-fans__item img { width: 32px; height: 32px; border-radius: 50%; }
+
+/* ─── Fan Dashboard Tabs ──────────────────────────────────────────── */
+.valt-tabs { display: flex; gap: 0; border-bottom: 1px solid rgba(232,196,139,0.15); margin-bottom: 1.5rem; }
+.valt-tab-btn {
+	padding: 0.6rem 1.25rem; background: none; border: none; color: var(--valt-mid);
+	font-family: var(--valt-font); font-size: 0.9rem; font-weight: 500; cursor: pointer;
+	border-bottom: 2px solid transparent; transition: all 0.2s;
+}
+.valt-tab-btn:hover { color: var(--valt-gold); }
+.valt-tab-btn--active { color: var(--valt-gold); border-bottom-color: var(--valt-gold); }
+.valt-tab-panel { display: none; }
+.valt-tab-panel--active { display: block; }
+
+/* ─── Section spacing ─────────────────────────────────────────────── */
+.valt-section { margin: 3rem 0; }
+
+/* ─── Contact Form ────────────────────────────────────────────────── */
+.valt-contact-form { max-width: 500px; }
+
+/* ─── Footer ──────────────────────────────────────────────────────── */
+.valt-footer {
+	background: var(--valt-dark); border-top: 1px solid rgba(232,196,139,0.1); padding: 2rem 0; margin-top: auto;
+}
+.valt-footer__inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.valt-footer__brand { color: var(--valt-gold); font-weight: 600; }
+.valt-footer__links { display: flex; gap: 1.5rem; }
+.valt-footer__links a { color: var(--valt-mid); font-size: 0.85rem; }
+.valt-footer__links a:hover { color: var(--valt-gold); }
+.valt-footer__copy { color: var(--valt-mid); font-size: 0.8rem; }
+
+@media (max-width: 640px) {
+	.valt-footer__inner { flex-direction: column; text-align: center; }
+}
+
+/* ─── Gated content states ────────────────────────────────────────── */
+.valt-gated { padding: 2rem; border-radius: var(--valt-radius); text-align: center; }
+.valt-gated--disconnected { background: rgba(232,196,139,0.08); border: 1px dashed rgba(232,196,139,0.2); }
+.valt-gated--locked { background: rgba(255,145,145,0.08); border: 1px dashed rgba(255,145,145,0.2); }
+
+/* ─── Utility ─────────────────────────────────────────────────────── */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 2rem; }
+.mb-2 { margin-bottom: 1rem; }

@@ -405,3 +405,72 @@ add_shortcode( 'valt_song_card', function ( $atts ) {
 	</div>
 	<?php return ob_get_clean();
 } );
+
+// ─── 15. [valt_song_grid] ───────────────────────────────────────────
+
+add_shortcode( 'valt_song_grid', function ( $atts ) {
+	$atts = shortcode_atts( [ 'artist_id' => 0, 'album_id' => 0, 'limit' => 12, 'exclude' => '', 'columns' => 3 ], $atts );
+	$qa = [ 'post_type' => 'song', 'post_status' => 'publish', 'posts_per_page' => (int) $atts['limit'], 'orderby' => 'date', 'order' => 'DESC', 'meta_query' => [] ];
+	if ( (int) $atts['artist_id'] ) $qa['meta_query'][] = [ 'key' => 'artist', 'value' => (int) $atts['artist_id'] ];
+	if ( (int) $atts['album_id'] )  $qa['meta_query'][] = [ 'key' => 'album',  'value' => (int) $atts['album_id'] ];
+	if ( $atts['exclude'] ) $qa['post__not_in'] = array_map( 'intval', explode( ',', $atts['exclude'] ) );
+	$songs = new WP_Query( $qa );
+	if ( ! $songs->have_posts() ) return '<p>No songs found.</p>';
+	ob_start(); ?>
+	<div class="valt-song-grid valt-song-grid--cols-<?php echo (int) $atts['columns']; ?>">
+		<?php while ( $songs->have_posts() ) : $songs->the_post();
+			$sid = get_the_ID(); $aid = (int) get_post_meta( $sid, 'artist', true );
+			$a = $aid ? get_post( $aid ) : null;
+			$img = (int) get_post_meta( $sid, 'valt_nft_image_id', true ) ?: get_post_thumbnail_id( $sid );
+			$img_url = $img ? wp_get_attachment_image_url( $img, 'medium' ) : ( $aid ? get_the_post_thumbnail_url( $aid, 'medium' ) : '' );
+			$pusd = (int) get_post_meta( $sid, 'valt_nft_price_usd', true );
+			$pada = get_post_meta( $sid, 'valt_nft_price_ada', true );
+			$dur = get_post_meta( $sid, 'duration', true );
+		?>
+		<a href="<?php the_permalink(); ?>" class="valt-song-grid__item">
+			<div class="valt-song-grid__art">
+				<?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
+				<?php else : ?><div class="valt-song-grid__placeholder"></div><?php endif; ?>
+			</div>
+			<div class="valt-song-grid__info">
+				<strong class="valt-song-grid__title"><?php the_title(); ?></strong>
+				<?php if ( $a ) : ?><span class="valt-song-grid__artist"><?php echo esc_html( $a->post_title ); ?></span><?php endif; ?>
+				<span class="valt-song-grid__meta">
+					<?php if ( $dur ) echo esc_html( $dur ); ?>
+					<?php if ( $pusd ) echo ' &middot; $' . number_format( $pusd / 100, 2 ); ?>
+					<?php if ( $pada ) echo ' &middot; ' . esc_html( $pada ) . ' ADA'; ?>
+				</span>
+			</div>
+		</a>
+		<?php endwhile; wp_reset_postdata(); ?>
+	</div>
+	<?php return ob_get_clean();
+} );
+
+// ─── 16. [valt_contact_form] ────────────────────────────────────────
+
+add_shortcode( 'valt_contact_form', function () {
+	$sent = false; $error = '';
+	if ( isset( $_POST['valt_contact_nonce'] ) && wp_verify_nonce( $_POST['valt_contact_nonce'], 'valt_contact' ) ) {
+		$name = sanitize_text_field( $_POST['valt_name'] ?? '' );
+		$email = sanitize_email( $_POST['valt_email'] ?? '' );
+		$msg = sanitize_textarea_field( $_POST['valt_message'] ?? '' );
+		if ( ! $name || ! $email || ! $msg ) { $error = 'All fields are required.'; }
+		elseif ( ! is_email( $email ) ) { $error = 'Please enter a valid email.'; }
+		else { $sent = wp_mail( 'cullah@awen.online', 'VALT Contact: ' . $name, "Name: {$name}\nEmail: {$email}\n\n{$msg}", [ 'Reply-To: ' . $email ] ); if ( ! $sent ) $error = 'Could not send. Try again.'; }
+	}
+	ob_start(); ?>
+	<div class="valt-contact-form">
+		<?php if ( $sent ) : ?><div class="valt-notice valt-notice--success">Message sent!</div>
+		<?php else : ?>
+			<?php if ( $error ) : ?><div class="valt-notice valt-notice--error"><?php echo esc_html( $error ); ?></div><?php endif; ?>
+			<form method="post" class="valt-form"><?php wp_nonce_field( 'valt_contact', 'valt_contact_nonce' ); ?>
+				<div class="valt-form__group"><label class="valt-form__label">Name</label><input type="text" name="valt_name" class="valt-form__input" required></div>
+				<div class="valt-form__group"><label class="valt-form__label">Email</label><input type="email" name="valt_email" class="valt-form__input" required></div>
+				<div class="valt-form__group"><label class="valt-form__label">Message</label><textarea name="valt_message" class="valt-form__textarea" rows="5" required></textarea></div>
+				<button type="submit" class="valt-btn valt-btn--primary">Send Message</button>
+			</form>
+		<?php endif; ?>
+	</div>
+	<?php return ob_get_clean();
+} );
