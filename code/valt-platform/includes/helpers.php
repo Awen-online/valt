@@ -39,6 +39,22 @@ function valt_stripe_config(): array {
 }
 
 /**
+ * Feature flags — enable/disable major subsystems from Settings.
+ */
+function valt_feature_enabled( string $feature ): bool {
+	$defaults = [
+		'gamification' => false,
+		'campaigns'    => false,
+		'leaderboard'  => false,
+		'discovery'    => true,
+		'stripe'       => true,
+		'nmkr'         => true,
+	];
+	$flags = wp_parse_args( get_option( 'valt_feature_flags', [] ), $defaults );
+	return ! empty( $flags[ $feature ] );
+}
+
+/**
  * Get gamification points config with defaults.
  */
 function valt_points_config(): array {

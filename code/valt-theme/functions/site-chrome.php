@@ -25,11 +25,19 @@ function valt_render_nav(): void {
 			</button>
 			<div class="valt-nav__links" data-nav-menu>
 				<a href="<?php echo esc_url( $home ); ?>">Home</a>
-				<a href="<?php echo esc_url( home_url( '/discover/' ) ); ?>">Discover</a>
-				<a href="<?php echo esc_url( home_url( '/leaderboard/' ) ); ?>">Leaderboard</a>
-				<a href="<?php echo esc_url( home_url( '/campaigns/' ) ); ?>">Campaigns</a>
+				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'discovery' ) ) : ?>
+					<a href="<?php echo esc_url( home_url( '/discover/' ) ); ?>">Discover</a>
+				<?php endif; ?>
+				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'leaderboard' ) ) : ?>
+					<a href="<?php echo esc_url( home_url( '/leaderboard/' ) ); ?>">Leaderboard</a>
+				<?php endif; ?>
+				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'campaigns' ) ) : ?>
+					<a href="<?php echo esc_url( home_url( '/campaigns/' ) ); ?>">Campaigns</a>
+				<?php endif; ?>
 				<?php if ( is_user_logged_in() ) : ?>
-					<a href="<?php echo esc_url( home_url( '/fan-dashboard/' ) ); ?>">My Dashboard</a>
+					<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'gamification' ) ) : ?>
+						<a href="<?php echo esc_url( home_url( '/fan-dashboard/' ) ); ?>">My Dashboard</a>
+					<?php endif; ?>
 					<a href="<?php echo esc_url( home_url( '/collection/' ) ); ?>">My Collection</a>
 				<?php endif; ?>
 				<?php if ( $connected ) : ?>
@@ -59,7 +67,7 @@ function valt_render_footer(): void {
 				<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">Privacy</a>
 			</div>
 			<div class="valt-footer__copy">
-				&copy; <?php echo date( 'Y' ); ?> Awen LLC. All rights reserved.
+				&copy; 2026 Awen LLC. All rights reserved.
 			</div>
 		</div>
 	</footer>
