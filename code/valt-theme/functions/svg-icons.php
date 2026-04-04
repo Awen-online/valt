@@ -9,15 +9,27 @@
  */
 function valt_svg_logo( int $size = 40 ): string {
 	return '<svg class="valt-logo-mark" width="' . $size . '" height="' . $size . '" viewBox="0 0 200 200" fill="none">
-		<circle cx="100" cy="100" r="82" stroke="#E8C48B" stroke-width="6" fill="none"/>
-		<circle cx="100" cy="100" r="64" stroke="#E8C48B" stroke-width="1" opacity="0.12" fill="none"/>
-		<line x1="100" y1="100" x2="100" y2="186" stroke="#E8C48B" stroke-width="6" stroke-linecap="round"/>
-		<line x1="100" y1="100" x2="26" y2="56" stroke="#C9A66B" stroke-width="6" stroke-linecap="round"/>
-		<line x1="100" y1="100" x2="178" y2="42" stroke="#C9A66B" stroke-width="6" stroke-linecap="round"/>
-		<circle cx="100" cy="186" r="8" fill="#E8C48B"/>
-		<circle cx="26" cy="56" r="6" fill="#C9A66B"/>
-		<circle cx="178" cy="42" r="6" fill="#C9A66B"/>
-		<circle cx="100" cy="100" r="7" fill="#3D3C56" stroke="#E8C48B" stroke-width="3"/>
+		<!-- Outer vinyl edge -->
+		<circle cx="100" cy="100" r="90" stroke="#E8C48B" stroke-width="4" fill="none"/>
+		<!-- Record grooves -->
+		<circle cx="100" cy="100" r="78" stroke="#E8C48B" stroke-width="0.7" opacity="0.18" fill="none"/>
+		<circle cx="100" cy="100" r="68" stroke="#E8C48B" stroke-width="0.7" opacity="0.15" fill="none"/>
+		<circle cx="100" cy="100" r="58" stroke="#E8C48B" stroke-width="0.7" opacity="0.12" fill="none"/>
+		<circle cx="100" cy="100" r="48" stroke="#E8C48B" stroke-width="0.7" opacity="0.10" fill="none"/>
+		<circle cx="100" cy="100" r="38" stroke="#E8C48B" stroke-width="0.7" opacity="0.08" fill="none"/>
+		<!-- Label area ring -->
+		<circle cx="100" cy="100" r="28" stroke="#E8C48B" stroke-width="1.5" opacity="0.25" fill="none"/>
+		<!-- Short vault-handle spokes -->
+		<line x1="100" y1="100" x2="100" y2="150" stroke="#E8C48B" stroke-width="5" stroke-linecap="round"/>
+		<line x1="100" y1="100" x2="58" y2="72" stroke="#C9A66B" stroke-width="5" stroke-linecap="round"/>
+		<line x1="100" y1="100" x2="148" y2="64" stroke="#C9A66B" stroke-width="5" stroke-linecap="round"/>
+		<!-- Spoke end nodes -->
+		<circle cx="100" cy="152" r="6" fill="#E8C48B"/>
+		<circle cx="56" cy="71" r="5" fill="#C9A66B"/>
+		<circle cx="150" cy="63" r="5" fill="#C9A66B"/>
+		<!-- Center spindle hole -->
+		<circle cx="100" cy="100" r="8" fill="#3D3C56" stroke="#E8C48B" stroke-width="2.5"/>
+		<circle cx="100" cy="100" r="3" fill="#E8C48B" opacity="0.4"/>
 	</svg>';
 }
 
