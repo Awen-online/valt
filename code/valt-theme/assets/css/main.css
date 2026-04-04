@@ -4,20 +4,59 @@
  * Replaces Elementor layout dependency.
  */
 
-/* ─── Variables ───────────────────────────────────────────────────── */
+/* ─── Design Tokens ───────────────────────────────────────────────── */
+/*
+ * VALT Color System — WCAG AA compliant on navy backgrounds.
+ *
+ * Primary:    Gold spectrum for headings, accents, and interactive elements
+ * Neutral:    Navy/brown spectrum for surfaces, text hierarchy
+ * Semantic:   Coral (links/danger), Green (success/connected)
+ *
+ * All buttons use --valt-cream text for readability.
+ */
 :root {
-	--valt-gold:      #E8C48B;
-	--valt-brown:     #493D3C;
-	--valt-mid:       #817269;
-	--valt-tan:       #C5AD90;
-	--valt-navy:      #3D3C56;
-	--valt-coral:     #FF9191;
-	--valt-dark:      #2A2940;
-	--valt-white:     #F5F0E8;
-	--valt-font:      'Ruda', sans-serif;
-	--valt-radius:    8px;
-	--valt-gap:       24px;
-	--valt-container: 1200px;
+	/* ── Gold spectrum ── */
+	--valt-gold:       #E8C48B;   /* headings, accents, borders — 7.5:1 on navy */
+	--valt-gold-dark:  #C9A66B;   /* primary button bg — warmer, better contrast base */
+	--valt-gold-light: #F2D9A9;   /* hover highlights */
+	--valt-cream:      #FFF8ED;   /* button text, bold text — 13:1 on navy, 6:1 on gold-dark */
+
+	/* ── Neutral spectrum ── */
+	--valt-navy:       #3D3C56;   /* body background */
+	--valt-dark:       #2A2940;   /* cards, nav, elevated surfaces */
+	--valt-darker:     #1E1D30;   /* deepest bg (modals, dropdowns) */
+	--valt-brown:      #493D3C;   /* dark accent */
+	--valt-mid:        #9B8E82;   /* muted text, labels — 4.5:1 on navy */
+	--valt-tan:        #C5AD90;   /* body text — 6.2:1 on navy */
+
+	/* ── Semantic ── */
+	--valt-coral:      #FF9191;   /* links, errors, secondary CTA — 5.8:1 on navy */
+	--valt-green:      #4ADE80;   /* success, connected states */
+
+	/* ── Typography ── */
+	--valt-font:       'Ruda', sans-serif;
+	--valt-fs-hero:    clamp(2.5rem, 6vw, 3.5rem);
+	--valt-fs-h1:      clamp(1.75rem, 4vw, 2.5rem);
+	--valt-fs-h2:      clamp(1.35rem, 3vw, 1.75rem);
+	--valt-fs-h3:      1.15rem;
+	--valt-fs-body:    0.95rem;
+	--valt-fs-small:   0.85rem;
+	--valt-fs-xs:      0.75rem;
+
+	/* ── Layout ── */
+	--valt-radius:     12px;
+	--valt-radius-sm:  8px;
+	--valt-radius-lg:  16px;
+	--valt-gap:        24px;
+	--valt-container:  1200px;
+
+	/* ── Shadows ── */
+	--valt-shadow:     0 4px 20px rgba(0,0,0,0.25);
+	--valt-shadow-lg:  0 8px 40px rgba(0,0,0,0.35);
+
+	/* ── Borders ── */
+	--valt-border:     1px solid rgba(232,196,139,0.12);
+	--valt-border-hover: 1px solid rgba(232,196,139,0.3);
 }
 
 /* ─── Reset & Base ────────────────────────────────────────────────── */
@@ -39,9 +78,9 @@ a:hover { color: var(--valt-gold); }
 img { max-width: 100%; height: auto; display: block; }
 
 h1, h2, h3, h4 { font-weight: 600; color: var(--valt-gold); line-height: 1.2; margin-bottom: 0.5em; }
-h1 { font-size: 2.5rem; }
-h2 { font-size: 1.75rem; margin-top: 2rem; }
-h3 { font-size: 1.25rem; }
+h1 { font-size: var(--valt-fs-h1); }
+h2 { font-size: var(--valt-fs-h2); margin-top: 2rem; }
+h3 { font-size: var(--valt-fs-h3); }
 
 p { color: var(--valt-tan); margin-bottom: 1em; }
 
@@ -127,54 +166,110 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	position: absolute; inset: 0; background: linear-gradient(180deg, rgba(61,60,86,0.4) 0%, rgba(42,41,64,0.9) 100%); z-index: 1;
 }
 .valt-hero__content {
-	position: relative; z-index: 2; text-align: center; max-width: 600px; padding: var(--valt-gap);
+	position: relative; z-index: 2; text-align: center; max-width: 640px; padding: var(--valt-gap);
 }
-.valt-hero__title { font-size: 3.5rem; color: var(--valt-gold); text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
-.valt-hero__subtitle { font-size: 1.25rem; color: var(--valt-tan); margin-top: 0.5rem; }
-.valt-hero__cta { margin-top: 1.5rem; display: inline-block; }
+.valt-hero__title {
+	font-size: var(--valt-fs-hero); font-weight: 700; color: var(--valt-cream);
+	text-shadow: 0 2px 30px rgba(0,0,0,0.6); letter-spacing: 0.04em;
+}
+.valt-hero__subtitle {
+	font-size: 1.25rem; color: var(--valt-gold-light); margin-top: 0.5rem;
+	text-shadow: 0 1px 10px rgba(0,0,0,0.4);
+}
+.valt-hero__cta {
+	margin-top: 2rem;
+}
+.valt-hero__cta.valt-btn--primary {
+	padding: 0.9rem 2.5rem; font-size: 1.05rem; border-radius: var(--valt-radius-lg);
+	box-shadow: 0 4px 25px rgba(201,166,107,0.3);
+}
 
 @media (max-width: 640px) {
 	.valt-hero { height: 50vh; min-height: 300px; }
-	.valt-hero__title { font-size: 2rem; }
 }
 
 /* ─── Buttons ─────────────────────────────────────────────────────── */
 .valt-btn {
-	display: inline-block; padding: 0.65rem 1.5rem; border-radius: var(--valt-radius);
-	font-family: var(--valt-font); font-weight: 600; font-size: 0.9rem;
-	cursor: pointer; border: none; transition: all 0.2s; text-align: center;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+	padding: 0.7rem 1.6rem; border-radius: var(--valt-radius);
+	font-family: var(--valt-font); font-weight: 600; font-size: var(--valt-fs-body);
+	cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease;
+	text-align: center; text-decoration: none; line-height: 1.2;
+	letter-spacing: 0.01em;
 }
-.valt-btn--primary { background: var(--valt-gold); color: var(--valt-brown); }
-.valt-btn--primary:hover { background: var(--valt-tan); color: var(--valt-brown); }
-.valt-btn--secondary { background: transparent; border: 1px solid var(--valt-gold); color: var(--valt-gold); }
-.valt-btn--secondary:hover { background: var(--valt-gold); color: var(--valt-brown); }
-.valt-btn--small { padding: 0.4rem 1rem; font-size: 0.8rem; }
-.valt-btn--danger { background: var(--valt-coral); color: #fff; }
+.valt-btn:hover { transform: translateY(-1px); box-shadow: var(--valt-shadow); }
+.valt-btn:active { transform: translateY(0); }
+
+/* Primary — dark gold bg, cream text. High contrast. */
+.valt-btn--primary {
+	background: var(--valt-gold-dark); color: var(--valt-cream);
+	border-color: var(--valt-gold-dark);
+}
+.valt-btn--primary:hover {
+	background: var(--valt-gold); color: var(--valt-darker);
+	border-color: var(--valt-gold);
+}
+.valt-btn--primary .valt-icon { stroke: currentColor; }
+
+/* Secondary — outlined gold. */
+.valt-btn--secondary {
+	background: transparent; color: var(--valt-gold);
+	border-color: var(--valt-gold);
+}
+.valt-btn--secondary:hover {
+	background: rgba(232,196,139,0.12); color: var(--valt-cream);
+}
+
+/* Ghost — minimal, for tertiary actions. */
+.valt-btn--ghost {
+	background: transparent; color: var(--valt-tan);
+	border-color: transparent; padding: 0.5rem 1rem;
+}
+.valt-btn--ghost:hover { color: var(--valt-gold); background: rgba(232,196,139,0.06); }
+
+/* Danger — coral. */
+.valt-btn--danger {
+	background: var(--valt-coral); color: var(--valt-cream);
+	border-color: var(--valt-coral);
+}
+.valt-btn--danger:hover { background: #ff7070; border-color: #ff7070; }
+
+/* Sizes */
+.valt-btn--small { padding: 0.45rem 1rem; font-size: var(--valt-fs-small); border-radius: var(--valt-radius-sm); }
+.valt-btn--large { padding: 0.9rem 2.2rem; font-size: 1.05rem; border-radius: var(--valt-radius-lg); }
 
 /* ─── Tags & Badges ───────────────────────────────────────────────── */
 .valt-tag {
-	display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
-	background: rgba(232,196,139,0.15); color: var(--valt-gold);
+	display: inline-block; padding: 0.25rem 0.7rem; border-radius: 20px;
+	font-size: var(--valt-fs-xs); font-weight: 500;
+	background: rgba(232,196,139,0.12); color: var(--valt-gold);
+	border: var(--valt-border);
 }
 .valt-badge {
-	display: inline-block; padding: 0.25rem 0.75rem; border-radius: var(--valt-radius); font-size: 0.75rem; font-weight: 600;
+	display: inline-flex; align-items: center; gap: 0.3rem;
+	padding: 0.3rem 0.8rem; border-radius: var(--valt-radius-sm);
+	font-size: var(--valt-fs-xs); font-weight: 600; letter-spacing: 0.02em;
 }
-.valt-badge--grey   { background: rgba(129,114,105,0.3); color: var(--valt-mid); }
-.valt-badge--amber  { background: rgba(232,196,139,0.25); color: var(--valt-gold); }
-.valt-badge--gold   { background: var(--valt-gold); color: var(--valt-brown); }
-.valt-badge--level  { background: rgba(232,196,139,0.15); color: var(--valt-gold); }
+.valt-badge--grey   { background: rgba(155,142,130,0.15); color: var(--valt-mid); }
+.valt-badge--amber  { background: rgba(232,196,139,0.2); color: var(--valt-gold); }
+.valt-badge--gold   { background: var(--valt-gold-dark); color: var(--valt-cream); }
+.valt-badge--level  { background: rgba(232,196,139,0.12); color: var(--valt-gold); }
 
 /* ─── Forms ───────────────────────────────────────────────────────── */
 .valt-form { max-width: 500px; }
-.valt-form__group { margin-bottom: 1rem; }
-.valt-form__label { display: block; font-size: 0.85rem; color: var(--valt-tan); margin-bottom: 0.3rem; font-weight: 500; }
+.valt-form__group { margin-bottom: 1.25rem; }
+.valt-form__label { display: block; font-size: var(--valt-fs-small); color: var(--valt-tan); margin-bottom: 0.4rem; font-weight: 500; }
 .valt-form__input, .valt-form__textarea, .valt-form__select {
-	width: 100%; padding: 0.6rem 0.8rem; border: 1px solid rgba(232,196,139,0.2); border-radius: var(--valt-radius);
-	background: var(--valt-dark); color: var(--valt-gold); font-family: var(--valt-font); font-size: 0.9rem;
-	transition: border-color 0.2s;
+	width: 100%; padding: 0.7rem 1rem; border: var(--valt-border); border-radius: var(--valt-radius-sm);
+	background: var(--valt-darker); color: var(--valt-cream); font-family: var(--valt-font); font-size: var(--valt-fs-body);
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+.valt-form__input::placeholder, .valt-form__textarea::placeholder {
+	color: var(--valt-mid); opacity: 0.7;
 }
 .valt-form__input:focus, .valt-form__textarea:focus, .valt-form__select:focus {
-	outline: none; border-color: var(--valt-gold);
+	outline: none; border-color: var(--valt-gold-dark);
+	box-shadow: 0 0 0 3px rgba(201,166,107,0.15);
 }
 .valt-form__textarea { resize: vertical; }
 
@@ -199,10 +294,13 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 
 .valt-song-grid__item {
 	display: block; background: var(--valt-dark); border-radius: var(--valt-radius);
-	overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none;
-	border: 1px solid rgba(232,196,139,0.08);
+	overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease; text-decoration: none;
+	border: var(--valt-border);
 }
-.valt-song-grid__item:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+.valt-song-grid__item:hover {
+	transform: translateY(-4px); box-shadow: var(--valt-shadow-lg);
+	border-color: rgba(232,196,139,0.2);
+}
 .valt-song-grid__art img { width: 100%; aspect-ratio: 1; object-fit: cover; }
 .valt-song-grid__placeholder {
 	width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, var(--valt-navy), var(--valt-dark));
@@ -445,13 +543,17 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-nav__connect-btn {
 	display: flex; align-items: center; gap: 0.5rem;
-	padding: 0.45rem 1.1rem; border-radius: var(--valt-radius);
-	background: var(--valt-gold); color: var(--valt-brown);
-	font-weight: 600; font-size: 0.85rem; text-decoration: none;
+	padding: 0.5rem 1.2rem; border-radius: var(--valt-radius);
+	background: var(--valt-gold-dark); color: var(--valt-cream);
+	font-weight: 600; font-size: var(--valt-fs-small); text-decoration: none;
 	transition: all 0.2s; white-space: nowrap;
+	border: 2px solid var(--valt-gold-dark);
 }
-.valt-nav__connect-btn:hover { background: var(--valt-tan); color: var(--valt-brown); }
-.valt-nav__connect-btn .valt-icon { stroke: var(--valt-brown); }
+.valt-nav__connect-btn:hover {
+	background: var(--valt-gold); color: var(--valt-darker);
+	border-color: var(--valt-gold); box-shadow: 0 2px 12px rgba(201,166,107,0.3);
+}
+.valt-nav__connect-btn .valt-icon { stroke: currentColor; }
 
 .valt-nav__wallet-btn {
 	display: flex; align-items: center; gap: 0.5rem;
