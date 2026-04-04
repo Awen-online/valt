@@ -8,11 +8,6 @@
  * Render the site navigation bar.
  */
 function valt_render_nav(): void {
-	$logo_id  = get_option( 'site_logo', 0 );
-	$logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'thumbnail' ) : '';
-	if ( ! $logo_url ) {
-		$logo_url = home_url( '/wp-content/uploads/2024/10/Valt-logo-150x150.png' );
-	}
 	$home = home_url( '/' );
 
 	// Check CardanoPress wallet connection.
@@ -21,7 +16,7 @@ function valt_render_nav(): void {
 	<nav class="valt-nav">
 		<div class="valt-container valt-nav__inner">
 			<a href="<?php echo esc_url( $home ); ?>" class="valt-nav__logo">
-				<img src="<?php echo esc_url( $logo_url ); ?>" alt="VALT" width="40" height="40">
+				<?php echo valt_svg_logo( 36 ); ?>
 				<span>VALT</span>
 			</a>
 
