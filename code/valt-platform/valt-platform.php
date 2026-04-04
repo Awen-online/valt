@@ -30,6 +30,9 @@ require VALT_PLATFORM_PATH . 'includes/db-schema.php';
 require VALT_PLATFORM_PATH . 'includes/cron.php';
 require VALT_PLATFORM_PATH . 'includes/nmkr.php';
 
+// ── Seed data (admin only, safe to keep loaded) ─────────────────────
+require VALT_PLATFORM_PATH . 'seed-data.php';
+
 // ── v2.0 — Payments, Gamification, Discovery (loaded as built) ──────
 foreach ( [
 	'stripe',
