@@ -154,21 +154,24 @@ add_shortcode( 'valt_user_badges', function ( $atts ) {
 // ─── 6. [valt_mint_button] ──────────────────────────────────────────
 
 add_shortcode( 'valt_mint_button', function ( $atts ) {
-	$atts    = shortcode_atts( [ 'song_id' => 0, 'price_usd' => '', 'price_ada' => '' ], $atts );
+	$atts    = shortcode_atts( [ 'song_id' => 0 ], $atts );
 	$song_id = (int) $atts['song_id'];
 	if ( ! $song_id ) return '';
 
-	$status    = get_post_meta( $song_id, 'valt_nft_status', true );
-	$price_usd = $atts['price_usd'] ?: get_post_meta( $song_id, 'valt_nft_price_usd', true );
-	$price_ada = $atts['price_ada'] ?: get_post_meta( $song_id, 'valt_nft_price_ada', true );
+	$status     = get_post_meta( $song_id, 'valt_nft_status', true );
+	$price_ada  = get_post_meta( $song_id, 'valt_nft_price_ada', true );
+	$price_usd  = (int) get_post_meta( $song_id, 'valt_nft_price_usd', true );
 	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
 	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
 
-	// Detect connected wallet via CardanoPress.
-	$wallet_addr = '';
-	if ( function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected() ) {
-		$wallet_addr = cardanoPress()->userProfile()->connectedWallet();
-	}
+	// Build NMKR payment gateway link for this song.
+	// The song must first be uploaded to NMKR to get a payment link.
+	$nft_uid     = get_post_meta( $song_id, 'valt_nft_uid', true );
+	$config      = valt_nmkr_config();
+	$project_uid = str_replace( '-', '', $config['project_uid'] );
+	$nft_clean   = $nft_uid ? str_replace( '-', '', $nft_uid ) : '';
+	$nmkr_base   = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
+	$nmkr_pay_url = ( $nft_uid && $project_uid ) ? "{$nmkr_base}/?p={$project_uid}&n={$nft_clean}" : '';
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
@@ -191,33 +194,24 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 					<span class="valt-mint__price-ada"><?php echo esc_html( $price_ada ); ?> ADA</span>
 				<?php endif; ?>
 				<?php if ( $price_usd ) : ?>
-					<span class="valt-mint__price-usd">$<?php echo number_format( (int) $price_usd / 100, 2 ); ?> USD</span>
+					<span class="valt-mint__price-usd">$<?php echo number_format( $price_usd / 100, 2 ); ?> USD</span>
 				<?php endif; ?>
 				<?php if ( $max_supply ) : ?>
 					<span class="valt-mint__supply"><?php echo $mint_count; ?> / <?php echo $max_supply; ?> collected</span>
 				<?php endif; ?>
 			</div>
 
-			<?php if ( $wallet_addr ) : ?>
-				<div class="valt-mint__wallet-connected">
-					<?php echo valt_svg_wallet( 16 ); ?>
-					<span>Delivering to <code><?php echo esc_html( substr( $wallet_addr, 0, 12 ) . '...' . substr( $wallet_addr, -6 ) ); ?></code></span>
-				</div>
-				<input type="hidden" data-wallet value="<?php echo esc_attr( $wallet_addr ); ?>">
-				<button class="valt-btn valt-btn--primary valt-mint__btn" data-action="mint">
-					<?php echo valt_svg_music( 16 ); ?> Collect NFT
-				</button>
+			<?php if ( $nmkr_pay_url ) : ?>
+				<?php // User pays ADA directly via NMKR payment gateway — NMKR handles minting. ?>
+				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-mint__btn">
+					<?php echo valt_svg_wallet( 16 ); ?> Collect with ADA
+				</a>
+				<p class="valt-mint__hint">Opens NMKR payment page. Pay with your Cardano wallet and the NFT is delivered automatically.</p>
 			<?php else : ?>
-				<div class="valt-mint__wallet-input">
-					<input type="text" class="valt-form__input" placeholder="Cardano wallet address (addr1...)" data-wallet>
-					<p class="valt-mint__hint">Or <a href="<?php echo home_url( '/dashboard/' ); ?>">connect your wallet</a> to auto-fill.</p>
-				</div>
-				<button class="valt-btn valt-btn--primary valt-mint__btn" data-action="mint">
-					<?php echo valt_svg_music( 16 ); ?> Collect NFT
-				</button>
+				<?php // NFT not yet uploaded to NMKR — show "coming soon" or prompt to connect. ?>
+				<p class="valt-mint__hint">This song is not yet available for collection. Check back soon.</p>
 			<?php endif; ?>
 		<?php endif; ?>
-		<div class="valt-mint__status" data-mint-status></div>
 	</div>
 	<?php return ob_get_clean();
 } );
@@ -417,26 +411,18 @@ add_shortcode( 'valt_connect_mint', function ( $atts ) {
 	$song_id = (int) $atts['song_id'];
 	if ( ! $song_id ) return '';
 
-	$connected = function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected();
 	$price_usd = (int) get_post_meta( $song_id, 'valt_nft_price_usd', true );
+	$stripe_ok = function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'stripe' ) && defined( 'VALT_STRIPE_SECRET_KEY' );
 
 	ob_start(); ?>
 	<div class="valt-connect-mint">
-		<?php // Always show the mint button — it handles wallet detection internally. ?>
+		<?php // Primary: Collect with ADA via NMKR payment gateway. ?>
 		<?php echo do_shortcode( '[valt_mint_button song_id="' . $song_id . '"]' ); ?>
 
-		<?php // If there's also a USD price, show card option as alternative. ?>
-		<?php if ( $price_usd ) : ?>
+		<?php // Secondary: Pay with card via Stripe (only if Stripe is configured). ?>
+		<?php if ( $price_usd && $stripe_ok ) : ?>
 			<div class="valt-connect-mint__divider"><span>or</span></div>
 			<?php echo do_shortcode( '[valt_checkout_button song_id="' . $song_id . '"]' ); ?>
-		<?php endif; ?>
-
-		<?php // If not connected at all, nudge them. ?>
-		<?php if ( ! $connected && ! is_user_logged_in() ) : ?>
-			<div class="valt-connect-mint__nudge">
-				<?php echo valt_svg_wallet( 16 ); ?>
-				<a href="<?php echo home_url( '/dashboard/' ); ?>">Connect your Cardano wallet</a> for the best experience.
-			</div>
 		<?php endif; ?>
 	</div>
 	<?php return ob_get_clean();

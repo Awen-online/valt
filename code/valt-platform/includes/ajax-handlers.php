@@ -6,13 +6,12 @@ defined( 'ABSPATH' ) || exit;
  * All use nonce 'valt_platform' (existing pattern from v1).
  */
 
-// ─── Mint Song NFT ───────────────────────────────────────────────────
+// ─── Upload Song to NMKR (makes it available for purchase) ──────────
 
-add_action( 'wp_ajax_valt_mint_song_nft', function () {
+add_action( 'wp_ajax_valt_upload_to_nmkr', function () {
 	check_ajax_referer( 'valt_platform', 'nonce' );
 
 	$song_id = (int) ( $_POST['song_id'] ?? 0 );
-	$wallet  = sanitize_text_field( $_POST['wallet_address'] ?? '' );
 
 	// Verify ownership.
 	$artist = valt_get_current_artist();
@@ -25,12 +24,43 @@ add_action( 'wp_ajax_valt_mint_song_nft', function () {
 		wp_send_json_error( 'You do not own this song.' );
 	}
 
+	// Already uploaded?
+	$existing_uid = get_post_meta( $song_id, 'valt_nft_uid', true );
+	if ( $existing_uid ) {
+		wp_send_json_success( [ 'message' => 'Already listed on NMKR.', 'nft_uid' => $existing_uid ] );
+	}
+
+	$result = valt_upload_song_to_nmkr( $song_id );
+	if ( is_wp_error( $result ) ) {
+		wp_send_json_error( $result->get_error_message() );
+	}
+
+	wp_send_json_success( $result );
+} );
+
+// ─── Free Mint (artist/admin promo — sends NFT at no cost) ──────────
+
+add_action( 'wp_ajax_valt_mint_song_nft', function () {
+	check_ajax_referer( 'valt_platform', 'nonce' );
+
+	$song_id = (int) ( $_POST['song_id'] ?? 0 );
+	$wallet  = sanitize_text_field( $_POST['wallet_address'] ?? '' );
+
+	// Admin or artist owner only.
+	if ( ! current_user_can( 'manage_options' ) ) {
+		$artist = valt_get_current_artist();
+		$song   = get_post( $song_id );
+		if ( ! $artist || ! $song || (int) $song->post_author !== get_current_user_id() ) {
+			wp_send_json_error( 'Not authorized.' );
+		}
+	}
+
 	$result = valt_schedule_nft_mint( $song_id, $wallet );
 	if ( is_wp_error( $result ) ) {
 		wp_send_json_error( $result->get_error_message() );
 	}
 
-	wp_send_json_success( [ 'message' => 'NFT mint scheduled.', 'song_id' => $song_id ] );
+	wp_send_json_success( [ 'message' => 'Promotional mint scheduled.', 'song_id' => $song_id ] );
 } );
 
 // ─── Set Song Price ──────────────────────────────────────────────────
