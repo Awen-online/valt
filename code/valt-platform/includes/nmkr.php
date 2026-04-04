@@ -137,7 +137,105 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
 	];
 }
 
-// ─── Minting Flow ────────────────────────────────────────────────────
+// ─── Upload to NMKR (list for sale) ──────────────────────────────────
+
+/**
+ * Upload a song to the NMKR project so it appears on the payment gateway.
+ * Does NOT mint — the buyer pays ADA via NMKR and NMKR mints + delivers.
+ *
+ * @param int $song_id Song post ID.
+ * @return array|WP_Error { nft_uid, payment_url, message }
+ */
+function valt_upload_song_to_nmkr( int $song_id ) {
+	$config = valt_nmkr_config();
+	$song   = get_post( $song_id );
+	if ( ! $song ) {
+		return new WP_Error( 'valt_invalid_song', 'Song not found.' );
+	}
+
+	// Find cover art (same fallback chain as minting).
+	$image_id = (int) get_post_meta( $song_id, 'valt_nft_image_id', true );
+	if ( ! $image_id ) $image_id = (int) get_post_thumbnail_id( $song_id );
+	if ( ! $image_id ) {
+		$album_id = (int) get_post_meta( $song_id, 'album', true );
+		if ( $album_id ) $image_id = (int) get_post_thumbnail_id( $album_id );
+	}
+	if ( ! $image_id ) {
+		$artist_id = (int) get_post_meta( $song_id, 'artist', true );
+		if ( $artist_id ) $image_id = (int) get_post_thumbnail_id( $artist_id );
+	}
+	if ( ! $image_id ) {
+		return new WP_Error( 'valt_no_image', 'No cover art found. Upload album or artist artwork first.' );
+	}
+
+	// Build asset name and metadata.
+	$asset_name = valt_generate_asset_name( $song->post_title, $song_id );
+	$price_ada  = get_post_meta( $song_id, 'valt_nft_price_ada', true );
+	$price_lovelace = $price_ada ? (int) ( (float) $price_ada * 1000000 ) : 5000000;
+
+	// Build CIP-25 metadata (use empty IPFS hash — NMKR will set the image from upload).
+	$cip25 = valt_build_cip25_metadata( $song_id, 'PLACEHOLDER', '' );
+
+	// Build upload payload.
+	$upload_body = [
+		'tokenname'        => $asset_name,
+		'displayname'      => $song->post_title,
+		'metadataOverride' => wp_json_encode( $cip25 ),
+		'priceInLovelace'  => $price_lovelace,
+	];
+
+	// Attach cover art as base64.
+	$file_path = get_attached_file( $image_id );
+	if ( $file_path && file_exists( $file_path ) ) {
+		$mime = get_post_mime_type( $image_id ) ?: 'image/jpeg';
+		$upload_body['previewImageNft'] = [
+			'mimetype'       => $mime,
+			'fileFromBase64' => base64_encode( file_get_contents( $file_path ) ),
+		];
+	} else {
+		return new WP_Error( 'valt_file_missing', 'Cover art file not found on disk.' );
+	}
+
+	// Upload to NMKR.
+	$result = valt_nmkr_request( 'POST', "UploadNft/{$config['project_uid']}", $upload_body );
+	if ( is_wp_error( $result ) ) {
+		valt_log_event( 'upload_error', "NMKR upload failed for song {$song_id}", [
+			'error' => $result->get_error_message(),
+		] );
+		return $result;
+	}
+
+	$nft_uid = $result['nftUid'] ?? '';
+	if ( empty( $nft_uid ) ) {
+		return new WP_Error( 'valt_upload_failed', 'NMKR returned no nftUid.' );
+	}
+
+	// Store the UID and update status.
+	update_post_meta( $song_id, 'valt_nft_uid', $nft_uid );
+	update_post_meta( $song_id, 'valt_release_status', 2 ); // "In NFT Collection"
+	if ( ! empty( $result['ipfsHashMainnft'] ) ) {
+		update_post_meta( $song_id, 'valt_nft_ipfs_hash', $result['ipfsHashMainnft'] );
+	}
+
+	// Build payment URL.
+	$project_clean = str_replace( '-', '', $config['project_uid'] );
+	$nft_clean     = str_replace( '-', '', $nft_uid );
+	$pay_base      = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
+	$payment_url   = "{$pay_base}/?p={$project_clean}&n={$nft_clean}";
+
+	valt_log_event( 'nft_listed', "Song {$song_id} listed on NMKR for {$price_ada} ADA", [
+		'nft_uid'     => $nft_uid,
+		'payment_url' => $payment_url,
+	] );
+
+	return [
+		'message'     => 'Song listed for sale on NMKR.',
+		'nft_uid'     => $nft_uid,
+		'payment_url' => $payment_url,
+	];
+}
+
+// ─── Minting Flow (server-side, for free/promo mints) ────────────────
 
 /**
  * Schedule an NFT mint for a song.
