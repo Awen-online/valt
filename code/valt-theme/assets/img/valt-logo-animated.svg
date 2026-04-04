@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <style>
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes vault-open {
+      0%, 40% { opacity: 1; transform: scale(1); }
+      70% { opacity: 0.6; transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes groove-pulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.35; }
+    }
+    .valt-spokes { transform-origin: 100px 100px; animation: spin 8s linear infinite; }
+    .valt-outer { transform-origin: 100px 100px; animation: vault-open 8s ease-in-out infinite; }
+    .valt-groove-1 { animation: groove-pulse 4s ease-in-out infinite; }
+    .valt-groove-2 { animation: groove-pulse 4s ease-in-out 0.5s infinite; }
+    .valt-groove-3 { animation: groove-pulse 4s ease-in-out 1s infinite; }
+    .valt-groove-4 { animation: groove-pulse 4s ease-in-out 1.5s infinite; }
+    .valt-groove-5 { animation: groove-pulse 4s ease-in-out 2s infinite; }
+    .valt-groove-6 { animation: groove-pulse 4s ease-in-out 2.5s infinite; }
+    .valt-groove-7 { animation: groove-pulse 4s ease-in-out 3s infinite; }
+  </style>
+
+  <!-- Outer vinyl edge (breathes open/close) -->
+  <circle class="valt-outer" cx="100" cy="100" r="90" stroke="#E8C48B" stroke-width="4" fill="none"/>
+
+  <!-- Record grooves (pulse like sound waves) -->
+  <circle class="valt-groove-1" cx="100" cy="100" r="82" stroke="#E8C48B" stroke-width="1.5" opacity="0.25" fill="none"/>
+  <circle class="valt-groove-2" cx="100" cy="100" r="74" stroke="#E8C48B" stroke-width="1.2" opacity="0.22" fill="none"/>
+  <circle class="valt-groove-3" cx="100" cy="100" r="66" stroke="#E8C48B" stroke-width="1.2" opacity="0.20" fill="none"/>
+  <circle class="valt-groove-4" cx="100" cy="100" r="58" stroke="#E8C48B" stroke-width="1.2" opacity="0.18" fill="none"/>
+  <circle class="valt-groove-5" cx="100" cy="100" r="50" stroke="#E8C48B" stroke-width="1.0" opacity="0.15" fill="none"/>
+  <circle class="valt-groove-6" cx="100" cy="100" r="42" stroke="#E8C48B" stroke-width="1.0" opacity="0.12" fill="none"/>
+  <circle class="valt-groove-7" cx="100" cy="100" r="35" stroke="#E8C48B" stroke-width="1.0" opacity="0.10" fill="none"/>
+
+  <!-- Label area ring -->
+  <circle cx="100" cy="100" r="28" stroke="#E8C48B" stroke-width="2" opacity="0.35" fill="none"/>
+
+  <!-- Spinning vault-handle spokes -->
+  <g class="valt-spokes">
+    <line x1="100" y1="100" x2="100" y2="150" stroke="#E8C48B" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="58" y2="72" stroke="#C9A66B" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="148" y2="64" stroke="#C9A66B" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="100" cy="152" r="6" fill="#E8C48B"/>
+    <circle cx="56" cy="71" r="5" fill="#C9A66B"/>
+    <circle cx="150" cy="63" r="5" fill="#C9A66B"/>
+  </g>
+
+  <!-- Center spindle (stationary) -->
+  <circle cx="100" cy="100" r="8" fill="#3D3C56" stroke="#E8C48B" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="3" fill="#E8C48B" opacity="0.4"/>
+</svg>
