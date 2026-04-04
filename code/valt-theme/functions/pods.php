@@ -15,4 +15,4 @@
 // add_shortcode( 'x', function() { return 'x'; } );
 
 // add_filter( 'elementor/dynamic_tags/shortcode/get_value', 'do_shortcode', 10, 1 );
-// require get_stylesheet_directory().'/functions/pods/datatag/Pods_Related_Artist_Featured_Image.php';
+require get_stylesheet_directory().'/functions/pods/datatag/Pods_Related_Artist_Featured_Image.php';
