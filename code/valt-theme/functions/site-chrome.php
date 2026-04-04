@@ -8,8 +8,12 @@
  * Render the site navigation bar.
  */
 function valt_render_nav(): void {
-	$logo_url = get_stylesheet_directory_uri() . '/../../../uploads/2024/06/valt-dark-300x300.png';
-	$home     = home_url( '/' );
+	$logo_id  = get_option( 'site_logo', 0 );
+	$logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'thumbnail' ) : '';
+	if ( ! $logo_url ) {
+		$logo_url = home_url( '/wp-content/uploads/2024/10/Valt-logo-150x150.png' );
+	}
+	$home = home_url( '/' );
 
 	// Check CardanoPress wallet connection.
 	$connected = function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected();
@@ -61,6 +65,13 @@ function valt_render_nav(): void {
  */
 function valt_render_footer(): void {
 	?>
+	<?php // Sticky music player (FML Music Player plugin). ?>
+	<?php if ( shortcode_exists( 'fml_music_player' ) ) : ?>
+		<div class="valt-player-wrap">
+			<?php echo do_shortcode( '[fml_music_player]' ); ?>
+		</div>
+	<?php endif; ?>
+
 	<footer class="valt-footer">
 		<div class="valt-container valt-footer__inner">
 			<div class="valt-footer__brand">

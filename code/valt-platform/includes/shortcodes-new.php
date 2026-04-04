@@ -158,23 +158,64 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$song_id = (int) $atts['song_id'];
 	if ( ! $song_id ) return '';
 
-	$status = get_post_meta( $song_id, 'valt_nft_status', true );
+	$status    = get_post_meta( $song_id, 'valt_nft_status', true );
 	$price_usd = $atts['price_usd'] ?: get_post_meta( $song_id, 'valt_nft_price_usd', true );
 	$price_ada = $atts['price_ada'] ?: get_post_meta( $song_id, 'valt_nft_price_ada', true );
+	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
+	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
+
+	// Detect connected wallet via CardanoPress.
+	$wallet_addr = '';
+	if ( function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected() ) {
+		$wallet_addr = cardanoPress()->userProfile()->connectedWallet();
+	}
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
-		<?php if ( $status === 'minted' ) : ?>
-			<span class="valt-badge valt-badge--gold">Minted</span>
+		<?php if ( $status === 'minted' || $status === 'complete' ) : ?>
+			<div class="valt-mint__done">
+				<?php echo valt_svg_music( 20 ); ?>
+				<span class="valt-badge valt-badge--gold">Collected</span>
+				<span class="valt-mint__count"><?php echo $mint_count; ?> minted<?php echo $max_supply ? " / {$max_supply}" : ''; ?></span>
+			</div>
 		<?php elseif ( in_array( $status, [ 'pending', 'processing' ], true ) ) : ?>
-			<span class="valt-badge valt-badge--amber">Minting...</span>
+			<div class="valt-mint__pending">
+				<span class="valt-badge valt-badge--amber">Minting...</span>
+				<p class="valt-mint__hint">Your NFT is being minted on Cardano. This can take a few minutes.</p>
+			</div>
+		<?php elseif ( $max_supply > 0 && $mint_count >= $max_supply ) : ?>
+			<span class="valt-badge valt-badge--grey">Sold Out</span>
 		<?php else : ?>
 			<div class="valt-mint__prices">
-				<?php if ( $price_usd ) : ?><span>$<?php echo number_format( (int) $price_usd / 100, 2 ); ?></span><?php endif; ?>
-				<?php if ( $price_ada ) : ?><span><?php echo esc_html( $price_ada ); ?> ADA</span><?php endif; ?>
+				<?php if ( $price_ada ) : ?>
+					<span class="valt-mint__price-ada"><?php echo esc_html( $price_ada ); ?> ADA</span>
+				<?php endif; ?>
+				<?php if ( $price_usd ) : ?>
+					<span class="valt-mint__price-usd">$<?php echo number_format( (int) $price_usd / 100, 2 ); ?> USD</span>
+				<?php endif; ?>
+				<?php if ( $max_supply ) : ?>
+					<span class="valt-mint__supply"><?php echo $mint_count; ?> / <?php echo $max_supply; ?> collected</span>
+				<?php endif; ?>
 			</div>
-			<input type="text" class="valt-mint__wallet valt-form__input" placeholder="Your Cardano wallet address (addr1...)" data-wallet>
-			<button class="valt-btn valt-btn--primary valt-mint__btn" data-action="mint">Mint NFT</button>
+
+			<?php if ( $wallet_addr ) : ?>
+				<div class="valt-mint__wallet-connected">
+					<?php echo valt_svg_wallet( 16 ); ?>
+					<span>Delivering to <code><?php echo esc_html( substr( $wallet_addr, 0, 12 ) . '...' . substr( $wallet_addr, -6 ) ); ?></code></span>
+				</div>
+				<input type="hidden" data-wallet value="<?php echo esc_attr( $wallet_addr ); ?>">
+				<button class="valt-btn valt-btn--primary valt-mint__btn" data-action="mint">
+					<?php echo valt_svg_music( 16 ); ?> Collect NFT
+				</button>
+			<?php else : ?>
+				<div class="valt-mint__wallet-input">
+					<input type="text" class="valt-form__input" placeholder="Cardano wallet address (addr1...)" data-wallet>
+					<p class="valt-mint__hint">Or <a href="<?php echo home_url( '/dashboard/' ); ?>">connect your wallet</a> to auto-fill.</p>
+				</div>
+				<button class="valt-btn valt-btn--primary valt-mint__btn" data-action="mint">
+					<?php echo valt_svg_music( 16 ); ?> Collect NFT
+				</button>
+			<?php endif; ?>
 		<?php endif; ?>
 		<div class="valt-mint__status" data-mint-status></div>
 	</div>
@@ -205,19 +246,33 @@ add_shortcode( 'valt_nft_status', function ( $atts ) {
 // ─── 8. [valt_checkout_button] ──────────────────────────────────────
 
 add_shortcode( 'valt_checkout_button', function ( $atts ) {
-	$atts    = shortcode_atts( [ 'song_id' => 0, 'label' => 'Buy Now' ], $atts );
+	$atts    = shortcode_atts( [ 'song_id' => 0, 'label' => 'Buy with Card' ], $atts );
 	$song_id = (int) $atts['song_id'];
 	if ( ! $song_id ) return '';
 
 	$price_usd = (int) get_post_meta( $song_id, 'valt_nft_price_usd', true );
+	if ( ! $price_usd ) return '';
+
+	// Detect connected wallet for auto NFT delivery.
+	$wallet_addr = '';
+	if ( function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected() ) {
+		$wallet_addr = cardanoPress()->userProfile()->connectedWallet();
+	}
 
 	ob_start(); ?>
 	<div class="valt-checkout" data-song-id="<?php echo $song_id; ?>">
-		<button class="valt-btn valt-btn--primary valt-checkout__btn" data-action="checkout">
-			<?php echo esc_html( $atts['label'] ); ?>
-			<?php if ( $price_usd ) : ?> — $<?php echo number_format( $price_usd / 100, 2 ); ?><?php endif; ?>
+		<button class="valt-btn valt-btn--secondary valt-checkout__btn" data-action="checkout">
+			<?php echo esc_html( $atts['label'] ); ?> — $<?php echo number_format( $price_usd / 100, 2 ); ?>
 		</button>
-		<input type="text" class="valt-checkout__wallet valt-form__input" placeholder="Wallet address for NFT delivery (optional)" data-wallet style="margin-top:8px;">
+		<?php if ( $wallet_addr ) : ?>
+			<input type="hidden" data-wallet value="<?php echo esc_attr( $wallet_addr ); ?>">
+			<p class="valt-checkout__hint">NFT will be delivered to your connected wallet.</p>
+		<?php else : ?>
+			<div class="valt-checkout__wallet-row" style="margin-top:8px;">
+				<input type="text" class="valt-form__input" placeholder="Wallet address for NFT delivery (optional)" data-wallet>
+				<p class="valt-checkout__hint">Leave empty to receive a claim link instead.</p>
+			</div>
+		<?php endif; ?>
 	</div>
 	<?php return ob_get_clean();
 } );
@@ -363,13 +418,25 @@ add_shortcode( 'valt_connect_mint', function ( $atts ) {
 	if ( ! $song_id ) return '';
 
 	$connected = function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected();
+	$price_usd = (int) get_post_meta( $song_id, 'valt_nft_price_usd', true );
 
 	ob_start(); ?>
 	<div class="valt-connect-mint">
-		<?php if ( ! $connected ) : ?>
-			<?php echo do_shortcode( '[valt_connect_prompt text="Connect Wallet to Mint"]' ); ?>
-		<?php else : ?>
-			<?php echo do_shortcode( '[valt_mint_button song_id="' . $song_id . '"]' ); ?>
+		<?php // Always show the mint button — it handles wallet detection internally. ?>
+		<?php echo do_shortcode( '[valt_mint_button song_id="' . $song_id . '"]' ); ?>
+
+		<?php // If there's also a USD price, show card option as alternative. ?>
+		<?php if ( $price_usd ) : ?>
+			<div class="valt-connect-mint__divider"><span>or</span></div>
+			<?php echo do_shortcode( '[valt_checkout_button song_id="' . $song_id . '"]' ); ?>
+		<?php endif; ?>
+
+		<?php // If not connected at all, nudge them. ?>
+		<?php if ( ! $connected && ! is_user_logged_in() ) : ?>
+			<div class="valt-connect-mint__nudge">
+				<?php echo valt_svg_wallet( 16 ); ?>
+				<a href="<?php echo home_url( '/dashboard/' ); ?>">Connect your Cardano wallet</a> for the best experience.
+			</div>
 		<?php endif; ?>
 	</div>
 	<?php return ob_get_clean();
