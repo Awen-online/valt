@@ -266,3 +266,46 @@ add_action( 'wp_ajax_valt_admin_award_points', function () {
 		wp_send_json_error( 'Gamification not available.' );
 	}
 } );
+
+// ─── Follow / Unfollow Artist ────────────────────────────────────────
+
+add_action( 'wp_ajax_valt_follow_artist', function () {
+	check_ajax_referer( 'valt_platform', 'nonce' );
+
+	$artist_id = (int) ( $_POST['artist_id'] ?? 0 );
+	if ( ! $artist_id || get_post_type( $artist_id ) !== 'artist' ) {
+		wp_send_json_error( 'Invalid artist.' );
+	}
+
+	$user_id = get_current_user_id();
+	$wallet  = '';
+	if ( function_exists( 'cardanoPress' ) && cardanoPress()->userProfile()->isConnected() ) {
+		$wallet = cardanoPress()->userProfile()->connectedWallet();
+	}
+
+	global $wpdb;
+	$table = $wpdb->prefix . 'valt_follows';
+
+	// Check if already following.
+	$exists = $wpdb->get_var( $wpdb->prepare(
+		"SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND artist_id = %d",
+		$user_id, $artist_id
+	) );
+
+	if ( $exists ) {
+		// Unfollow.
+		$wpdb->delete( $table, [ 'user_id' => $user_id, 'artist_id' => $artist_id ], [ '%d', '%d' ] );
+		$count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE artist_id = %d", $artist_id ) );
+		wp_send_json_success( [ 'action' => 'unfollowed', 'count' => $count ] );
+	}
+
+	// Follow.
+	$wpdb->insert( $table, [
+		'user_id'     => $user_id,
+		'artist_id'   => $artist_id,
+		'wallet_addr' => $wallet ?: null,
+	], [ '%d', '%d', '%s' ] );
+
+	$count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE artist_id = %d", $artist_id ) );
+	wp_send_json_success( [ 'action' => 'followed', 'count' => $count ] );
+} );
