@@ -367,6 +367,79 @@ function valt_seed_pages_page(): void {
 <h2>Your Rights</h2>
 <p>You may request export or deletion of your personal data by contacting us at <a href="mailto:cullah@awen.online">cullah@awen.online</a>.</p>',
 		],
+		'FAQ' => [
+			'slug'    => 'faq',
+			'content' => '<h1>Frequently Asked Questions</h1>
+
+<h2>What is Valt?</h2>
+<p>Valt is a music platform where you can own the songs you love as digital collectables on the Cardano blockchain. When you collect a song, you receive a token (NFT) that proves ownership. It\'s yours — no one can revoke it.</p>
+
+<h2>What is a Cardano wallet?</h2>
+<p>A Cardano wallet is a browser extension that lets you hold, send, and receive ADA (the currency on Cardano) and tokens like music NFTs. Think of it like a digital wallet for blockchain assets. Your wallet is secured by a recovery phrase that only you know.</p>
+
+<h2>Which wallets work with Valt?</h2>
+<p>Valt supports any wallet that uses the CIP-30 standard, including:</p>
+<ul>
+<li><strong>Eternl</strong> — full-featured, popular with experienced users</li>
+<li><strong>Lace</strong> — made by IOG (the team behind Cardano), clean and simple</li>
+<li><strong>Yoroi</strong> — lightweight, mobile-friendly</li>
+<li><strong>NuFi</strong> — multi-chain support</li>
+<li><strong>VESPR</strong> — mobile-first with desktop extension</li>
+<li><strong>Typhon</strong> — advanced features for power users</li>
+<li><strong>GeroWallet</strong> — beginner-friendly</li>
+<li><strong>Begin</strong> — simple onboarding</li>
+</ul>
+
+<h2>How do I set up a wallet?</h2>
+<ol>
+<li>Install a wallet extension in your browser (we recommend <strong>Eternl</strong> or <strong>Lace</strong>)</li>
+<li>Create a new wallet — the extension will generate a recovery phrase (12-24 words)</li>
+<li><strong>Write down your recovery phrase and store it safely.</strong> This is the only way to recover your wallet. Never share it with anyone.</li>
+<li>Switch to <strong>Preprod</strong> network if you\'re testing (Settings > Network)</li>
+<li>Visit Valt and click <strong>Connect</strong> in the top right</li>
+</ol>
+
+<h2>What is ADA?</h2>
+<p>ADA is the native currency of the Cardano blockchain. You use ADA to collect songs on Valt. 1 ADA is currently worth about $0.30-0.80 USD (prices vary). You can buy ADA on exchanges like Coinbase, Kraken, or Binance and send it to your wallet.</p>
+
+<h2>What is an NFT?</h2>
+<p>NFT stands for Non-Fungible Token. In simple terms, it\'s a unique digital item recorded on the blockchain that proves you own something. On Valt, each song collectable is an NFT — it has the song\'s metadata (title, artist, album, cover art) permanently stored on-chain.</p>
+
+<h2>What happens when I collect a song?</h2>
+<ol>
+<li>You click "Collect with ADA" on a song page</li>
+<li>The NMKR payment page opens — you connect your wallet and confirm the transaction</li>
+<li>You pay the listed price in ADA (typically 3-5 ADA)</li>
+<li>The NFT is minted on the Cardano blockchain and delivered to your wallet</li>
+<li>You now own that song\'s digital collectable permanently</li>
+</ol>
+
+<h2>What does owning a song NFT give me?</h2>
+<ul>
+<li><strong>Proof of ownership</strong> — verifiable on the blockchain forever</li>
+<li><strong>Access to The Valt</strong> — exclusive token-gated content from the artist</li>
+<li><strong>Fan status</strong> — your support is visible and permanent</li>
+<li><strong>Transferability</strong> — you can send, gift, or sell your NFT</li>
+</ul>
+
+<h2>What is The Valt?</h2>
+<p>The Valt is an exclusive area on each artist\'s page that only NFT holders can access. When you hold a song NFT from an artist, their Valt unlocks — revealing exclusive content like unreleased tracks, behind-the-scenes material, and direct updates.</p>
+
+<h2>What is "following" an artist?</h2>
+<p>Following is free and doesn\'t cost any ADA. If you have a connected wallet, clicking Follow is verified by your wallet (a signature, not a transaction — no fees). It lets artists know you\'re interested in their work.</p>
+
+<h2>Is my wallet safe?</h2>
+<p>Your wallet is controlled by your recovery phrase. Valt never has access to your funds — when you connect, you only grant permission to view your address and request transaction signatures. You approve every transaction in your wallet extension before anything happens.</p>
+
+<h2>What blockchain does Valt use?</h2>
+<p>Valt runs on <strong>Cardano</strong>, a proof-of-stake blockchain known for low transaction fees (~$0.15-0.30 per transaction), energy efficiency, and peer-reviewed academic research. Music NFTs on Valt use the CIP-25 metadata standard.</p>
+
+<h2>Do I need crypto to use Valt?</h2>
+<p>To collect songs, yes — you need ADA in a Cardano wallet. We\'re working on card payment options so you can pay with USD in the future. You can browse and follow artists without a wallet.</p>
+
+<h2>What if I lose my wallet?</h2>
+<p>If you have your recovery phrase, you can restore your wallet on any device. If you\'ve lost your recovery phrase and can\'t access your wallet, your NFTs are unfortunately not recoverable. <strong>Always store your recovery phrase safely offline.</strong></p>',
+		],
 	];
 
 	foreach ( $pages as $title => $config ) {

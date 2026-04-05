@@ -534,3 +534,46 @@ add_shortcode( 'valt_contact_form', function () {
 	</div>
 	<?php return ob_get_clean();
 } );
+
+// ─── 18. [valt_follow_button] ───────────────────────────────────────
+
+add_shortcode( 'valt_follow_button', function ( $atts ) {
+	$atts      = shortcode_atts( [ 'artist_id' => 0 ], $atts );
+	$artist_id = (int) $atts['artist_id'];
+	if ( ! $artist_id ) return '';
+
+	global $wpdb;
+	$table = $wpdb->prefix . 'valt_follows';
+
+	$count = (int) $wpdb->get_var( $wpdb->prepare(
+		"SELECT COUNT(*) FROM {$table} WHERE artist_id = %d", $artist_id
+	) );
+
+	$is_following = false;
+	if ( is_user_logged_in() ) {
+		$is_following = (bool) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND artist_id = %d",
+			get_current_user_id(), $artist_id
+		) );
+	}
+
+	ob_start(); ?>
+	<div class="valt-follow" data-artist-id="<?php echo $artist_id; ?>">
+		<?php if ( is_user_logged_in() ) : ?>
+			<button class="valt-btn <?php echo $is_following ? 'valt-btn--secondary valt-follow--active' : 'valt-btn--primary'; ?> valt-btn--small" data-action="follow">
+				<?php if ( $is_following ) : ?>
+					<?php echo valt_svg_user( 14 ); ?> Following
+				<?php else : ?>
+					<?php echo valt_svg_user( 14 ); ?> Follow
+				<?php endif; ?>
+			</button>
+		<?php else : ?>
+			<a href="<?php echo home_url( '/dashboard/' ); ?>" class="valt-btn valt-btn--secondary valt-btn--small">
+				<?php echo valt_svg_wallet( 14 ); ?> Connect to Follow
+			</a>
+		<?php endif; ?>
+		<span class="valt-follow__count" data-follow-count><?php echo $count; ?></span>
+		<span class="valt-follow__label">follower<?php echo $count !== 1 ? 's' : ''; ?></span>
+	</div>
+	<?php return ob_get_clean();
+} );

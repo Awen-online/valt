@@ -21,7 +21,7 @@ add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
 //
 add_action('wp_enqueue_scripts', function() {
     
-    $style_version = '1.00'; // Change this to your desired version number
+    $style_version = '2.1.' . time(); // Cache bust
     
     //
     //ADD CSS
@@ -86,6 +86,11 @@ add_action('wp_enqueue_scripts', function() {
 
 
 });
+
+// SVG favicon
+add_action( 'wp_head', function () {
+	echo '<link rel="icon" href="' . get_stylesheet_directory_uri() . '/assets/img/favicon.svg" type="image/svg+xml">';
+} );
 
 require get_stylesheet_directory().'/functions/elementor.php';
 require get_stylesheet_directory().'/functions/pods.php';

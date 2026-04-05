@@ -73,6 +73,7 @@ function valt_render_footer(): void {
 				<strong>VALT</strong> &mdash; Digital Music Collectables
 			</div>
 			<div class="valt-footer__links">
+				<a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>">FAQ</a>
 				<a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Contact</a>
 				<a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>">Terms</a>
 				<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">Privacy</a>

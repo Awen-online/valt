@@ -434,6 +434,31 @@
 			} ).fail( function () { $msg.text( 'Network error.' ); } );
 		} );
 
+		// ── Follow / Unfollow artist ─────────────────────────────────
+		$( document ).on( 'click', '[data-action="follow"]', function () {
+			var $btn   = $( this );
+			var $wrap  = $btn.closest( '.valt-follow' );
+			var artistId = $wrap.data( 'artist-id' );
+
+			$btn.prop( 'disabled', true );
+
+			$.post( valtPlatform.ajaxUrl, {
+				action: 'valt_follow_artist',
+				nonce:  valtPlatform.nonce,
+				artist_id: artistId,
+			}, function ( r ) {
+				if ( r.success ) {
+					var isFollowing = r.data.action === 'followed';
+					$btn.toggleClass( 'valt-btn--primary', ! isFollowing )
+						.toggleClass( 'valt-btn--secondary valt-follow--active', isFollowing )
+						.html( ( isFollowing ? '\u2714 Following' : '+ Follow' ) );
+					$wrap.find( '[data-follow-count]' ).text( r.data.count );
+					var label = r.data.count === 1 ? 'follower' : 'followers';
+					$wrap.find( '.valt-follow__label' ).text( label );
+				}
+			} ).always( function () { $btn.prop( 'disabled', false ); } );
+		} );
+
 	} );
 
 } )( jQuery );

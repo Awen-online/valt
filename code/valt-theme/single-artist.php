@@ -62,10 +62,13 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 					<?php if ( $country ) : ?><span class="valt-tag"><?php echo esc_html( $country ); ?></span><?php endif; ?>
 				</div>
 				<?php if ( $bio ) : ?><p class="valt-artist-hero__bio"><?php echo wp_kses_post( $bio ); ?></p><?php endif; ?>
-				<div class="valt-artist-hero__social">
-					<?php if ( $social_x ) : ?><a href="https://x.com/<?php echo esc_attr( $social_x ); ?>" target="_blank" rel="noopener">X</a><?php endif; ?>
-					<?php if ( $social_ig ) : ?><a href="https://instagram.com/<?php echo esc_attr( $social_ig ); ?>" target="_blank" rel="noopener">Instagram</a><?php endif; ?>
-					<?php if ( $social_sp ) : ?><a href="<?php echo esc_url( $social_sp ); ?>" target="_blank" rel="noopener">Spotify</a><?php endif; ?>
+				<div class="valt-artist-hero__actions">
+					<?php echo do_shortcode( '[valt_follow_button artist_id="' . $artist_id . '"]' ); ?>
+					<div class="valt-artist-hero__social">
+						<?php if ( $social_x ) : ?><a href="https://x.com/<?php echo esc_attr( $social_x ); ?>" target="_blank" rel="noopener">X</a><?php endif; ?>
+						<?php if ( $social_ig ) : ?><a href="https://instagram.com/<?php echo esc_attr( $social_ig ); ?>" target="_blank" rel="noopener">Instagram</a><?php endif; ?>
+						<?php if ( $social_sp ) : ?><a href="<?php echo esc_url( $social_sp ); ?>" target="_blank" rel="noopener">Spotify</a><?php endif; ?>
+					</div>
 				</div>
 			</div>
 		</div>

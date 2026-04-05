@@ -71,11 +71,11 @@ foreach ( $assets as $asset ) {
 							<span class="valt-dash-stat__label">Balance</span>
 							<span class="valt-dash-stat__value">
 								<?php
+								$balance = '';
 								if ( $wallet_addr ) {
-									echo do_shortcode( '[cardanopress_wallet_balance address="' . esc_attr( $wallet_addr ) . '" unit="ada"]' );
-								} else {
-									echo '—';
+									$balance = do_shortcode( '[cardanopress_wallet_balance address="' . esc_attr( $wallet_addr ) . '" unit="ada"]' );
 								}
+								echo $balance !== '' ? $balance : '0';
 								?>
 								<small>ADA</small>
 							</span>
