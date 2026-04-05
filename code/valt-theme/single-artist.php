@@ -92,11 +92,10 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 					</div>
 
 					<?php if ( $gate_state === 'unlocked' ) : ?>
-						<?php // ── UNLOCKED — vault opens ── ?>
-						<div class="valt-vault__status valt-vault__status--open">
-							<?php echo valt_svg_wallet( 18 ); ?>
-							<span>Vault Open</span>
-						</div>
+						<?php // ── UNLOCKED — click to reveal ── ?>
+						<button class="valt-btn valt-btn--primary valt-btn--large valt-vault__open-btn" data-action="open-valt">
+							<?php echo valt_svg_wallet( 18 ); ?> Open Valt
+						</button>
 					<?php elseif ( $gate_state === 'disconnected' ) : ?>
 						<div class="valt-vault__status valt-vault__status--locked">
 							<p>Connect your wallet to enter</p>
@@ -123,11 +122,33 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 					<?php endif; ?>
 				</div>
 
-				<?php if ( $gate_state === 'unlocked' ) : ?>
-				<div class="valt-vault__content">
+				<?php if ( $gate_state === 'unlocked' ) :
+					// Get user's NFTs that match this artist's policy.
+					$user_assets = [];
+					if ( function_exists( 'cardanoPress' ) ) {
+						$all_assets = cardanoPress()->userProfile()->storedAssets();
+						foreach ( $all_assets as $asset ) {
+							if ( ( $asset['policy_id'] ?? '' ) === $policy_id ) {
+								$user_assets[] = $asset;
+							}
+						}
+					}
+				?>
+				<div class="valt-vault__content" data-valt-content style="display:none;">
 					<div class="valt-vault__inner">
 						<h3>Welcome to <?php echo esc_html( $name ); ?>'s Valt</h3>
-						<p>You hold the key. Here's what's inside.</p>
+						<p>You hold the key. You own <?php echo count( $user_assets ); ?> collectable<?php echo count( $user_assets ) !== 1 ? 's' : ''; ?> from this artist.</p>
+
+						<?php if ( ! empty( $user_assets ) ) : ?>
+						<div class="valt-vault__collection">
+							<h4><?php echo valt_svg_collection( 18 ); ?> Your <?php echo esc_html( $name ); ?> NFTs</h4>
+							<div class="valt-collection-grid">
+								<?php foreach ( $user_assets as $asset ) : ?>
+									<?php cardanoPress()->template( 'part/collection-item', compact( 'asset' ) ); ?>
+								<?php endforeach; ?>
+							</div>
+						</div>
+						<?php endif; ?>
 
 						<div class="valt-vault__grid">
 							<div class="valt-card">

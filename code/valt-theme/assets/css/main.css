@@ -472,6 +472,32 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-mint__btn { display: inline-flex; align-items: center; gap: 0.5rem; }
 .valt-mint__btn .valt-icon { stroke: var(--valt-brown); }
 
+/* Price tiers */
+.valt-mint__tiers { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.valt-mint__tier {
+	display: flex; flex-direction: column; align-items: center;
+	padding: 1rem 1.5rem; border-radius: var(--valt-radius); min-width: 140px;
+	text-decoration: none; text-align: center; transition: all 0.2s;
+}
+.valt-mint__tier:hover { transform: translateY(-2px); box-shadow: var(--valt-shadow); }
+.valt-mint__tier--primary {
+	background: var(--valt-gold-dark); border: 2px solid var(--valt-gold-dark);
+}
+.valt-mint__tier--primary .valt-mint__tier-label { color: var(--valt-cream); font-weight: 600; font-size: var(--valt-fs-small); }
+.valt-mint__tier--primary .valt-mint__tier-price { color: var(--valt-cream); font-size: 1.3rem; font-weight: 700; }
+.valt-mint__tier--primary .valt-mint__tier-usd { color: rgba(255,248,237,0.6); font-size: var(--valt-fs-xs); }
+.valt-mint__tier--primary:hover { background: var(--valt-gold); border-color: var(--valt-gold); }
+.valt-mint__tier--primary:hover .valt-mint__tier-label,
+.valt-mint__tier--primary:hover .valt-mint__tier-price { color: var(--valt-darker); }
+
+.valt-mint__tier--bundle {
+	background: var(--valt-darker); border: 2px solid var(--valt-gold);
+}
+.valt-mint__tier--bundle .valt-mint__tier-label { color: var(--valt-gold); font-weight: 600; font-size: var(--valt-fs-small); }
+.valt-mint__tier--bundle .valt-mint__tier-price { color: var(--valt-cream); font-size: 1.3rem; font-weight: 700; }
+.valt-mint__tier--bundle .valt-mint__tier-usd { color: var(--valt-green); font-size: var(--valt-fs-xs); font-weight: 500; }
+.valt-mint__tier--bundle:hover { background: rgba(232,196,139,0.08); }
+
 .valt-checkout { margin: 1rem 0; }
 .valt-checkout__hint { font-size: 0.8rem; color: var(--valt-mid); margin-top: 0.4rem; }
 .valt-checkout__btn { display: inline-flex; align-items: center; gap: 0.5rem; }
@@ -625,6 +651,13 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	gap: var(--valt-gap); margin-top: 1.5rem;
 }
+.valt-vault__collection { margin-bottom: 2rem; }
+.valt-vault__collection h4 {
+	display: flex; align-items: center; gap: 0.5rem;
+	font-size: var(--valt-fs-h3); color: var(--valt-cream); margin-bottom: 1rem;
+}
+.valt-vault__collection h4 .valt-icon { stroke: var(--valt-gold-light); }
+
 .valt-vault__grid .valt-card {
 	background: var(--valt-dark); border: var(--valt-border);
 }
