@@ -19,12 +19,54 @@ add_action( 'admin_menu', function () {
 
 // Handle manual sync action.
 add_action( 'admin_init', function () {
-	if ( ! isset( $_GET['valt_sync_nmkr'] ) || ! current_user_can( 'manage_options' ) ) return;
-	check_admin_referer( 'valt_sync_nmkr' );
-	valt_sync_nmkr_project_stats();
-	wp_redirect( admin_url( 'admin.php?page=valt-nft-monitor&synced=1' ) );
-	exit;
+	if ( ! current_user_can( 'manage_options' ) ) return;
+
+	// Sync stats from NMKR.
+	if ( isset( $_GET['valt_sync_nmkr'] ) ) {
+		check_admin_referer( 'valt_sync_nmkr' );
+		valt_sync_nmkr_project_stats();
+		wp_redirect( admin_url( 'admin.php?page=valt-nft-monitor&synced=1' ) );
+		exit;
+	}
+
+	// Upload all unsynced songs to NMKR.
+	if ( isset( $_GET['valt_upload_songs'] ) ) {
+		check_admin_referer( 'valt_upload_songs' );
+		$uploaded = valt_bulk_upload_songs_to_nmkr();
+		wp_redirect( admin_url( 'admin.php?page=valt-nft-monitor&uploaded=' . $uploaded ) );
+		exit;
+	}
 } );
+
+/**
+ * Upload all songs that don't have an nft_uid to NMKR.
+ * Returns count of newly uploaded songs.
+ */
+function valt_bulk_upload_songs_to_nmkr(): int {
+	$songs = get_posts( [
+		'post_type'      => 'song',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+	] );
+
+	$count = 0;
+	foreach ( $songs as $song ) {
+		$existing_uid = get_post_meta( $song->ID, 'valt_nft_uid', true );
+		if ( $existing_uid ) continue; // Already uploaded.
+
+		$result = valt_upload_song_to_nmkr( $song->ID );
+		if ( ! is_wp_error( $result ) ) {
+			$count++;
+			valt_log_event( 'nft_bulk_upload', "Uploaded song {$song->ID} ({$song->post_title}) to NMKR", [
+				'nft_uid' => $result['nft_uid'] ?? '',
+			] );
+		} else {
+			valt_log_event( 'nft_bulk_error', "Failed to upload song {$song->ID}: {$result->get_error_message()}" );
+		}
+	}
+
+	return $count;
+}
 
 /**
  * Sync project stats from NMKR API and cache them.
@@ -72,6 +114,20 @@ function valt_render_nft_monitor_page(): void {
 	if ( isset( $_GET['synced'] ) ) {
 		echo '<div class="notice notice-success"><p>NMKR project stats synced.</p></div>';
 	}
+	if ( isset( $_GET['uploaded'] ) ) {
+		$n = (int) $_GET['uploaded'];
+		echo '<div class="notice notice-success"><p>' . ( $n ? "{$n} song(s) uploaded to NMKR." : 'All songs already synced to NMKR.' ) . '</p></div>';
+	}
+
+	// Count songs missing from NMKR.
+	$unsynced = get_posts( [
+		'post_type' => 'song', 'post_status' => 'publish', 'posts_per_page' => -1,
+		'meta_query' => [ 'relation' => 'OR',
+			[ 'key' => 'valt_nft_uid', 'compare' => 'NOT EXISTS' ],
+			[ 'key' => 'valt_nft_uid', 'value' => '', 'compare' => '=' ],
+		],
+	] );
+	$unsynced_count = count( $unsynced );
 	?>
 	<div class="wrap">
 		<h1>NFT Monitor</h1>
@@ -88,6 +144,9 @@ function valt_render_nft_monitor_page(): void {
 				</table>
 				<p style="margin-top:10px;">
 					<a href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=valt-nft-monitor&valt_sync_nmkr=1' ), 'valt_sync_nmkr' ); ?>" class="button button-primary">Sync from NMKR</a>
+					<a href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=valt-nft-monitor&valt_upload_songs=1' ), 'valt_upload_songs' ); ?>" class="button" <?php echo $unsynced_count ? '' : 'disabled'; ?>>
+						Upload Songs to NMKR<?php echo $unsynced_count ? " ({$unsynced_count} new)" : ' (all synced)'; ?>
+					</a>
 					<a href="<?php echo esc_url( $studio_base ); ?>" target="_blank" class="button">Open NMKR Studio</a>
 				</p>
 			</div>

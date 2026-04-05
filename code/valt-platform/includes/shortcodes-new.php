@@ -164,11 +164,13 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
 	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
 
-	// NMKR Pay link — project-level (flat pricing, random NFT from collection).
+	// NMKR Pay link — per-NFT specific (user buys THIS song's NFT).
+	$nft_uid     = get_post_meta( $song_id, 'valt_nft_uid', true );
 	$config      = valt_nmkr_config();
 	$project_uid = str_replace( '-', '', $config['project_uid'] );
+	$nft_clean   = $nft_uid ? str_replace( '-', '', $nft_uid ) : '';
 	$nmkr_base   = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
-	$nmkr_pay_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=1" : '';
+	$nmkr_pay_url = ( $nft_clean && $project_uid ) ? "{$nmkr_base}/?p={$project_uid}&n={$nft_clean}" : '';
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
