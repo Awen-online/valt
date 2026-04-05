@@ -137,7 +137,11 @@ foreach ( $assets as $asset ) {
 						<div class="valt-section-header">
 							<h2><?php echo valt_svg_music( 22 ); ?> Your Valt Collection</h2>
 							<?php if ( empty( $valt_nfts ) && empty( $assets ) ) : ?>
-								<p>No NFTs found. <a href="<?php echo home_url( '/discover/' ); ?>">Discover artists</a> and start collecting.</p>
+								<div class="valt-sync-prompt">
+									<p>No NFTs found. Recently purchased? Click <strong>Sync Assets</strong> to refresh your wallet.</p>
+									<?php cardanoPress()->template('part/asset-sync', ['text' => 'Sync Assets Now']); ?>
+									<p class="valt-mint__hint" style="margin-top:0.5rem;">Or <a href="<?php echo home_url( '/discover/' ); ?>">discover artists</a> and start collecting.</p>
+								</div>
 							<?php elseif ( empty( $valt_nfts ) ) : ?>
 								<p>No Valt music NFTs yet. Your wallet has <?php echo count( $assets ); ?> other asset(s).</p>
 							<?php endif; ?>
