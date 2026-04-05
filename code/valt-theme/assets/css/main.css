@@ -722,7 +722,9 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-modal__body { padding: 1.25rem 1.5rem; }
 .valt-modal__hint { font-size: 0.8rem; color: var(--valt-mid); margin-bottom: 1rem; }
 
-.valt-wallet-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.valt-wallet-list { display: flex; flex-direction: column; gap: 0.5rem; transition: opacity 0.2s; }
+.valt-modal__help { font-size: var(--valt-fs-xs); color: var(--valt-mid); margin-top: 1rem; text-align: center; }
+.valt-modal__help a { color: var(--valt-coral); }
 
 /* ─── Wallet Buttons (inside modal) ───────────────────────────────── */
 .valt-wallet-btn {
@@ -743,11 +745,21 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-wallet-btn--unavailable:hover { opacity: 0.75; }
 
 .valt-wallet-btn__name { flex: 1; }
-.valt-wallet-btn__status { font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
-.valt-wallet-btn__status--installed { color: #4ade80; }
-.valt-wallet-btn__status--installed svg { stroke: #4ade80; }
-.valt-wallet-btn__status--missing { color: var(--valt-mid); }
 .valt-wallet-btn__vespr { font-size: 0.7rem; color: var(--valt-mid); font-style: italic; margin-left: 0.5rem; }
+
+/* Spinner (hidden by default, shown when connecting) */
+.valt-wallet-btn__spinner {
+	display: none; width: 16px; height: 16px;
+	border: 2px solid rgba(232,196,139,0.2); border-top-color: var(--valt-gold);
+	border-radius: 50%; animation: valt-spin 0.6s linear infinite;
+}
+
+/* Connecting state — clicked button shows spinner, others dim */
+.valt-wallet-btn--connecting .valt-wallet-btn__spinner { display: block; }
+.valt-wallet-btn--connecting { border-color: var(--valt-gold); pointer-events: none; }
+.valt-wallet-list.is-connecting .valt-wallet-btn:not(.valt-wallet-btn--connecting) {
+	opacity: 0.3; pointer-events: none;
+}
 
 /* ─── Connect Trigger Button ──────────────────────────────────────── */
 .valt-connect-trigger { display: inline-flex; align-items: center; gap: 0.5rem; }
