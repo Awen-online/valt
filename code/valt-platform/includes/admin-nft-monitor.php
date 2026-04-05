@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * NFT Monitor admin page for Valt Platform v2.
- * Shows mint queue, event log, and retry controls.
+ * Tracks NMKR project status, minted NFTs, sales, and event log.
  */
 
 add_action( 'admin_menu', function () {
@@ -17,58 +17,137 @@ add_action( 'admin_menu', function () {
 	);
 }, 21 );
 
-// Handle retry action.
+// Handle manual sync action.
 add_action( 'admin_init', function () {
-	if ( ! isset( $_GET['valt_retry_mint'] ) || ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-	check_admin_referer( 'valt_retry_mint' );
-	$song_id = (int) $_GET['valt_retry_mint'];
-	update_post_meta( $song_id, 'valt_nft_status', 'pending' );
-	delete_transient( "valt_nft_poll_count_{$song_id}" );
-	wp_schedule_single_event( time() + 5, 'valt_mint_nft_async', [ $song_id ] );
-	valt_log_event( 'mint_retry', "Admin retried mint for song {$song_id}" );
-	wp_redirect( admin_url( 'admin.php?page=valt-nft-monitor&retried=' . $song_id ) );
+	if ( ! isset( $_GET['valt_sync_nmkr'] ) || ! current_user_can( 'manage_options' ) ) return;
+	check_admin_referer( 'valt_sync_nmkr' );
+	valt_sync_nmkr_project_stats();
+	wp_redirect( admin_url( 'admin.php?page=valt-nft-monitor&synced=1' ) );
 	exit;
 } );
 
-function valt_render_nft_monitor_page(): void {
-	$queue     = get_option( 'valt_nft_queue', [] );
-	$event_log = get_option( 'valt_event_log', [] );
-	$config    = valt_nmkr_config();
+/**
+ * Sync project stats from NMKR API and cache them.
+ */
+function valt_sync_nmkr_project_stats(): void {
+	$config = valt_nmkr_config();
+	if ( empty( $config['api_key'] ) || empty( $config['project_uid'] ) ) return;
 
-	if ( isset( $_GET['retried'] ) ) {
-		echo '<div class="notice notice-success"><p>Mint retry scheduled for song #' . (int) $_GET['retried'] . '.</p></div>';
+	// Get project counts.
+	$counts = valt_nmkr_request( 'GET', "GetCounts/{$config['project_uid']}" );
+	if ( ! is_wp_error( $counts ) ) {
+		update_option( 'valt_nmkr_counts', $counts, false );
+	}
+
+	// Get sold/minted NFTs.
+	$sold = valt_nmkr_request( 'GET', "GetNfts/{$config['project_uid']}/sold/1/50" );
+	if ( ! is_wp_error( $sold ) && is_array( $sold ) ) {
+		update_option( 'valt_nmkr_sold', $sold, false );
+	}
+
+	// Get all NFTs for overview.
+	$all = valt_nmkr_request( 'GET', "GetNfts/{$config['project_uid']}/all/1/50" );
+	if ( ! is_wp_error( $all ) && is_array( $all ) ) {
+		update_option( 'valt_nmkr_all_nfts', $all, false );
+	}
+
+	update_option( 'valt_nmkr_last_sync', current_time( 'mysql' ), false );
+	valt_log_event( 'nmkr_sync', 'NMKR project stats synced' );
+}
+
+function valt_render_nft_monitor_page(): void {
+	$config    = valt_nmkr_config();
+	$counts    = get_option( 'valt_nmkr_counts', [] );
+	$sold_nfts = get_option( 'valt_nmkr_sold', [] );
+	$all_nfts  = get_option( 'valt_nmkr_all_nfts', [] );
+	$last_sync = get_option( 'valt_nmkr_last_sync', 'Never' );
+	$event_log = get_option( 'valt_event_log', [] );
+
+	$nmkr_base = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
+	$studio_base = $config['mode'] === 'mainnet' ? 'https://studio.nmkr.io' : 'https://studio.preprod.nmkr.io';
+	$explorer = $config['mode'] === 'mainnet' ? 'https://cardanoscan.io' : 'https://preprod.cardanoscan.io';
+	$project_clean = str_replace( '-', '', $config['project_uid'] );
+	$pay_url = "{$nmkr_base}/?p={$project_clean}&c=1";
+
+	if ( isset( $_GET['synced'] ) ) {
+		echo '<div class="notice notice-success"><p>NMKR project stats synced.</p></div>';
 	}
 	?>
 	<div class="wrap">
 		<h1>NFT Monitor</h1>
-		<p>NMKR Mode: <strong><?php echo esc_html( $config['mode'] ); ?></strong> | Policy: <code><?php echo esc_html( $config['policy_id'] ?: 'Not set' ); ?></code></p>
 
-		<h2>Mint Queue (<?php echo count( $queue ); ?>)</h2>
-		<?php if ( empty( $queue ) ) : ?>
-			<p>No pending mints.</p>
+		<?php // ── Project Overview ──────────────────────────────────── ?>
+		<div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
+			<div class="card" style="flex:1; min-width:200px;">
+				<h3>NMKR Project</h3>
+				<table class="form-table" style="margin:0;">
+					<tr><th>Mode</th><td><strong style="color:<?php echo $config['mode'] === 'mainnet' ? 'green' : 'orange'; ?>"><?php echo esc_html( strtoupper( $config['mode'] ) ); ?></strong></td></tr>
+					<tr><th>Policy ID</th><td><code style="font-size:11px;word-break:break-all;"><?php echo esc_html( $config['policy_id'] ?: 'Not set' ); ?></code></td></tr>
+					<tr><th>Project UID</th><td><code style="font-size:11px;"><?php echo esc_html( $config['project_uid'] ?: 'Not set' ); ?></code></td></tr>
+					<tr><th>Last Sync</th><td><?php echo esc_html( $last_sync ); ?></td></tr>
+				</table>
+				<p style="margin-top:10px;">
+					<a href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=valt-nft-monitor&valt_sync_nmkr=1' ), 'valt_sync_nmkr' ); ?>" class="button button-primary">Sync from NMKR</a>
+					<a href="<?php echo esc_url( $studio_base ); ?>" target="_blank" class="button">Open NMKR Studio</a>
+				</p>
+			</div>
+
+			<?php if ( ! empty( $counts ) ) : ?>
+			<div class="card" style="flex:1; min-width:200px;">
+				<h3>Collection Stats</h3>
+				<table class="form-table" style="margin:0;">
+					<tr><th>Total NFTs</th><td><strong><?php echo (int) ( $counts['nftTotal'] ?? 0 ); ?></strong></td></tr>
+					<tr><th>Sold / Minted</th><td><strong style="color:green;"><?php echo (int) ( $counts['sold'] ?? 0 ); ?></strong></td></tr>
+					<tr><th>Available</th><td><strong><?php echo (int) ( $counts['free'] ?? 0 ); ?></strong></td></tr>
+					<tr><th>Reserved</th><td><?php echo (int) ( $counts['reserved'] ?? 0 ); ?></td></tr>
+					<tr><th>Errors</th><td><?php echo (int) ( $counts['error'] ?? 0 ); ?></td></tr>
+				</table>
+			</div>
+
+			<div class="card" style="flex:1; min-width:200px;">
+				<h3>Quick Links</h3>
+				<p><a href="<?php echo esc_url( $pay_url ); ?>" target="_blank" class="button">NMKR Pay Link (1 NFT)</a></p>
+				<p><a href="<?php echo esc_url( "{$nmkr_base}/?p={$project_clean}&c=3" ); ?>" target="_blank" class="button">NMKR Pay Link (3 NFTs)</a></p>
+				<p><a href="<?php echo esc_url( $explorer . '/tokenPolicy/' . $config['policy_id'] ); ?>" target="_blank" class="button">View on Cardanoscan</a></p>
+				<p style="margin-top:10px; font-size:12px; color:#666;">
+					Payment link for embedding:<br>
+					<code style="font-size:11px; word-break:break-all;"><?php echo esc_html( $pay_url ); ?></code>
+				</p>
+			</div>
+			<?php endif; ?>
+		</div>
+
+		<?php // ── Minted / Sold NFTs ────────────────────────────────── ?>
+		<h2>Sold / Minted NFTs</h2>
+		<?php if ( empty( $sold_nfts ) ) : ?>
+			<p>No sold NFTs yet. Click "Sync from NMKR" to refresh.</p>
 		<?php else : ?>
 			<table class="widefat striped">
 				<thead>
-					<tr><th>Song</th><th>Artist</th><th>Wallet</th><th>Status</th><th>Queued</th><th>Action</th></tr>
+					<tr><th>Name</th><th>Buyer</th><th>Sold</th><th>TX Hash</th><th>Price</th><th>IPFS</th></tr>
 				</thead>
 				<tbody>
-				<?php foreach ( $queue as $song_id => $info ) :
-					$song   = get_post( $song_id );
-					$status = get_post_meta( $song_id, 'valt_nft_status', true );
-					$artist_id = (int) get_post_meta( $song_id, 'artist', true );
-					$artist = $artist_id ? get_the_title( $artist_id ) : '—';
+				<?php foreach ( $sold_nfts as $nft ) :
+					$tx = $nft['initialMintTxHash'] ?? '';
+					$addr = $nft['receiveraddress'] ?? $nft['receiverAddress'] ?? '';
 				?>
 					<tr>
-						<td><a href="<?php echo get_edit_post_link( $song_id ); ?>"><?php echo esc_html( $song ? $song->post_title : "#{$song_id}" ); ?></a></td>
-						<td><?php echo esc_html( $artist ); ?></td>
-						<td><code style="font-size:11px;"><?php echo esc_html( substr( $info['wallet'] ?? '', 0, 20 ) . '...' ); ?></code></td>
-						<td><span class="valt-status-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $status ); ?></span></td>
-						<td><?php echo esc_html( $info['queued_at'] ?? '' ); ?></td>
+						<td><strong><?php echo esc_html( $nft['displayname'] ?? $nft['name'] ?? '—' ); ?></strong></td>
+						<td><code style="font-size:10px;"><?php echo $addr ? esc_html( substr( $addr, 0, 16 ) . '...' ) : '—'; ?></code></td>
+						<td><?php echo esc_html( $nft['selldate'] ?? '—' ); ?></td>
 						<td>
-							<?php if ( $status === 'failed' ) : ?>
-								<a href="<?php echo wp_nonce_url( admin_url( "admin.php?page=valt-nft-monitor&valt_retry_mint={$song_id}" ), 'valt_retry_mint' ); ?>" class="button button-small">Retry</a>
+							<?php if ( $tx ) : ?>
+								<a href="<?php echo esc_url( $explorer . '/transaction/' . $tx ); ?>" target="_blank">
+									<code style="font-size:10px;"><?php echo esc_html( substr( $tx, 0, 16 ) . '...' ); ?></code>
+								</a>
+							<?php else : ?>
+								<em>pending</em>
+							<?php endif; ?>
+						</td>
+						<td><?php echo $nft['price'] ? number_format( $nft['price'] / 1000000, 1 ) . ' ADA' : '—'; ?></td>
+						<td>
+							<?php if ( ! empty( $nft['gatewayLink'] ) ) : ?>
+								<a href="<?php echo esc_url( $nft['gatewayLink'] ); ?>" target="_blank">View</a>
 							<?php endif; ?>
 						</td>
 					</tr>
@@ -77,46 +156,44 @@ function valt_render_nft_monitor_page(): void {
 			</table>
 		<?php endif; ?>
 
-		<h2>All Songs with NFT Status</h2>
-		<?php
-		$nft_songs = get_posts( [
-			'post_type'      => 'song',
-			'posts_per_page' => 50,
-			'meta_query'     => [ [
-				'key'     => 'valt_nft_status',
-				'value'   => '',
-				'compare' => '!=',
-			] ],
-			'orderby'        => 'modified',
-			'order'          => 'DESC',
-		] );
-		if ( $nft_songs ) : ?>
+		<?php // ── All NFTs in Project ───────────────────────────────── ?>
+		<h2>All NFTs in Project</h2>
+		<?php if ( empty( $all_nfts ) ) : ?>
+			<p>No NFTs in project. Click "Sync from NMKR" to refresh.</p>
+		<?php else : ?>
 			<table class="widefat striped">
 				<thead>
-					<tr><th>Song</th><th>Status</th><th>Mint Count</th><th>TX Hash</th><th>Asset ID</th></tr>
+					<tr><th>Name</th><th>State</th><th>Minted</th><th>UID</th><th>NMKR Pay</th></tr>
 				</thead>
 				<tbody>
-				<?php foreach ( $nft_songs as $song ) :
-					$status  = get_post_meta( $song->ID, 'valt_nft_status', true );
-					$tx      = get_post_meta( $song->ID, 'valt_nft_transaction_id', true );
-					$asset   = get_post_meta( $song->ID, 'valt_nft_asset_id', true );
-					$mints   = get_post_meta( $song->ID, 'valt_mint_count', true );
-					$explorer = $config['mode'] === 'mainnet' ? 'https://cardanoscan.io/transaction/' : 'https://preprod.cardanoscan.io/transaction/';
+				<?php foreach ( $all_nfts as $nft ) :
+					$uid_clean = str_replace( '-', '', $nft['uid'] ?? '' );
+					$state = $nft['state'] ?? 'unknown';
+					$state_color = match( $state ) {
+						'free' => '#2196F3',
+						'sold' => '#4CAF50',
+						'reserved' => '#FF9800',
+						'error' => '#f44336',
+						default => '#999',
+					};
 				?>
 					<tr>
-						<td><a href="<?php echo get_edit_post_link( $song->ID ); ?>"><?php echo esc_html( $song->post_title ); ?></a></td>
-						<td><strong><?php echo esc_html( $status ); ?></strong></td>
-						<td><?php echo (int) $mints; ?></td>
-						<td><?php if ( $tx ) : ?><a href="<?php echo esc_url( $explorer . $tx ); ?>" target="_blank"><code style="font-size:11px;"><?php echo esc_html( substr( $tx, 0, 16 ) . '...' ); ?></code></a><?php else : ?>—<?php endif; ?></td>
-						<td><code style="font-size:11px;"><?php echo esc_html( $asset ? substr( $asset, 0, 24 ) . '...' : '—' ); ?></code></td>
+						<td><?php echo esc_html( $nft['displayname'] ?? $nft['name'] ?? '—' ); ?></td>
+						<td><span style="color:<?php echo $state_color; ?>; font-weight:600;"><?php echo esc_html( ucfirst( $state ) ); ?></span></td>
+						<td><?php echo $nft['minted'] ? 'Yes' : 'No'; ?></td>
+						<td><code style="font-size:10px;"><?php echo esc_html( substr( $nft['uid'] ?? '', 0, 12 ) . '...' ); ?></code></td>
+						<td>
+							<?php if ( $state === 'free' && $uid_clean ) : ?>
+								<a href="<?php echo esc_url( "{$nmkr_base}/?p={$project_clean}&n={$uid_clean}" ); ?>" target="_blank" class="button button-small">Pay Link</a>
+							<?php endif; ?>
+						</td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>
-		<?php else : ?>
-			<p>No songs with NFT status yet.</p>
 		<?php endif; ?>
 
+		<?php // ── Event Log ─────────────────────────────────────────── ?>
 		<h2>Event Log (Last 50)</h2>
 		<?php $recent_log = array_slice( $event_log, 0, 50 ); ?>
 		<?php if ( empty( $recent_log ) ) : ?>
@@ -124,7 +201,7 @@ function valt_render_nft_monitor_page(): void {
 		<?php else : ?>
 			<table class="widefat striped">
 				<thead>
-					<tr><th>Time</th><th>Type</th><th>Message</th></tr>
+					<tr><th style="width:160px;">Time</th><th style="width:140px;">Type</th><th>Message</th></tr>
 				</thead>
 				<tbody>
 				<?php foreach ( $recent_log as $entry ) : ?>
