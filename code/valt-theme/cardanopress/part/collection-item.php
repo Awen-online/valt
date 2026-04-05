@@ -8,11 +8,35 @@ if (empty($asset)) {
 
 $meta     = $asset['onchain_metadata'] ?? [];
 $policy   = $asset['policy_id'] ?? '';
-$nft_name = $meta['name'] ?? '';
+$asset_name_hex = $asset['asset_name'] ?? '';
+
+// Decode the on-chain token name from hex as fallback.
+$decoded_name = '';
+if ( $asset_name_hex ) {
+	$decoded_name = @hex2bin( $asset_name_hex );
+	if ( $decoded_name === false ) $decoded_name = $asset_name_hex;
+}
+
+$nft_name    = $meta['name'] ?? $decoded_name ?: 'Unknown';
 $artist_name = $meta['artist'] ?? '';
 $album_name  = $meta['album'] ?? '';
 $genre       = $meta['genre'] ?? '';
 $platform    = $meta['platform'] ?? '';
+
+// If no metadata but we have a decoded name, try to extract artist from it.
+if ( ! $artist_name && $decoded_name ) {
+	// Names like "valtdeadend261" or "valtcullah-falling0007"
+	$clean = preg_replace( '/^valt/i', '', $decoded_name ); // strip project prefix
+	$clean = preg_replace( '/\d+$/', '', $clean );           // strip trailing numbers
+	// Check if it matches a known artist name
+	foreach ( [ 'cullah', 'mie' ] as $known ) {
+		if ( stripos( $clean, $known ) !== false ) {
+			$found = get_posts( [ 'post_type' => 'artist', 'posts_per_page' => 1, 's' => $known ] );
+			if ( $found ) { $artist_name = $found[0]->post_title; }
+			break;
+		}
+	}
+}
 
 // Try to match this NFT to a WordPress artist post.
 $matched_artist = null;
