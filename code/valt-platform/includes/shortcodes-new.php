@@ -173,17 +173,7 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$nmkr_pay_url = ( $nft_clean && $project_uid ) ? "{$nmkr_base}/?p={$project_uid}&n={$nft_clean}" : '';
 	$nmkr_bundle_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=3" : '';
 
-	// Fetch pricelist (cached for 10 min).
-	$pricelist = get_transient( 'valt_nmkr_pricelist' );
-	if ( false === $pricelist && $project_uid ) {
-		$pricelist = valt_nmkr_request( 'GET', "GetPricelist/{$config['project_uid']}" );
-		if ( ! is_wp_error( $pricelist ) && is_array( $pricelist ) ) {
-			set_transient( 'valt_nmkr_pricelist', $pricelist, 600 );
-		} else {
-			$pricelist = [];
-		}
-	}
-	if ( ! is_array( $pricelist ) ) $pricelist = [];
+	$nmkr_bundle_url; // Reserved for future multi-copy support.
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
@@ -213,30 +203,11 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 				<?php endif; ?>
 			</div>
 
-			<?php if ( $nmkr_pay_url || ! empty( $pricelist ) ) : ?>
-				<div class="valt-mint__tiers">
-					<?php foreach ( $pricelist as $tier ) :
-						$count = (int) ( $tier['countNft'] ?? 1 );
-						$ada   = $tier['adaToSend'] ?? '';
-						$usd   = $tier['priceInUsd'] ?? 0;
-						if ( ! $ada ) continue;
-
-						// Always link to THIS specific NFT with quantity.
-						$link = $nmkr_pay_url ? $nmkr_pay_url . '&c=' . $count : '';
-						if ( ! $link ) continue;
-
-						$label = $count === 1 ? '1 Copy' : "{$count} Copies";
-						$single_usd = ! empty( $pricelist[0]['priceInUsd'] ) ? $pricelist[0]['priceInUsd'] : $usd;
-						$save_pct = $count > 1 ? round( (1 - ($usd / ($count * $single_usd))) * 100 ) : 0;
-					?>
-						<a href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener" class="valt-mint__tier <?php echo $count === 1 ? 'valt-mint__tier--primary' : 'valt-mint__tier--bundle'; ?>">
-							<span class="valt-mint__tier-label"><?php echo esc_html( $label ); ?></span>
-							<span class="valt-mint__tier-price"><?php echo esc_html( $ada ); ?> ADA</span>
-							<span class="valt-mint__tier-usd">~$<?php echo number_format( $usd, 2 ); ?><?php echo $save_pct > 0 ? " &middot; Save {$save_pct}%" : ''; ?></span>
-						</a>
-					<?php endforeach; ?>
-				</div>
-				<p class="valt-mint__hint">Pay with your Cardano wallet. NFTs are minted and delivered automatically.</p>
+			<?php if ( $nmkr_pay_url ) : ?>
+				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-btn--large valt-mint__btn">
+					<?php echo valt_svg_wallet( 16 ); ?> Collect with ADA
+				</a>
+				<p class="valt-mint__hint">Pay with your Cardano wallet. The NFT is minted and delivered automatically.</p>
 			<?php endif; ?>
 		<?php endif; ?>
 	</div>
