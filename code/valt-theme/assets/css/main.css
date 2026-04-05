@@ -903,6 +903,18 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-nft-card__image img { width: 100%; aspect-ratio: 1; object-fit: cover; }
 .valt-nft-card__body { padding: 1rem; }
 .valt-nft-card__name { font-size: 0.95rem; color: var(--valt-gold); margin-bottom: 0.25rem; }
+.valt-nft-card__name a { color: var(--valt-gold); text-decoration: none; }
+.valt-nft-card__name a:hover { color: var(--valt-cream); }
+.valt-nft-card__artist-link {
+	display: inline-flex; align-items: center; gap: 0.3rem;
+	font-size: var(--valt-fs-small); color: var(--valt-coral); text-decoration: none;
+	margin-bottom: 0.25rem;
+}
+a.valt-nft-card__artist-link:hover { color: var(--valt-gold); }
+.valt-nft-card__artist-link .valt-icon { stroke: currentColor; }
+.valt-nft-card__album { display: block; font-size: var(--valt-fs-xs); color: var(--valt-mid); margin-bottom: 0.35rem; }
+.valt-nft-card__badge { margin-bottom: 0.35rem; }
+.valt-nft-card--valt { border-color: rgba(201,166,107,0.25); }
 .valt-nft-card__qty { font-size: 0.8rem; color: var(--valt-mid); display: block; margin-bottom: 0.5rem; }
 .valt-nft-card__meta { display: flex; flex-direction: column; gap: 0.3rem; }
 .valt-nft-card__field { display: flex; gap: 0.5rem; font-size: 0.8rem; }
