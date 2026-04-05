@@ -889,6 +889,60 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-dropdown__link:hover { color: var(--valt-gold); }
 
+/* ─── Toast Notifications (CardanoPress) ───────────────────────────── */
+.valt-toast-container {
+	position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+	z-index: 10000; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+	pointer-events: none; width: 100%; max-width: 480px; padding: 0 1rem;
+}
+.valt-toast {
+	display: flex; align-items: center; gap: 1rem;
+	padding: 0.8rem 1.2rem; border-radius: var(--valt-radius);
+	background: var(--valt-dark); border: var(--valt-border);
+	box-shadow: var(--valt-shadow-lg); pointer-events: all;
+	width: 100%; animation: valt-toast-in 0.3s ease-out;
+}
+.valt-toast--success { border-color: rgba(74,222,128,0.4); background: rgba(42,41,64,0.97); }
+.valt-toast--info    { border-color: rgba(232,196,139,0.4); }
+.valt-toast--warning { border-color: rgba(212,165,116,0.4); }
+.valt-toast--error   { border-color: rgba(232,124,124,0.4); }
+
+.valt-toast__text { flex: 1; color: var(--valt-cream); font-size: var(--valt-fs-body); font-weight: 500; }
+.valt-toast--success .valt-toast__text { color: var(--valt-green); }
+.valt-toast--error .valt-toast__text { color: var(--valt-red); }
+
+.valt-toast__actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.valt-toast__refresh {
+	padding: 0.3rem 0.8rem; border-radius: var(--valt-radius-sm);
+	background: var(--valt-gold-dark); color: var(--valt-cream);
+	font-family: var(--valt-font); font-size: var(--valt-fs-xs); font-weight: 600;
+	border: none; cursor: pointer; transition: background 0.2s;
+}
+.valt-toast__refresh:hover { background: var(--valt-gold); color: var(--valt-darker); }
+.valt-toast__close {
+	background: none; border: none; color: var(--valt-mid); font-size: 1.2rem;
+	cursor: pointer; padding: 0 0.3rem; line-height: 1;
+}
+.valt-toast__close:hover { color: var(--valt-cream); }
+
+@keyframes valt-toast-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.valt-toast-enter { transition: all 0.3s ease-out; }
+.valt-toast-leave { transition: all 0.3s ease-in; }
+.valt-toast-start { opacity: 0; transform: translateY(-10px); }
+.valt-toast-end { opacity: 1; transform: translateY(0); }
+
+/* ─── Sync Button & Prompt ─────────────────────────────────────────── */
+.valt-sync-btn { display: inline-flex; align-items: center; gap: 0.4rem; }
+.valt-sync-btn__icon { transition: transform 0.3s; }
+.valt-sync-btn:hover .valt-sync-btn__icon { transform: rotate(180deg); }
+.valt-sync-btn:disabled { opacity: 0.5; }
+
+.valt-sync-prompt {
+	padding: 1.5rem; background: var(--valt-darker); border-radius: var(--valt-radius);
+	border: 1px dashed rgba(232,196,139,0.2); text-align: center;
+}
+.valt-sync-prompt p { margin-bottom: 0.75rem; }
+
 /* ─── Follow Button ───────────────────────────────────────────────── */
 .valt-follow {
 	display: inline-flex; align-items: center; gap: 0.6rem;
