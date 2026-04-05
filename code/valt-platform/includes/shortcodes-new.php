@@ -164,14 +164,11 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
 	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
 
-	// Build NMKR payment gateway link for this song.
-	// The song must first be uploaded to NMKR to get a payment link.
-	$nft_uid     = get_post_meta( $song_id, 'valt_nft_uid', true );
+	// NMKR Pay link — project-level (flat pricing, random NFT from collection).
 	$config      = valt_nmkr_config();
 	$project_uid = str_replace( '-', '', $config['project_uid'] );
-	$nft_clean   = $nft_uid ? str_replace( '-', '', $nft_uid ) : '';
 	$nmkr_base   = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
-	$nmkr_pay_url = ( $nft_uid && $project_uid ) ? "{$nmkr_base}/?p={$project_uid}&n={$nft_clean}" : '';
+	$nmkr_pay_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=1" : '';
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
@@ -194,7 +191,7 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 					<span class="valt-mint__price-ada"><?php echo esc_html( $price_ada ); ?> ADA</span>
 				<?php endif; ?>
 				<?php if ( $price_usd ) : ?>
-					<span class="valt-mint__price-usd">$<?php echo number_format( $price_usd / 100, 2 ); ?> USD</span>
+					<span class="valt-mint__price-usd">~$<?php echo number_format( $price_usd / 100, 2 ); ?> USD</span>
 				<?php endif; ?>
 				<?php if ( $max_supply ) : ?>
 					<span class="valt-mint__supply"><?php echo $mint_count; ?> / <?php echo $max_supply; ?> collected</span>
@@ -202,14 +199,10 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 			</div>
 
 			<?php if ( $nmkr_pay_url ) : ?>
-				<?php // User pays ADA directly via NMKR payment gateway — NMKR handles minting. ?>
 				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-mint__btn">
 					<?php echo valt_svg_wallet( 16 ); ?> Collect with ADA
 				</a>
-				<p class="valt-mint__hint">Opens NMKR payment page. Pay with your Cardano wallet and the NFT is delivered automatically.</p>
-			<?php else : ?>
-				<?php // NFT not yet uploaded to NMKR — show "coming soon" or prompt to connect. ?>
-				<p class="valt-mint__hint">This song is not yet available for collection. Check back soon.</p>
+				<p class="valt-mint__hint">Pay with your Cardano wallet. The NFT is minted and delivered automatically.</p>
 			<?php endif; ?>
 		<?php endif; ?>
 	</div>
