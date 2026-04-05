@@ -82,6 +82,29 @@ $is_valt = $platform === 'Valt' || ( function_exists( 'valt_nmkr_config' ) && $p
 
 		<span class="valt-nft-card__qty">Qty: <?php echo esc_html($asset['quantity']); ?></span>
 
+		<?php // Links to explorers ?>
+		<div class="valt-nft-card__links">
+			<?php
+			$asset_hex = $asset['asset'] ?? '';
+			$fingerprint = $asset['fingerprint'] ?? '';
+			if ( $asset_hex ) :
+				$pool_pm_url = 'https://pool.pm/' . $asset_hex;
+			?>
+				<a href="<?php echo esc_url( $pool_pm_url ); ?>" target="_blank" rel="noopener" class="valt-nft-card__explorer">
+					<?php echo valt_svg_external( 12 ); ?> pool.pm
+				</a>
+			<?php endif; ?>
+			<?php
+			$config = function_exists( 'valt_nmkr_config' ) ? valt_nmkr_config() : [];
+			$explorer_base = ( $config['mode'] ?? '' ) === 'mainnet' ? 'https://cardanoscan.io/token/' : 'https://preprod.cardanoscan.io/token/';
+			if ( $asset_hex ) :
+			?>
+				<a href="<?php echo esc_url( $explorer_base . $asset_hex ); ?>" target="_blank" rel="noopener" class="valt-nft-card__explorer">
+					<?php echo valt_svg_external( 12 ); ?> Cardanoscan
+				</a>
+			<?php endif; ?>
+		</div>
+
 		<?php // Show remaining metadata fields (skip ones we display above) ?>
 		<?php
 		$skip_keys = ['name', 'image', 'arweaveId', 'files', 'music_metadata_version', 'artist', 'album', 'genre', 'platform', 'website', 'release'];

@@ -915,7 +915,14 @@ a.valt-nft-card__artist-link:hover { color: var(--valt-gold); }
 .valt-nft-card__album { display: block; font-size: var(--valt-fs-xs); color: var(--valt-mid); margin-bottom: 0.35rem; }
 .valt-nft-card__badge { margin-bottom: 0.35rem; }
 .valt-nft-card--valt { border-color: rgba(201,166,107,0.25); }
-.valt-nft-card__qty { font-size: 0.8rem; color: var(--valt-mid); display: block; margin-bottom: 0.5rem; }
+.valt-nft-card__qty { font-size: 0.8rem; color: var(--valt-mid); display: block; margin-bottom: 0.4rem; }
+.valt-nft-card__links { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
+.valt-nft-card__explorer {
+	display: inline-flex; align-items: center; gap: 0.25rem;
+	font-size: var(--valt-fs-xs); color: var(--valt-mid); text-decoration: none;
+}
+.valt-nft-card__explorer:hover { color: var(--valt-gold); }
+.valt-nft-card__explorer .valt-icon { stroke: currentColor; }
 .valt-nft-card__meta { display: flex; flex-direction: column; gap: 0.3rem; }
 .valt-nft-card__field { display: flex; gap: 0.5rem; font-size: 0.8rem; }
 .valt-nft-card__label { color: var(--valt-mid); font-weight: 500; min-width: 70px; }
