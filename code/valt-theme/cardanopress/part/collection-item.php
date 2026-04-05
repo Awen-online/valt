@@ -23,12 +23,28 @@ $album_name  = $meta['album'] ?? '';
 $genre       = $meta['genre'] ?? '';
 $platform    = $meta['platform'] ?? '';
 
-// If no metadata but we have a decoded name, try to extract artist from it.
+// Fallback: check local NFT registry if metadata is missing.
+if ( ( ! $nft_name || $nft_name === $decoded_name ) && $policy ) {
+	global $wpdb;
+	$registry = $wpdb->get_row( $wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}valt_nft_registry WHERE policy_id = %s AND (asset_name LIKE %s OR nft_uid = %s) LIMIT 1",
+		$policy,
+		'%' . $wpdb->esc_like( $decoded_name ) . '%',
+		$decoded_name
+	), ARRAY_A );
+
+	if ( $registry ) {
+		if ( ! $nft_name || $nft_name === $decoded_name ) $nft_name = $registry['display_name'];
+		if ( ! $artist_name ) $artist_name = $registry['artist_name'] ?? '';
+		if ( ! $album_name ) $album_name = $registry['album_name'] ?? '';
+		$platform = 'Valt';
+	}
+}
+
+// Still no artist? Try extracting from decoded token name.
 if ( ! $artist_name && $decoded_name ) {
-	// Names like "valtdeadend261" or "valtcullah-falling0007"
-	$clean = preg_replace( '/^valt/i', '', $decoded_name ); // strip project prefix
-	$clean = preg_replace( '/\d+$/', '', $clean );           // strip trailing numbers
-	// Check if it matches a known artist name
+	$clean = preg_replace( '/^valt/i', '', $decoded_name );
+	$clean = preg_replace( '/\d+$/', '', $clean );
 	foreach ( [ 'cullah', 'mie' ] as $known ) {
 		if ( stripos( $clean, $known ) !== false ) {
 			$found = get_posts( [ 'post_type' => 'artist', 'posts_per_page' => 1, 's' => $known ] );
@@ -110,22 +126,20 @@ $is_valt = $platform === 'Valt' || ( function_exists( 'valt_nmkr_config' ) && $p
 		<div class="valt-nft-card__links">
 			<?php
 			$asset_hex = $asset['asset'] ?? '';
-			$fingerprint = $asset['fingerprint'] ?? '';
-			if ( $asset_hex ) :
-				$pool_pm_url = 'https://pool.pm/' . $asset_hex;
-			?>
-				<a href="<?php echo esc_url( $pool_pm_url ); ?>" target="_blank" rel="noopener" class="valt-nft-card__explorer">
-					<?php echo valt_svg_external( 12 ); ?> pool.pm
-				</a>
-			<?php endif; ?>
-			<?php
 			$config = function_exists( 'valt_nmkr_config' ) ? valt_nmkr_config() : [];
-			$explorer_base = ( $config['mode'] ?? '' ) === 'mainnet' ? 'https://cardanoscan.io/token/' : 'https://preprod.cardanoscan.io/token/';
+			$is_mainnet = ( $config['mode'] ?? '' ) === 'mainnet';
+
 			if ( $asset_hex ) :
+				$cardanoscan = ( $is_mainnet ? 'https://cardanoscan.io/token/' : 'https://preprod.cardanoscan.io/token/' ) . $asset_hex;
 			?>
-				<a href="<?php echo esc_url( $explorer_base . $asset_hex ); ?>" target="_blank" rel="noopener" class="valt-nft-card__explorer">
+				<a href="<?php echo esc_url( $cardanoscan ); ?>" target="_blank" rel="noopener" class="valt-nft-card__explorer">
 					<?php echo valt_svg_external( 12 ); ?> Cardanoscan
 				</a>
+				<?php if ( $is_mainnet ) : ?>
+					<a href="<?php echo esc_url( 'https://pool.pm/' . $asset_hex ); ?>" target="_blank" rel="noopener" class="valt-nft-card__explorer">
+						<?php echo valt_svg_external( 12 ); ?> pool.pm
+					</a>
+				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 
