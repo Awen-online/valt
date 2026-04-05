@@ -434,6 +434,47 @@
 			} ).fail( function () { $msg.text( 'Network error.' ); } );
 		} );
 
+		// ── Open Valt animation ──────────────────────────────────────
+		$( document ).on( 'click', '[data-action="open-valt"]', function () {
+			var $btn     = $( this );
+			var $section = $btn.closest( '.valt-vault' );
+			var $door    = $section.find( '.valt-vault__door-inner' );
+			var $content = $section.find( '[data-valt-content]' );
+
+			// Animate: button disappears, door shrinks + fades, content reveals
+			$btn.fadeOut( 300 );
+
+			$door.css( 'transition', 'transform 1s cubic-bezier(0.34,1.56,0.64,1), opacity 0.8s ease' );
+			$door.css( { transform: 'scale(0.4)', opacity: '0.15' } );
+
+			// Stop the spinning animation
+			$door.find( '.valt-spokes' ).css( 'animation', 'none' );
+			$door.find( '.valt-outer' ).css( 'animation', 'none' );
+			$door.find( '.valt-groove' ).css( 'animation', 'none' );
+
+			setTimeout( function () {
+				$content.slideDown( 600, function () {
+					// Scroll to the revealed content
+					$( 'html, body' ).animate( { scrollTop: $content.offset().top - 100 }, 400 );
+				} );
+				// Remember it's been opened (skip animation next visit)
+				try { localStorage.setItem( 'valt_opened_' + $section.data( 'state' ), '1' ); } catch(e) {}
+			}, 600 );
+		} );
+
+		// Auto-open if previously opened (skip animation on return visits)
+		$( '.valt-vault[data-state="unlocked"]' ).each( function () {
+			var key = 'valt_opened_' + $( this ).data( 'state' );
+			try {
+				if ( localStorage.getItem( key ) ) {
+					$( this ).find( '[data-action="open-valt"]' ).hide();
+					$( this ).find( '.valt-vault__door-inner' ).css( { transform: 'scale(0.4)', opacity: '0.15' } );
+					$( this ).find( '.valt-spokes, .valt-outer, .valt-groove' ).css( 'animation', 'none' );
+					$( this ).find( '[data-valt-content]' ).show();
+				}
+			} catch(e) {}
+		} );
+
 		// ── Follow / Unfollow artist ─────────────────────────────────
 		$( document ).on( 'click', '[data-action="follow"]', function () {
 			var $btn   = $( this );

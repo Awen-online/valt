@@ -164,13 +164,26 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
 	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
 
-	// NMKR Pay link — per-NFT specific (user buys THIS song's NFT).
+	// NMKR Pay links — per-NFT for single, project-level for bundles.
 	$nft_uid     = get_post_meta( $song_id, 'valt_nft_uid', true );
 	$config      = valt_nmkr_config();
 	$project_uid = str_replace( '-', '', $config['project_uid'] );
 	$nft_clean   = $nft_uid ? str_replace( '-', '', $nft_uid ) : '';
 	$nmkr_base   = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
 	$nmkr_pay_url = ( $nft_clean && $project_uid ) ? "{$nmkr_base}/?p={$project_uid}&n={$nft_clean}" : '';
+	$nmkr_bundle_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=3" : '';
+
+	// Fetch pricelist (cached for 10 min).
+	$pricelist = get_transient( 'valt_nmkr_pricelist' );
+	if ( false === $pricelist && $project_uid ) {
+		$pricelist = valt_nmkr_request( 'GET', "GetPricelist/{$config['project_uid']}" );
+		if ( ! is_wp_error( $pricelist ) && is_array( $pricelist ) ) {
+			set_transient( 'valt_nmkr_pricelist', $pricelist, 600 );
+		} else {
+			$pricelist = [];
+		}
+	}
+	if ( ! is_array( $pricelist ) ) $pricelist = [];
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
@@ -200,11 +213,26 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 				<?php endif; ?>
 			</div>
 
-			<?php if ( $nmkr_pay_url ) : ?>
-				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-mint__btn">
-					<?php echo valt_svg_wallet( 16 ); ?> Collect with ADA
-				</a>
-				<p class="valt-mint__hint">Pay with your Cardano wallet. The NFT is minted and delivered automatically.</p>
+			<?php if ( $nmkr_pay_url || ! empty( $pricelist ) ) : ?>
+				<div class="valt-mint__tiers">
+					<?php foreach ( $pricelist as $tier ) :
+						$count = (int) ( $tier['countNft'] ?? 1 );
+						$ada   = $tier['adaToSend'] ?? '';
+						$usd   = $tier['priceInUsd'] ?? 0;
+						$link  = $tier['paymentGatewayLinkForRandomNftSale'] ?? '';
+						if ( $count === 1 && $nmkr_pay_url ) $link = $nmkr_pay_url; // Use specific NFT link for singles
+						if ( ! $link ) continue;
+						$label = $count === 1 ? '1 Song' : "{$count} Songs";
+						$save  = $count > 1 ? ' &middot; Save ' . round( (1 - ($usd / ($count * ($pricelist[0]['priceInUsd'] ?? $usd)))) * 100 ) . '%' : '';
+					?>
+						<a href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener" class="valt-mint__tier <?php echo $count === 1 ? 'valt-mint__tier--primary' : 'valt-mint__tier--bundle'; ?>">
+							<span class="valt-mint__tier-label"><?php echo esc_html( $label ); ?></span>
+							<span class="valt-mint__tier-price"><?php echo esc_html( $ada ); ?> ADA</span>
+							<span class="valt-mint__tier-usd">~$<?php echo number_format( $usd, 2 ); ?><?php echo $save; ?></span>
+						</a>
+					<?php endforeach; ?>
+				</div>
+				<p class="valt-mint__hint">Pay with your Cardano wallet. NFTs are minted and delivered automatically.</p>
 			<?php endif; ?>
 		<?php endif; ?>
 	</div>
