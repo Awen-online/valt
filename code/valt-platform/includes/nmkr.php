@@ -128,10 +128,15 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
 		];
 	}
 
+	// NMKR prepends the project URL slug to the token name on-chain.
+	// The CIP-25 metadata key must match the actual minted asset name.
+	// Project slug is "valt" → on-chain name = "valt" + $asset_name.
+	$onchain_name = 'valt' . $asset_name;
+
 	return [
 		'721' => [
 			$config['policy_id'] => [
-				$asset_name => $metadata,
+				$onchain_name => $metadata,
 			],
 		],
 	];
