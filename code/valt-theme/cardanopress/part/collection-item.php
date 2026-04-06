@@ -145,16 +145,56 @@ $is_valt = $platform === 'Valt' || ( function_exists( 'valt_nmkr_config' ) && $p
 
 		<?php // Show remaining metadata fields (skip ones we display above) ?>
 		<?php
-		$skip_keys = ['name', 'image', 'arweaveId', 'files', 'music_metadata_version', 'artist', 'album', 'genre', 'platform', 'website', 'release'];
+		$skip_keys = ['name', 'image', 'arweaveId', 'files', 'music_metadata_version',
+			'artist', 'album', 'genre', 'platform', 'website', 'release',
+			'authors', 'contributing_artists', 'copyright'];
 		$extra_meta = array_diff_key( $meta, array_flip( $skip_keys ) );
-		if ( ! empty( $extra_meta ) ) : ?>
+
+		// Format special fields.
+		$copyright_val = $meta['copyright'] ?? '';
+		if ( is_array( $copyright_val ) ) {
+			$copyright_val = $copyright_val['master'] ?? $copyright_val['composition'] ?? implode( ', ', array_filter( $copyright_val ) );
+		}
+
+		$authors = $meta['authors'] ?? [];
+		$contribs = $meta['contributing_artists'] ?? [];
+		$credits_parts = [];
+		if ( is_array( $authors ) ) {
+			foreach ( $authors as $a ) {
+				if ( is_array( $a ) && ! empty( $a['name'] ) ) $credits_parts[] = $a['name'];
+				elseif ( is_string( $a ) ) $credits_parts[] = $a;
+			}
+		}
+		if ( is_array( $contribs ) ) {
+			foreach ( $contribs as $c ) {
+				if ( is_array( $c ) && ! empty( $c['name'] ) ) {
+					$role = is_array( $c['role'] ?? '' ) ? implode( '/', $c['role'] ) : ( $c['role'] ?? '' );
+					$credits_parts[] = $c['name'] . ( $role ? " ({$role})" : '' );
+				}
+			}
+		}
+		?>
+
+		<?php if ( $copyright_val || ! empty( $credits_parts ) || ! empty( $extra_meta ) ) : ?>
 			<div class="valt-nft-card__meta">
-				<?php foreach ( $extra_meta as $key => $value ) : ?>
+				<?php if ( ! empty( $credits_parts ) ) : ?>
+					<div class="valt-nft-card__field">
+						<span class="valt-nft-card__label">Credits</span>
+						<span class="valt-nft-card__value"><?php echo esc_html( implode( ', ', $credits_parts ) ); ?></span>
+					</div>
+				<?php endif; ?>
+				<?php if ( $copyright_val ) : ?>
+					<div class="valt-nft-card__field">
+						<span class="valt-nft-card__label">Copyright</span>
+						<span class="valt-nft-card__value"><?php echo esc_html( $copyright_val ); ?></span>
+					</div>
+				<?php endif; ?>
+				<?php foreach ( $extra_meta as $key => $value ) :
+					if ( is_array( $value ) || is_object( $value ) ) continue; // Skip complex nested data
+				?>
 					<div class="valt-nft-card__field">
 						<span class="valt-nft-card__label"><?php echo esc_html(ucfirst(str_replace('_', ' ', $key))); ?></span>
-						<span class="valt-nft-card__value">
-							<?php echo is_array($value) ? esc_html(implode(', ', $value)) : esc_html($value); ?>
-						</span>
+						<span class="valt-nft-card__value"><?php echo esc_html( $value ); ?></span>
 					</div>
 				<?php endforeach; ?>
 			</div>
