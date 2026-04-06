@@ -147,10 +147,23 @@ $is_valt = $platform === 'Valt' || ( function_exists( 'valt_nmkr_config' ) && $p
 		<?php
 		$skip_keys = ['name', 'image', 'arweaveId', 'files', 'music_metadata_version',
 			'artist', 'album', 'genre', 'platform', 'website', 'release',
-			'authors', 'contributing_artists', 'copyright'];
+			'authors', 'contributing_artists', 'copyright', 'duration', 'edition'];
 		$extra_meta = array_diff_key( $meta, array_flip( $skip_keys ) );
 
 		// Format special fields.
+		// Format duration from ISO 8601 (PT4M14S) to MM:SS.
+		$duration_raw = $meta['duration'] ?? '';
+		$duration_fmt = '';
+		if ( $duration_raw && preg_match( '/PT(?:(\d+)M)?(?:(\d+)S)?/', $duration_raw, $dm ) ) {
+			$mins = (int) ( $dm[1] ?? 0 );
+			$secs = (int) ( $dm[2] ?? 0 );
+			$duration_fmt = $mins . ':' . str_pad( $secs, 2, '0', STR_PAD_LEFT );
+		} elseif ( $duration_raw && strpos( $duration_raw, ':' ) !== false ) {
+			$duration_fmt = $duration_raw; // Already MM:SS.
+		}
+
+		$edition = $meta['edition'] ?? '';
+
 		$copyright_val = $meta['copyright'] ?? '';
 		if ( is_array( $copyright_val ) ) {
 			$copyright_val = $copyright_val['master'] ?? $copyright_val['composition'] ?? implode( ', ', array_filter( $copyright_val ) );
@@ -175,8 +188,20 @@ $is_valt = $platform === 'Valt' || ( function_exists( 'valt_nmkr_config' ) && $p
 		}
 		?>
 
-		<?php if ( $copyright_val || ! empty( $credits_parts ) || ! empty( $extra_meta ) ) : ?>
+		<?php if ( $copyright_val || ! empty( $credits_parts ) || ! empty( $extra_meta ) || $duration_fmt || $edition ) : ?>
 			<div class="valt-nft-card__meta">
+				<?php if ( $duration_fmt ) : ?>
+					<div class="valt-nft-card__field">
+						<span class="valt-nft-card__label">Duration</span>
+						<span class="valt-nft-card__value"><?php echo esc_html( $duration_fmt ); ?></span>
+					</div>
+				<?php endif; ?>
+				<?php if ( $edition ) : ?>
+					<div class="valt-nft-card__field">
+						<span class="valt-nft-card__label">Edition</span>
+						<span class="valt-nft-card__value"><?php echo esc_html( $edition ); ?></span>
+					</div>
+				<?php endif; ?>
 				<?php if ( ! empty( $credits_parts ) ) : ?>
 					<div class="valt-nft-card__field">
 						<span class="valt-nft-card__label">Credits</span>
