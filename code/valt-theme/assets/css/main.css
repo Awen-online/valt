@@ -304,7 +304,16 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	transform: translateY(-4px); box-shadow: var(--valt-shadow-lg);
 	border-color: rgba(232,196,139,0.2);
 }
+.valt-song-grid__art { position: relative; }
 .valt-song-grid__art img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-song-grid__owned {
+	position: absolute; bottom: 8px; right: 8px;
+	padding: 0.2rem 0.6rem; border-radius: var(--valt-radius-sm);
+	background: var(--valt-gold-dark); color: var(--valt-cream);
+	font-size: var(--valt-fs-xs); font-weight: 600;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.valt-song-grid__item--owned { border-color: rgba(201,166,107,0.3); }
 .valt-song-grid__placeholder {
 	width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, var(--valt-navy), var(--valt-dark));
 }

@@ -462,6 +462,48 @@ add_shortcode( 'valt_song_card', function ( $atts ) {
 	<?php return ob_get_clean();
 } );
 
+// ─── Helper: count NFTs a user owns for a song ──────────────────────
+
+function valt_user_owns_song( string $song_title ): int {
+	if ( ! is_user_logged_in() || ! function_exists( 'cardanoPress' ) ) return 0;
+	$profile = cardanoPress()->userProfile();
+	if ( ! $profile->isConnected() ) return 0;
+
+	$assets = $profile->storedAssets();
+	$count  = 0;
+	$clean  = strtolower( preg_replace( '/[^a-z0-9]/i', '', $song_title ) );
+
+	foreach ( $assets as $asset ) {
+		$meta = $asset['onchain_metadata'] ?? [];
+		$name = $meta['name'] ?? '';
+		// Match by on-chain metadata name.
+		if ( $name && strtolower( $name ) === strtolower( $song_title ) ) {
+			$count += (int) ( $asset['quantity'] ?? 1 );
+			continue;
+		}
+		// Fallback: match by decoded asset name containing the song slug.
+		$hex = $asset['asset_name'] ?? '';
+		if ( $hex ) {
+			$decoded = @hex2bin( $hex );
+			if ( $decoded && stripos( $decoded, $clean ) !== false ) {
+				$count += (int) ( $asset['quantity'] ?? 1 );
+			}
+		}
+	}
+
+	// Also check local registry.
+	if ( $count === 0 ) {
+		global $wpdb;
+		$registry_name = $wpdb->get_var( $wpdb->prepare(
+			"SELECT display_name FROM {$wpdb->prefix}valt_nft_registry WHERE display_name = %s LIMIT 1",
+			$song_title
+		) );
+		// If in registry but not in wallet, count stays 0.
+	}
+
+	return $count;
+}
+
 // ─── 15. [valt_song_grid] ───────────────────────────────────────────
 
 add_shortcode( 'valt_song_grid', function ( $atts ) {
@@ -482,11 +524,15 @@ add_shortcode( 'valt_song_grid', function ( $atts ) {
 			$pusd = (int) get_post_meta( $sid, 'valt_nft_price_usd', true );
 			$pada = get_post_meta( $sid, 'valt_nft_price_ada', true );
 			$dur = get_post_meta( $sid, 'duration', true );
+			$owned = valt_user_owns_song( get_the_title() );
 		?>
-		<a href="<?php the_permalink(); ?>" class="valt-song-grid__item">
+		<a href="<?php the_permalink(); ?>" class="valt-song-grid__item <?php echo $owned ? 'valt-song-grid__item--owned' : ''; ?>">
 			<div class="valt-song-grid__art">
 				<?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
 				<?php else : ?><div class="valt-song-grid__placeholder"></div><?php endif; ?>
+				<?php if ( $owned ) : ?>
+					<span class="valt-song-grid__owned"><?php echo $owned; ?> owned</span>
+				<?php endif; ?>
 			</div>
 			<div class="valt-song-grid__info">
 				<strong class="valt-song-grid__title"><?php the_title(); ?></strong>
