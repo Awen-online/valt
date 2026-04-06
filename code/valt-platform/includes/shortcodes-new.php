@@ -164,14 +164,12 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
 	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
 
-	// NMKR Pay links — per-NFT for single, project-level for bundles.
-	$nft_uid     = get_post_meta( $song_id, 'valt_nft_uid', true );
+	// NMKR Pay link — project-level. User gets a random available edition.
+	// Songs exist as multiple copies (editions) in the NMKR project.
 	$config      = valt_nmkr_config();
 	$project_uid = str_replace( '-', '', $config['project_uid'] );
-	$nft_clean   = $nft_uid ? str_replace( '-', '', $nft_uid ) : '';
 	$nmkr_base   = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
-	$nmkr_pay_url = ( $nft_clean && $project_uid ) ? "{$nmkr_base}/?p={$project_uid}&n={$nft_clean}" : '';
-	$nmkr_bundle_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=3" : '';
+	$nmkr_pay_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=1" : '';
 
 	$nmkr_bundle_url; // Reserved for future multi-copy support.
 
