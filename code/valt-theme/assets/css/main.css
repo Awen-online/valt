@@ -911,7 +911,13 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	transition: transform 0.2s, box-shadow 0.2s;
 }
 .valt-nft-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
-.valt-nft-card__image img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-nft-card__image img, .valt-nft-card__img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.valt-nft-card__img-wrap { width: 100%; }
+.valt-nft-card__img-placeholder {
+	width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+	background: linear-gradient(135deg, var(--valt-navy), var(--valt-dark));
+	font-size: 3rem; font-weight: 700; color: var(--valt-mid);
+}
 .valt-nft-card__body { padding: 1rem; }
 .valt-nft-card__name { font-size: 0.95rem; color: var(--valt-gold); margin-bottom: 0.25rem; }
 .valt-nft-card__name a { color: var(--valt-gold); text-decoration: none; }
