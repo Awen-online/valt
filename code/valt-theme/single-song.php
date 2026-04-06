@@ -15,7 +15,14 @@
 <?php
 $song_id   = get_the_ID();
 $title     = get_the_title();
+// Pods relationship fields — try direct meta, fallback to _pods_ serialized.
 $artist_id = (int) get_post_meta( $song_id, 'artist', true );
+if ( ! $artist_id ) {
+	$pods_artist = get_post_meta( $song_id, '_pods_artist', true );
+	if ( is_array( $pods_artist ) && ! empty( $pods_artist ) ) {
+		$artist_id = (int) reset( $pods_artist );
+	}
+}
 $album_id  = (int) get_post_meta( $song_id, 'album', true );
 $artist    = $artist_id ? get_post( $artist_id ) : null;
 $album     = $album_id ? get_post( $album_id ) : null;
@@ -46,10 +53,15 @@ if ( ! $image_url && $artist_id ) {
 					<?php if ( $track ) : ?><span>Track <?php echo (int) $track; ?></span><?php endif; ?>
 					<?php if ( $duration ) : ?><span><?php echo esc_html( $duration ); ?></span><?php endif; ?>
 				</div>
+				<?php
+				$release_status = (int) get_post_meta( $song_id, 'valt_release_status', true );
+				$nft_status     = get_post_meta( $song_id, 'valt_nft_status', true );
+				if ( $release_status > 1 || ( $nft_status && $nft_status !== 'none' ) ) : ?>
 				<div class="valt-song-hero__badges">
-					<?php echo do_shortcode( '[valt_release_status post_id="' . $song_id . '"]' ); ?>
-					<?php echo do_shortcode( '[valt_nft_status song_id="' . $song_id . '"]' ); ?>
+					<?php if ( $release_status > 1 ) echo do_shortcode( '[valt_release_status post_id="' . $song_id . '"]' ); ?>
+					<?php if ( $nft_status && ! in_array( $nft_status, [ '', 'none' ], true ) ) echo do_shortcode( '[valt_nft_status song_id="' . $song_id . '"]' ); ?>
 				</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</section>
