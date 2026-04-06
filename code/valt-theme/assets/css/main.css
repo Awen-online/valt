@@ -340,6 +340,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	flex-shrink: 0;
 }
 .valt-artist-hero__info { flex: 1; }
+.valt-artist-hero__info h1 { color: var(--valt-cream); }
 .valt-artist-hero__tags { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
 .valt-artist-hero__bio { color: var(--valt-tan); max-width: 600px; }
 .valt-artist-hero__actions { display: flex; align-items: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
@@ -367,6 +368,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 .valt-song-hero__info { flex: 1; }
+.valt-song-hero__info h1 { color: var(--valt-cream); }
 .valt-song-hero__artist { font-size: 1.1rem; }
 .valt-song-hero__artist a { color: var(--valt-coral); }
 .valt-song-hero__meta { display: flex; gap: 1.5rem; color: var(--valt-mid); font-size: 0.9rem; margin: 0.75rem 0; flex-wrap: wrap; }
