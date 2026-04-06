@@ -15,16 +15,45 @@
 <?php
 $song_id   = get_the_ID();
 $title     = get_the_title();
-// Pods relationship fields — try direct meta, fallback to _pods_ serialized.
-$artist_id = (int) get_post_meta( $song_id, 'artist', true );
+// Pods relationship fields — multiple fallbacks.
+$raw_artist = get_post_meta( $song_id, 'artist', true );
+$artist_id  = 0;
+
+if ( is_numeric( $raw_artist ) ) {
+	$artist_id = (int) $raw_artist;
+} elseif ( is_array( $raw_artist ) && ! empty( $raw_artist ) ) {
+	$artist_id = (int) reset( $raw_artist );
+} elseif ( is_object( $raw_artist ) && isset( $raw_artist->ID ) ) {
+	$artist_id = (int) $raw_artist->ID;
+}
+
+// Fallback: _pods_artist serialized array.
 if ( ! $artist_id ) {
 	$pods_artist = get_post_meta( $song_id, '_pods_artist', true );
 	if ( is_array( $pods_artist ) && ! empty( $pods_artist ) ) {
 		$artist_id = (int) reset( $pods_artist );
 	}
 }
+
+// Fallback: query podsrel table directly.
+if ( ! $artist_id ) {
+	global $wpdb;
+	$artist_id = (int) $wpdb->get_var( $wpdb->prepare(
+		"SELECT related_item_id FROM {$wpdb->prefix}podsrel WHERE item_id = %d AND pod_id = (SELECT id FROM {$wpdb->prefix}posts WHERE post_name = 'song' AND post_type = '_pods_pod' LIMIT 1) LIMIT 1",
+		$song_id
+	) );
+}
+
 $album_id  = (int) get_post_meta( $song_id, 'album', true );
-$artist    = $artist_id ? get_post( $artist_id ) : null;
+if ( ! $album_id ) {
+	$raw_album = get_post_meta( $song_id, '_pods_album', true );
+	if ( is_array( $raw_album ) && ! empty( $raw_album ) ) {
+		$album_id = (int) reset( $raw_album );
+	}
+}
+
+$artist = $artist_id ? get_post( $artist_id ) : null;
+
 $album     = $album_id ? get_post( $album_id ) : null;
 $duration  = get_post_meta( $song_id, 'duration', true );
 $track     = get_post_meta( $song_id, 'track_number', true );
