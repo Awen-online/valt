@@ -551,14 +551,47 @@ add_shortcode( 'valt_song_grid', function ( $atts ) {
 
 // ─── 16. [valt_contact_form] ────────────────────────────────────────
 
+/**
+ * Verify a Google reCAPTCHA v3 token. Returns true only when Google reports
+ * success AND the spam score meets the configured threshold.
+ */
+if ( ! function_exists( 'valt_verify_recaptcha_v3' ) ) {
+	function valt_verify_recaptcha_v3( $token, $secret, $threshold = 0.5 ) {
+		$token = trim( (string) $token );
+		if ( $token === '' ) return false;
+		$resp = wp_remote_post( 'https://www.google.com/recaptcha/api/siteverify', [
+			'timeout' => 10,
+			'body'    => [
+				'secret'   => $secret,
+				'response' => $token,
+				'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+			],
+		] );
+		if ( is_wp_error( $resp ) ) return false;
+		$data = json_decode( wp_remote_retrieve_body( $resp ), true );
+		if ( empty( $data['success'] ) ) return false;
+		if ( isset( $data['score'] ) && (float) $data['score'] < (float) $threshold ) return false;
+		return true;
+	}
+}
+
 add_shortcode( 'valt_contact_form', function () {
+	$site_key     = trim( (string) get_option( 'valt_recaptcha_v3_site_key', '' ) );
+	$secret_key   = trim( (string) get_option( 'valt_recaptcha_v3_secret_key', '' ) );
+	$threshold    = (float) get_option( 'valt_recaptcha_v3_threshold', 0.5 );
+	$recaptcha_on = ( $site_key !== '' && $secret_key !== '' );
+
 	$sent = false; $error = '';
 	if ( isset( $_POST['valt_contact_nonce'] ) && wp_verify_nonce( $_POST['valt_contact_nonce'], 'valt_contact' ) ) {
 		$name = sanitize_text_field( $_POST['valt_name'] ?? '' );
 		$email = sanitize_email( $_POST['valt_email'] ?? '' );
 		$msg = sanitize_textarea_field( $_POST['valt_message'] ?? '' );
-		if ( ! $name || ! $email || ! $msg ) { $error = 'All fields are required.'; }
+		$honeypot = trim( (string) ( $_POST['valt_website'] ?? '' ) );
+
+		if ( $honeypot !== '' ) { $sent = true; /* Bot tripped the honeypot — feign success, send nothing. */ }
+		elseif ( ! $name || ! $email || ! $msg ) { $error = 'All fields are required.'; }
 		elseif ( ! is_email( $email ) ) { $error = 'Please enter a valid email.'; }
+		elseif ( $recaptcha_on && ! valt_verify_recaptcha_v3( $_POST['g-recaptcha-response'] ?? '', $secret_key, $threshold ) ) { $error = 'Spam check failed. Please try again.'; }
 		else { $sent = wp_mail( 'cullah@awen.online', 'VALT Contact: ' . $name, "Name: {$name}\nEmail: {$email}\n\n{$msg}", [ 'Reply-To: ' . $email ] ); if ( ! $sent ) $error = 'Could not send. Try again.'; }
 	}
 	ob_start(); ?>
@@ -566,12 +599,35 @@ add_shortcode( 'valt_contact_form', function () {
 		<?php if ( $sent ) : ?><div class="valt-notice valt-notice--success">Message sent!</div>
 		<?php else : ?>
 			<?php if ( $error ) : ?><div class="valt-notice valt-notice--error"><?php echo esc_html( $error ); ?></div><?php endif; ?>
-			<form method="post" class="valt-form"><?php wp_nonce_field( 'valt_contact', 'valt_contact_nonce' ); ?>
+			<form method="post" class="valt-form" id="valt-contact-form"><?php wp_nonce_field( 'valt_contact', 'valt_contact_nonce' ); ?>
 				<div class="valt-form__group"><label class="valt-form__label">Name</label><input type="text" name="valt_name" class="valt-form__input" required></div>
 				<div class="valt-form__group"><label class="valt-form__label">Email</label><input type="email" name="valt_email" class="valt-form__input" required></div>
 				<div class="valt-form__group"><label class="valt-form__label">Message</label><textarea name="valt_message" class="valt-form__textarea" rows="5" required></textarea></div>
+				<div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;overflow:hidden;"><label>Website</label><input type="text" name="valt_website" tabindex="-1" autocomplete="off"></div>
+				<?php if ( $recaptcha_on ) : ?><input type="hidden" name="g-recaptcha-response" id="valt-recaptcha-token"><?php endif; ?>
 				<button type="submit" class="valt-btn valt-btn--primary">Send Message</button>
 			</form>
+			<?php if ( $recaptcha_on ) : ?>
+			<script src="https://www.google.com/recaptcha/api.js?render=<?php echo esc_attr( $site_key ); ?>"></script>
+			<script>
+			(function(){
+				var f = document.getElementById('valt-contact-form');
+				if ( ! f ) return;
+				var submitting = false;
+				f.addEventListener('submit', function(e){
+					if ( submitting || ! window.grecaptcha ) return;
+					e.preventDefault();
+					grecaptcha.ready(function(){
+						grecaptcha.execute('<?php echo esc_js( $site_key ); ?>', { action: 'contact' }).then(function(token){
+							document.getElementById('valt-recaptcha-token').value = token;
+							submitting = true;
+							f.submit();
+						});
+					});
+				});
+			})();
+			</script>
+			<?php endif; ?>
 		<?php endif; ?>
 	</div>
 	<?php return ob_get_clean();
