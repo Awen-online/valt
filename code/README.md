@@ -2,6 +2,13 @@
 
 Source code for the Valt platform.
 
+> **Note — curated open-source build.** This public repository contains the core,
+> delivered platform: token-gating, NMKR NFT minting, discovery, the artist dashboard,
+> the REST API, and the front-end theme. Commercial and feature-flagged modules
+> (Stripe payments, crowdfunding campaigns, gamification, leaderboards), demo seed data,
+> and internal tooling are maintained in a private development repository and are omitted
+> here. The live platform runs at https://www.valt.digital.
+
 ## Contents
 
 > [/valt-theme](valt-theme/) — WordPress child theme of Hello Elementor. Handles Elementor Pro dynamic queries, Pods custom post types (Artists, Albums, Songs), CardanoPress wallet integration, and frontend assets.
