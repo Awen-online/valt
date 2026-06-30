@@ -83,21 +83,36 @@ function valt_upload_to_ipfs( int $attachment_id ) {
 function valt_build_cip25_metadata( int $song_id, string $image_cid, string $audio_cid = '' ): array {
 	$config     = valt_nmkr_config();
 	$song       = get_post( $song_id );
-	$artist_id  = (int) get_post_meta( $song_id, 'artist', true );
+	// 'artist' is a Pods relationship (stored as an array/object), so a raw (int) cast yields 1
+	// (the default "Hello world!" post). Resolve it properly.
+	$artist_id  = function_exists( 'valt_resolve_artist_id' ) ? valt_resolve_artist_id( $song_id ) : (int) get_post_meta( $song_id, 'artist', true );
 	$artist     = $artist_id ? get_post( $artist_id ) : null;
 	$album_id   = (int) get_post_meta( $song_id, 'album', true );
 	$album      = $album_id ? get_post( $album_id ) : null;
-	$genre      = $artist_id ? get_post_meta( $artist_id, 'genre', true ) : '';
+	// Genre: prefer the song's own genre, fall back to the artist's.
+	$genre      = get_post_meta( $song_id, 'genre', true );
+	if ( ! $genre && $artist_id ) {
+		$genre = get_post_meta( $artist_id, 'genre', true );
+	}
 	$asset_name = valt_generate_asset_name( $song->post_title, $song_id );
+
+	// Description: prefer the song's 'description' field (post_content is usually empty); keep it to
+	// one sentence (<=64 chars) for clean single-string CIP-25 compliance, then content/title.
+	$desc = get_post_meta( $song_id, 'description', true );
+	$desc = $desc ? wp_strip_all_tags( $desc ) : ( wp_strip_all_tags( $song->post_content ) ?: $song->post_title );
+	if ( strlen( $desc ) > 64 ) {
+		$desc = preg_match( '/^(.{1,64}?[.!?])(\s|$)/u', $desc, $dmm ) ? $dmm[1] : rtrim( substr( $desc, 0, 64 ) );
+	}
 
 	$metadata = [
 		'name'        => $song->post_title,
 		'image'       => 'ipfs://' . $image_cid,
 		'mediaType'   => 'image/png',
-		'description' => wp_strip_all_tags( $song->post_content ) ?: $song->post_title,
+		'description' => $desc,
 		'artist'      => $artist ? $artist->post_title : 'Unknown Artist',
 		'platform'    => 'Valt',
 		'website'     => home_url(),
+		'music_metadata_version' => 3,
 	];
 
 	if ( $album ) {
@@ -107,14 +122,36 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
 		$metadata['genre'] = $genre;
 	}
 
+	// Duration as ISO-8601 (e.g. "4:14" -> "PT4M14S"); pass through if already ISO/other format.
 	$duration = get_post_meta( $song_id, 'duration', true );
 	if ( $duration ) {
-		$metadata['duration'] = $duration;
+		if ( preg_match( '/^(\d+):(\d{1,2})$/', trim( $duration ), $dm ) ) {
+			$metadata['duration'] = 'PT' . (int) $dm[1] . 'M' . (int) $dm[2] . 'S';
+		} else {
+			$metadata['duration'] = $duration;
+		}
 	}
 
 	$track = get_post_meta( $song_id, 'track_number', true );
 	if ( $track ) {
 		$metadata['track'] = (int) $track;
+	}
+
+	// Full CIP music-metadata v3 credits & rights, pulled from the song's fields.
+	$songwriter = get_post_meta( $song_id, 'songwriter', true );
+	if ( $songwriter ) {
+		$names = array_values( array_filter( array_map( 'trim', explode( ',', $songwriter ) ) ) );
+		if ( $names ) {
+			$metadata['authors'] = array_map( function ( $n ) { return [ 'name' => $n ]; }, $names );
+		}
+	}
+	$producer = get_post_meta( $song_id, 'producer', true );
+	if ( $producer ) {
+		$metadata['contributing_artists'] = [ [ 'name' => $producer, 'role' => [ 'Producer' ] ] ];
+	}
+	$copyright = get_post_meta( $song_id, 'copyright', true );
+	if ( $copyright ) {
+		$metadata['copyright'] = [ 'master' => $copyright ];
 	}
 
 	// Attach audio file if uploaded to IPFS.
@@ -535,4 +572,55 @@ function valt_remove_from_queue( int $song_id ): void {
 	unset( $queue[ $song_id ] );
 	update_option( 'valt_nft_queue', $queue, false );
 	delete_transient( "valt_nft_poll_count_{$song_id}" );
+}
+
+/**
+ * Per-song available-edition inventory from NMKR (cached 5 min).
+ *
+ * Returns [ song_id => [ 'count' => int, 'uid' => string ] ], where count is the number of
+ * FREE (collectible) editions of that song still on NMKR and uid is one such edition. Also keeps
+ * each song's valt_nft_uid pointing at a currently-free edition (or clears it when none remain),
+ * so the Collect button can be song-specific and is disabled automatically when a song sells out.
+ *
+ * @return array
+ */
+function valt_song_inventory(): array {
+	$cached = get_transient( 'valt_song_inventory' );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+	$config = valt_nmkr_config();
+	if ( empty( $config['project_uid'] ) || empty( $config['api_key'] ) ) {
+		return [];
+	}
+	$free = valt_nmkr_request( 'GET', "GetNfts/{$config['project_uid']}/free/50/1" );
+	if ( is_wp_error( $free ) || ! is_array( $free ) ) {
+		return is_array( $cached ) ? $cached : [];
+	}
+	$songs = get_posts( [ 'post_type' => 'song', 'posts_per_page' => -1, 'post_status' => 'publish', 'fields' => 'ids' ] );
+	$map = [];
+	foreach ( $songs as $sid ) {
+		$base  = strtolower( valt_generate_asset_name( get_the_title( $sid ), (int) $sid ) );
+		$count = 0;
+		$uid   = '';
+		foreach ( $free as $nft ) {
+			$name = strtolower( (string) ( $nft['name'] ?? '' ) );
+			if ( $name !== '' && strpos( $name, $base ) === 0 ) {
+				$count++;
+				if ( ! $uid ) {
+					$uid = (string) ( $nft['uid'] ?? '' );
+				}
+			}
+		}
+		$map[ (int) $sid ] = [ 'count' => $count, 'uid' => $uid ];
+		if ( $uid ) {
+			update_post_meta( $sid, 'valt_nft_uid', $uid );
+		} else {
+			delete_post_meta( $sid, 'valt_nft_uid' );
+		}
+	}
+	// Short TTL so that right after a collect, the song quickly repoints to the next free edition
+	// (the previous one is now sold) instead of linking to a sold NFT.
+	set_transient( 'valt_song_inventory', $map, 60 );
+	return $map;
 }

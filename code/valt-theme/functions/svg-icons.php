@@ -94,6 +94,34 @@ function valt_svg_user( int $size = 24 ): string {
 	</svg>';
 }
 
+/**
+ * Cardano "ada" constellation mark (center + 6 inner + 12 outer dots).
+ * Uses currentColor so it inherits surrounding text color.
+ */
+function valt_svg_cardano( int $size = 20 ): string {
+	$dots = '<circle cx="50" cy="50" r="6.5"/>';
+	foreach ( [ [72,50],[61,31],[39,31],[28,50],[39,69],[61,69] ] as $p ) {
+		$dots .= '<circle cx="' . $p[0] . '" cy="' . $p[1] . '" r="4.3"/>';
+	}
+	foreach ( [ [90,50],[84.6,30],[70,15.4],[50,10],[30,15.4],[15.4,30],[10,50],[15.4,70],[30,84.6],[50,90],[70,84.6],[84.6,70] ] as $p ) {
+		$dots .= '<circle cx="' . $p[0] . '" cy="' . $p[1] . '" r="2.8"/>';
+	}
+	return '<svg class="valt-icon valt-icon--cardano" width="' . $size . '" height="' . $size . '" viewBox="0 0 100 100" fill="currentColor" role="img" aria-label="Cardano">' . $dots . '</svg>';
+}
+
+/**
+ * [valt_cardano size="20"] — inline Cardano mark for use in page content / headings.
+ * [valt_cardano wordmark="1"] — full Cardano wordmark (logo + "CARDANO"), white on dark.
+ */
+add_shortcode( 'valt_cardano', function ( $atts ) {
+	$atts = shortcode_atts( [ 'size' => 20, 'wordmark' => '' ], $atts );
+	if ( ! empty( $atts['wordmark'] ) && $atts['wordmark'] !== '0' ) {
+		$src = esc_url( get_stylesheet_directory_uri() . '/assets/img/cardano-wordmark.png' );
+		return '<img class="valt-cardano-wordmark-text" src="' . $src . '" alt="Cardano">';
+	}
+	return '<span class="valt-cardano-mark" title="Cardano">' . valt_svg_cardano( (int) $atts['size'] ) . '</span>';
+} );
+
 function valt_svg_search( int $size = 24 ): string {
 	return '<svg class="valt-icon" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 		<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>

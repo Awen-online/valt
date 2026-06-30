@@ -453,6 +453,8 @@
 			$door.find( '.valt-groove' ).css( 'animation', 'none' );
 
 			setTimeout( function () {
+				// Collapse the (now-empty) vault door so it doesn't leave a blank box above the content.
+				$section.find( '.valt-vault__door' ).slideUp( 400 );
 				$content.slideDown( 600, function () {
 					// Scroll to the revealed content
 					$( 'html, body' ).animate( { scrollTop: $content.offset().top - 100 }, 400 );
@@ -468,8 +470,8 @@
 			try {
 				if ( localStorage.getItem( key ) ) {
 					$( this ).find( '[data-action="open-valt"]' ).hide();
-					$( this ).find( '.valt-vault__door-inner' ).css( { transform: 'scale(0.4)', opacity: '0.15' } );
-					$( this ).find( '.valt-spokes, .valt-outer, .valt-groove' ).css( 'animation', 'none' );
+					// Return visit: skip the animation and hide the empty door box outright.
+					$( this ).find( '.valt-vault__door' ).hide();
 					$( this ).find( '[data-valt-content]' ).show();
 				}
 			} catch(e) {}

@@ -120,6 +120,65 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	text-decoration: none;
 }
 .valt-nav__logo img { border-radius: 50%; }
+.valt-nav__testnet {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 9px;
+	padding: 2px 9px;
+	font-size: 0.6rem;
+	font-weight: 700;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--valt-darker);
+	background: var(--valt-gold);
+	border-radius: 999px;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+.valt-footer__testnet {
+	display: block;
+	margin-top: 4px;
+	font-size: var(--valt-fs-xs);
+	color: var(--valt-mid);
+}
+
+/* ─── Featured artists (home hero band) ─────────────────────────────── */
+.valt-featured {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: var(--valt-gap);
+	margin: 1rem 0 2.5rem;
+}
+.valt-featured__card {
+	display: flex;
+	flex-direction: column;
+	background: var(--valt-dark);
+	border: var(--valt-border);
+	border-radius: var(--valt-radius);
+	overflow: hidden;
+	transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.valt-featured__card:hover {
+	transform: translateY(-4px);
+	border-color: rgba(232,196,139,0.35);
+	box-shadow: var(--valt-shadow);
+}
+.valt-featured__art { aspect-ratio: 1 / 1; background: var(--valt-darker); overflow: hidden; }
+.valt-featured__art img { width: 100%; height: 100%; object-fit: cover; }
+.valt-featured__placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--valt-mid); }
+.valt-featured__info { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.valt-featured__name { color: var(--valt-gold); font-size: 1.05rem; }
+.valt-featured__bio { color: var(--valt-tan); font-size: var(--valt-fs-small); line-height: 1.4; }
+.valt-featured__cta { margin-top: auto; color: var(--valt-coral); font-size: var(--valt-fs-small); font-weight: 600; }
+
+/* ─── Cardano inline mark ───────────────────────────────────────────── */
+.valt-cardano-mark { display: inline-flex; align-items: center; vertical-align: middle; }
+.valt-icon--cardano { vertical-align: -0.14em; }
+/* Cardano wordmark in the footer — rendered white on the dark footer via filter. */
+.valt-cardano-wordmark { height: 20px; width: auto; display: block; filter: brightness(0) invert(1); opacity: 0.95; }
+/* Cardano wordmark inline within a heading/sentence ([valt_cardano wordmark="1"]) — scales with text.
+   Shown in its native Cardano blue (the heading sits on a light background). */
+.valt-cardano-wordmark-text { height: 0.82em; width: auto; display: inline-block; vertical-align: -0.06em; margin-left: 0.18em; }
 .valt-nav__links {
 	display: flex;
 	align-items: center;
@@ -385,6 +444,13 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-song-hero__badges { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 
 .valt-song-actions { margin: 2rem 0; padding: 2rem; background: var(--valt-dark); border-radius: var(--valt-radius); border: 1px solid rgba(232,196,139,0.1); }
+/* The "Collect This Song" heading sits on the dark card — force it light for readability. */
+.valt-song-actions h2 { color: var(--valt-cream) !important; }
+/* Ownership indicator on the song page (shown above the collect button when the wallet holds a copy). */
+.valt-mint__owned { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.75rem; margin-bottom: 1rem; color: var(--valt-tan); }
+.valt-mint__owned .valt-icon { stroke: var(--valt-gold); }
+.valt-mint__valt-link { color: var(--valt-coral); font-size: var(--valt-fs-small); font-weight: 600; }
+.valt-mint__valt-link:hover { color: var(--valt-gold); }
 
 @media (max-width: 640px) {
 	.valt-song-hero__inner { flex-direction: column; align-items: center; text-align: center; }
@@ -399,6 +465,15 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-discovery__search { flex: 2; min-width: 200px; }
 .valt-discovery__select { flex: 1; min-width: 140px; }
+.valt-discovery__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: var(--valt-gap);
+}
+.valt-discovery__load-more { text-align: center; margin-top: 1.5rem; }
+@media (max-width: 480px) {
+	.valt-discovery__grid { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ─── Trending ────────────────────────────────────────────────────── */
 .valt-trending__scroll {

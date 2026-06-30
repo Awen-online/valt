@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Valt Platform
  * Plugin URI:  https://github.com/Awen-online/valt
- * Description: Superfan experience engine — token-gating, NMKR NFT minting, and discovery for the Valt music platform on Cardano. (Curated open-source build; full feature set in the private repo.)
+ * Description: Superfan experience engine — token-gating, NMKR NFT minting, Stripe payments, gamification, leaderboards, discovery, and proto-tokenomics for the Valt music platform on Cardano.
  * Version:     2.0.0
  * Author:      Awen
  * Text Domain: valt-platform
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VALT_PLATFORM_VERSION', '2.0.0' );
+define( 'VALT_PLATFORM_VERSION', '2.0.1' );
 define( 'VALT_PLATFORM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'VALT_PLATFORM_URL',  plugin_dir_url( __FILE__ ) );
 
@@ -22,6 +22,7 @@ require VALT_PLATFORM_PATH . 'includes/rest-meta.php';
 require VALT_PLATFORM_PATH . 'includes/artist-dashboard.php';
 require VALT_PLATFORM_PATH . 'includes/shortcodes.php';
 require VALT_PLATFORM_PATH . 'includes/admin-meta.php';
+require VALT_PLATFORM_PATH . 'includes/admin-docs.php';
 
 // ── v2.0 — Foundation ────────────────────────────────────────────────
 require VALT_PLATFORM_PATH . 'includes/helpers.php';
@@ -29,17 +30,22 @@ require VALT_PLATFORM_PATH . 'includes/db-schema.php';
 require VALT_PLATFORM_PATH . 'includes/cron.php';
 require VALT_PLATFORM_PATH . 'includes/nmkr.php';
 
-// ── v2.0 — Discovery, REST, mint/collect (delivered M2 surface) ─────
-// NOTE: This is the curated open-source build. Commercial / feature-flagged
-// modules (Stripe payments, campaigns, gamification, leaderboard), admin
-// docs, and seed data live in the private development repository.
+// ── Seed data (admin only, safe to keep loaded) ─────────────────────
+require VALT_PLATFORM_PATH . 'seed-data.php';
+
+// ── v2.0 — Payments, Gamification, Discovery (loaded as built) ──────
 foreach ( [
+	'stripe',
+	'gamification',
+	'leaderboard',
 	'discovery',
+	'campaigns',
 	'rest-api',
 	'ajax-handlers',
 	'shortcodes-new',
 	'admin-settings',
 	'admin-nft-monitor',
+	'admin-campaigns',
 ] as $valt_include ) {
 	$valt_file = VALT_PLATFORM_PATH . "includes/{$valt_include}.php";
 	if ( file_exists( $valt_file ) ) {

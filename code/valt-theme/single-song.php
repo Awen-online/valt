@@ -78,7 +78,7 @@ if ( ! $image_url && $artist_id ) {
 					<p class="valt-song-hero__artist"><a href="<?php echo get_permalink( $artist_id ); ?>"><?php echo esc_html( $artist->post_title ); ?></a></p>
 				<?php endif; ?>
 				<div class="valt-song-hero__meta">
-					<?php if ( $album ) : ?><span>Album: <a href="<?php echo get_permalink( $album_id ); ?>"><?php echo esc_html( $album->post_title ); ?></a></span><?php endif; ?>
+					<?php if ( $album ) : ?><span>Album: <?php echo esc_html( $album->post_title ); ?></span><?php endif; ?>
 					<?php if ( $track ) : ?><span>Track <?php echo (int) $track; ?></span><?php endif; ?>
 					<?php if ( $duration ) : ?><span><?php echo esc_html( $duration ); ?></span><?php endif; ?>
 				</div>

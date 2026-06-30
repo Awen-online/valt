@@ -38,10 +38,13 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 		$assets = $profile->storedAssets();
 		if ( empty( $assets ) ) {
 			$gate_state = 'needs-sync';
-		} elseif ( valt_user_holds_policy( $policy_id ) ) {
-			$gate_state = 'unlocked';
 		} else {
-			$gate_state = 'locked';
+			// Shared policy across all artists — keep only THIS artist's NFTs so the
+			// gate unlocks (and later displays) for the right artist only.
+			$artist_assets = function_exists( 'valt_filter_assets_for_artist' )
+				? valt_filter_assets_for_artist( $assets, $policy_id, $name )
+				: $assets;
+			$gate_state = ! empty( $artist_assets ) ? 'unlocked' : 'locked';
 		}
 	}
 }
@@ -123,21 +126,19 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 				</div>
 
 				<?php if ( $gate_state === 'unlocked' ) :
-					// Get user's NFTs that match this artist's policy.
-					$user_assets = [];
-					if ( function_exists( 'cardanoPress' ) ) {
-						$all_assets = cardanoPress()->userProfile()->storedAssets();
-						foreach ( $all_assets as $asset ) {
-							if ( ( $asset['policy_id'] ?? '' ) === $policy_id ) {
-								$user_assets[] = $asset;
-							}
-						}
+					// Only this artist's NFTs - already computed in the gate block above. Recompute as a
+					// fallback for the admin ?valt_preview path, where the gate block did not run.
+					if ( ! isset( $artist_assets ) ) {
+						$artist_assets = ( function_exists( 'cardanoPress' ) && function_exists( 'valt_filter_assets_for_artist' ) )
+							? valt_filter_assets_for_artist( cardanoPress()->userProfile()->storedAssets(), $policy_id, $name )
+							: [];
 					}
+					$user_assets = $artist_assets;
 				?>
 				<div class="valt-vault__content" data-valt-content style="display:none;">
 					<div class="valt-vault__inner">
 						<h3>Welcome to <?php echo esc_html( $name ); ?>'s Valt</h3>
-						<p>You hold the key. You own <?php echo count( $user_assets ); ?> collectable<?php echo count( $user_assets ) !== 1 ? 's' : ''; ?> from this artist.</p>
+						<p>You hold the key. You own <?php echo count( $user_assets ); ?> song<?php echo count( $user_assets ) !== 1 ? 's' : ''; ?> from this artist.</p>
 
 						<?php if ( ! empty( $user_assets ) ) : ?>
 						<div class="valt-vault__collection">

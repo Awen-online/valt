@@ -68,6 +68,61 @@ add_shortcode( 'valt_trending_artists', function ( $atts ) {
 	<?php return ob_get_clean();
 } );
 
+// ─── 2b. [valt_featured_artists] ────────────────────────────────────
+// Artist-first hero band. Prefers artists flagged valt_featured; falls back
+// to all artists. Optional genre/country filters let it become a focused
+// showcase (e.g. genre="Afrobeats") once those artists are onboarded.
+// Renders nothing when there are no matching artists, so the home stays clean.
+
+add_shortcode( 'valt_featured_artists', function ( $atts ) {
+	$atts = shortcode_atts( [ 'limit' => 6, 'genre' => '', 'country' => '' ], $atts );
+
+	$base = [
+		'post_type'      => 'artist',
+		'post_status'    => 'publish',
+		'posts_per_page' => (int) $atts['limit'],
+		'meta_query'     => [],
+	];
+	if ( $atts['genre'] )   $base['meta_query'][] = [ 'key' => 'genre',   'value' => $atts['genre'],   'compare' => '=' ];
+	if ( $atts['country'] ) $base['meta_query'][] = [ 'key' => 'country', 'value' => $atts['country'], 'compare' => '=' ];
+
+	// Prefer explicitly-featured artists; fall back to any matching artist.
+	$featured = $base;
+	$featured['meta_query'][] = [ 'key' => 'valt_featured', 'value' => '1' ];
+	$query = new WP_Query( $featured );
+	if ( ! $query->have_posts() ) {
+		$query = new WP_Query( $base );
+	}
+	if ( ! $query->have_posts() ) {
+		return '';
+	}
+
+	ob_start(); ?>
+	<div class="valt-featured">
+		<?php foreach ( $query->posts as $post ) :
+			$a = valt_format_artist_card( $post );
+			$meta = trim( $a['genre'] . ( $a['genre'] && $a['country'] ? ' · ' : '' ) . $a['country'] );
+		?>
+			<a href="<?php echo esc_url( $a['url'] ); ?>" class="valt-featured__card">
+				<div class="valt-featured__art">
+					<?php if ( $a['thumbnail_url'] ) : ?>
+						<img src="<?php echo esc_url( $a['thumbnail_url'] ); ?>" alt="<?php echo esc_attr( $a['name'] ); ?>" loading="lazy">
+					<?php else : ?>
+						<div class="valt-featured__placeholder"><?php echo valt_svg_user( 28 ); ?></div>
+					<?php endif; ?>
+				</div>
+				<div class="valt-featured__info">
+					<strong class="valt-featured__name"><?php echo esc_html( $a['name'] ); ?></strong>
+					<?php if ( $meta ) : ?><span class="valt-tag"><?php echo esc_html( $meta ); ?></span><?php endif; ?>
+					<?php if ( $a['bio'] ) : ?><span class="valt-featured__bio"><?php echo esc_html( $a['bio'] ); ?></span><?php endif; ?>
+					<span class="valt-featured__cta">View artist &rarr;</span>
+				</div>
+			</a>
+		<?php endforeach; wp_reset_postdata(); ?>
+	</div>
+	<?php return ob_get_clean();
+} );
+
 // ─── 3. [valt_leaderboard] ──────────────────────────────────────────
 
 add_shortcode( 'valt_leaderboard', function ( $atts ) {
@@ -164,30 +219,55 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	$max_supply = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
 	$mint_count = (int) get_post_meta( $song_id, 'valt_mint_count', true );
 
-	// NMKR Pay link — project-level. User gets a random available edition.
-	// Songs exist as multiple copies (editions) in the NMKR project.
-	$config      = valt_nmkr_config();
-	$project_uid = str_replace( '-', '', $config['project_uid'] );
-	$nmkr_base   = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
-	$nmkr_pay_url = $project_uid ? "{$nmkr_base}/?p={$project_uid}&c=1" : '';
+	// Does the connected wallet already hold this song's NFT? (Per-user, unlike $status.)
+	$owned = function_exists( 'valt_user_owns_song' ) ? valt_user_owns_song( get_the_title( $song_id ) ) : 0;
+
+	// Live NMKR inventory for this song (cached). $avail = free editions collectible right now;
+	// null = inventory unknown (no API/config) — in that case we don't disable collecting.
+	$inv       = function_exists( 'valt_song_inventory' ) ? valt_song_inventory() : [];
+	$avail     = array_key_exists( $song_id, $inv ) ? (int) $inv[ $song_id ]['count'] : null;
+	$avail_uid = ( $avail && ! empty( $inv[ $song_id ]['uid'] ) ) ? $inv[ $song_id ]['uid'] : (string) get_post_meta( $song_id, 'valt_nft_uid', true );
+
+	// NMKR Pay link — song-specific (this song's available edition) so the pay page shows the
+	// right song; fall back to a project-level random buy only if there's no edition uid.
+	$config       = valt_nmkr_config();
+	$project_uid  = str_replace( '-', '', $config['project_uid'] );
+	$nmkr_base    = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
+	$song_nft_uid = str_replace( '-', '', $avail_uid );
+	if ( $project_uid && $song_nft_uid ) {
+		$nmkr_pay_url = "{$nmkr_base}/?p={$project_uid}&n={$song_nft_uid}";
+	} elseif ( $project_uid ) {
+		$nmkr_pay_url = "{$nmkr_base}/?p={$project_uid}&c=1";
+	} else {
+		$nmkr_pay_url = '';
+	}
 
 	$nmkr_bundle_url; // Reserved for future multi-copy support.
 
 	ob_start(); ?>
 	<div class="valt-mint" data-song-id="<?php echo $song_id; ?>">
-		<?php if ( $status === 'minted' || $status === 'complete' ) : ?>
-			<div class="valt-mint__done">
-				<?php echo valt_svg_music( 20 ); ?>
-				<span class="valt-badge valt-badge--gold">Collected</span>
-				<span class="valt-mint__count"><?php echo $mint_count; ?> minted<?php echo $max_supply ? " / {$max_supply}" : ''; ?></span>
+		<?php if ( $owned > 0 ) : ?>
+			<?php // Wallet already holds this song. Show ownership, but still allow collecting more copies. ?>
+			<div class="valt-mint__owned">
+				<?php echo valt_svg_music( 18 ); ?>
+				<span class="valt-badge valt-badge--gold">In your collection &middot; you own <?php echo (int) $owned; ?></span>
+				<?php $owned_artist = function_exists( 'valt_resolve_artist_id' ) ? valt_resolve_artist_id( $song_id ) : 0; ?>
+				<?php if ( $owned_artist ) : ?>
+					<a href="<?php echo esc_url( get_permalink( $owned_artist ) ); ?>" class="valt-mint__valt-link">Open <?php echo esc_html( get_the_title( $owned_artist ) ); ?>&rsquo;s Valt &rarr;</a>
+				<?php endif; ?>
 			</div>
-		<?php elseif ( in_array( $status, [ 'pending', 'processing' ], true ) ) : ?>
+		<?php endif; ?>
+
+		<?php if ( in_array( $status, [ 'pending', 'processing' ], true ) ) : ?>
 			<div class="valt-mint__pending">
 				<span class="valt-badge valt-badge--amber">Minting...</span>
 				<p class="valt-mint__hint">Your NFT is being minted on Cardano. This can take a few minutes.</p>
 			</div>
 		<?php elseif ( $max_supply > 0 && $mint_count >= $max_supply ) : ?>
 			<span class="valt-badge valt-badge--grey">Sold Out</span>
+		<?php elseif ( $avail !== null && $avail <= 0 ) : ?>
+			<?php // No free editions available on NMKR — collecting disabled for this song. ?>
+			<span class="valt-badge valt-badge--grey">Not available to collect</span>
 		<?php else : ?>
 			<div class="valt-mint__prices">
 				<?php if ( $price_ada ) : ?>
@@ -203,7 +283,7 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 
 			<?php if ( $nmkr_pay_url ) : ?>
 				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-btn--large valt-mint__btn">
-					<?php echo valt_svg_wallet( 16 ); ?> Collect with ADA
+					<?php echo valt_svg_wallet( 16 ); ?> <?php echo $owned > 0 ? 'Collect another copy' : 'Collect with ADA'; ?>
 				</a>
 				<p class="valt-mint__hint">Pay with your Cardano wallet. The NFT is minted and delivered automatically.</p>
 			<?php endif; ?>
@@ -434,10 +514,10 @@ add_shortcode( 'valt_song_card', function ( $atts ) {
 	$song      = get_post( $song_id );
 	if ( ! $song ) return '';
 
-	$artist_id = (int) get_post_meta( $song_id, 'artist', true );
+	$artist_id = valt_resolve_artist_id( $song_id );
 	$artist    = $artist_id ? get_post( $artist_id ) : null;
 	$image_id  = (int) get_post_meta( $song_id, 'valt_nft_image_id', true ) ?: get_post_thumbnail_id( $song_id );
-	$image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'medium' ) : '';
+	$image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'large' ) : '';
 	$price_usd = (int) get_post_meta( $song_id, 'valt_nft_price_usd', true );
 
 	ob_start(); ?>
@@ -507,8 +587,18 @@ function valt_user_owns_song( string $song_title ): int {
 // ─── 15. [valt_song_grid] ───────────────────────────────────────────
 
 add_shortcode( 'valt_song_grid', function ( $atts ) {
-	$atts = shortcode_atts( [ 'artist_id' => 0, 'album_id' => 0, 'limit' => 12, 'exclude' => '', 'columns' => 3 ], $atts );
+	$atts = shortcode_atts( [ 'artist_id' => 0, 'album_id' => 0, 'limit' => 12, 'exclude' => '', 'columns' => 3, 'ids' => '' ], $atts );
 	$qa = [ 'post_type' => 'song', 'post_status' => 'publish', 'posts_per_page' => (int) $atts['limit'], 'orderby' => 'date', 'order' => 'DESC', 'meta_query' => [] ];
+	// Curated list: show exactly these songs, in the given order.
+	if ( $atts['ids'] ) {
+		$ids = array_filter( array_map( 'intval', explode( ',', $atts['ids'] ) ) );
+		if ( $ids ) {
+			$qa['post__in']       = $ids;
+			$qa['orderby']        = 'post__in';
+			$qa['posts_per_page'] = count( $ids );
+			unset( $qa['order'] );
+		}
+	}
 	if ( (int) $atts['artist_id'] ) $qa['meta_query'][] = [ 'key' => 'artist', 'value' => (int) $atts['artist_id'] ];
 	if ( (int) $atts['album_id'] )  $qa['meta_query'][] = [ 'key' => 'album',  'value' => (int) $atts['album_id'] ];
 	if ( $atts['exclude'] ) $qa['post__not_in'] = array_map( 'intval', explode( ',', $atts['exclude'] ) );
@@ -517,10 +607,10 @@ add_shortcode( 'valt_song_grid', function ( $atts ) {
 	ob_start(); ?>
 	<div class="valt-song-grid valt-song-grid--cols-<?php echo (int) $atts['columns']; ?>">
 		<?php while ( $songs->have_posts() ) : $songs->the_post();
-			$sid = get_the_ID(); $aid = (int) get_post_meta( $sid, 'artist', true );
+			$sid = get_the_ID(); $aid = valt_resolve_artist_id( $sid );
 			$a = $aid ? get_post( $aid ) : null;
 			$img = (int) get_post_meta( $sid, 'valt_nft_image_id', true ) ?: get_post_thumbnail_id( $sid );
-			$img_url = $img ? wp_get_attachment_image_url( $img, 'medium' ) : ( $aid ? get_the_post_thumbnail_url( $aid, 'medium' ) : '' );
+			$img_url = $img ? wp_get_attachment_image_url( $img, 'large' ) : ( $aid ? get_the_post_thumbnail_url( $aid, 'large' ) : '' );
 			$pusd = (int) get_post_meta( $sid, 'valt_nft_price_usd', true );
 			$pada = get_post_meta( $sid, 'valt_nft_price_ada', true );
 			$dur = get_post_meta( $sid, 'duration', true );
