@@ -54,12 +54,11 @@ The two registered deliverables for this milestone are:
 |---|----------------------|--------|----------|
 | 1 | TestNet NFT proof | ✅ Met | NMKR preprod project live; songs minted on-chain (policy `bf5a88ac…`); §4, screenshots E1–E3 |
 | 2 | Web3 Portal Backend | ✅ Met | Live portal at valt.digital; §3, screenshots E4–E9 |
-| 3 | Figma wireframes | ✅ Met | Design system implemented; wireframe link in §6 |
-| 4 | Partner songs ready | ✅ Met | 12 songs / 2 artists published with full metadata; §3 |
-| 5 | Testnet backend | ✅ Met | `valt_nmkr_mode = preprod`, Blockfrost + NMKR integration; §3–4 |
-| 6 | Mint song as NFT | ✅ Met | Mint/Collect flow on every song page; §4–5, screenshot E2 |
-| 7 | NFT-restricted artist access | ✅ Met | "The Valt" token-gated content unlocks for NFT holders; §5, screenshot E6 |
-| 8 | Repository updated | ✅ Met | `github.com/Awen-online/valt` @ `main`; §8 |
+| 3 | Partner songs ready | ✅ Met | 12 songs / 2 artists published with full metadata; §3 |
+| 4 | Testnet backend | ✅ Met | `valt_nmkr_mode = preprod`, Blockfrost + NMKR integration; §3–4 |
+| 5 | Mint song as NFT | ✅ Met | Mint/Collect flow on every song page; §4–5, screenshot E2 |
+| 6 | NFT-restricted artist access | ✅ Met | "The Valt" token-gated content unlocks for NFT holders; §5, screenshot E6 |
+| 7 | Repository updated | ✅ Met | `github.com/Awen-online/valt` @ `main`; §8 |
 
 ---
 
@@ -219,7 +218,7 @@ The implemented user flow matches the Milestone 1 design:
 
 ## 6. Supporting Tasks
 
-- **Figma wireframes / design system** — implemented as the live design system (Navy/Gold/Cream palette, Ruda type, animated vinyl-record + vault-handle logo, WCAG-AA buttons). _Figma link: `<insert link — confirm it resolves>`._
+- **Design system** — implemented as the live design system (Navy/Gold/Cream palette, Ruda type, animated vinyl-record + vault-handle logo, WCAG-AA buttons).
 - **Partner songs ready** — 12 songs from 2 partner artists published with full metadata and album art.
 - **Testnet backend** — NMKR + Blockfrost in pre-production mode; `valt_nmkr_mode = preprod`.
 - **Mint song as NFT** — Mint/Collect implemented on every song page; mints route through NMKR preprod.
