@@ -80,9 +80,9 @@ edit PHP/CSS/JS directly; WordPress loads changes on refresh.
 
 Minting is **on-the-fly** — there is no pre-minted inventory. A "Collect" registers a fresh NFT in
 the NMKR project (`UploadNft`) and mints it to the fan's wallet (`MintAndSendSpecific`), then polls
-for confirmation. Full sequence: `docs/M2_Development/M2_Minting_Flow.md`.
+for confirmation. Full sequence: see the Development Report (`docs/M2_Development/M2_Development_Report.pdf`, §6).
 
 ## Milestone 2 evidence
 
 `docs/M2_Development/` — **Proof of Achievement**, Development Report, Launch Partner Roster, and the
-screenshot set (E1–E9). On-chain proof: the policy above on **preprod.cardanoscan.io**.
+screenshot set (E1–E10, incl. the minting sequence). On-chain proof: the policy above on **preprod.cardanoscan.io**.
