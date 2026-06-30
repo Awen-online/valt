@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://objects-us-east-1.dream.io/website-backup-wsc/Assets/github/1-f531f7.png" alt="Afrocharts Web3 Portal / Valt">
+  <img src="docs/assets/valt-banner.png" alt="Valt — Token-gated music platform on Cardano" width="100%">
 </p>
 
 # Afrocharts | Web3 Artist Portal (Awen)
