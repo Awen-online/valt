@@ -103,3 +103,20 @@ Here you can find links to all neccessary documentation for each of the mileston
 >[CI](../.github/workflows/ci.yml) - lint + PHPUnit (19 tests) on PHP 8.1-8.3 plus a semgrep scan, on every push
 
 ### Milestone 5 - Closeout & Evaluation
+>**Documents**
+>
+>[Final Report](M5_Closeout/M5_Final_Report.pdf) - final design, results and evaluation: the architecture, the metrics dashboard, user feedback and a named artist testimonial, the per-artist evaluation of recognition, opportunities and compensation, the ecosystem contribution, and the next phase
+>
+>[Project Close-out Report](M5_Closeout/M5_Project_Closeout_Report.pdf) - the Catalyst close-out summary: challenge and project KPIs, key achievements, learnings and next steps
+>
+>[Close-out video script](M5_Closeout/M5_Closeout_Video_Script.md) - the script and shot list for the close-out video
+>
+>[Screens](M5_Closeout/screens) - the live portal as delivered (homepage, featured release, how to collect, a token-gated Valt)
+>
+>**Verify**
+>
+>[Live portal](https://www.valt.digital) - the Web3 artist portal on the Cardano pre-production testnet
+>
+>[Open-source code](../code) - the curated platform, with tests and CI on every push
+>
+>[CardanoPress v1.36.1](https://github.com/CardanoPress/cardanopress/releases/tag/v1.36.1) - the critical wallet-authentication fix we reported upstream, credited in the release notes

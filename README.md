@@ -48,7 +48,8 @@ valt/
 │   ├── M1_Initialization/     # Setup report, API docs, status + timeline
 │   ├── M2_Development/        # Development report, launch-partner roster, evidence
 │   ├── M3_Implementation/     # Test & bug-fix, security audit, feedback + roadmap, PoA
-│   └── M4_LaunchRollout/      # PoA, rollout bug log, status + timeline
+│   ├── M4_LaunchRollout/      # PoA, rollout bug log, status + timeline
+│   └── M5_Closeout/           # final report, close-out report, video script
 ├── tests/                     # PHPUnit suite + load harness
 └── README.md
 ```
@@ -80,7 +81,7 @@ Valt is funded by a **100,000 ADA** grant from [Cardano Project Catalyst Fund 11
 | M2 | Development - core platform & launch partners | Delivered - [evidence](docs/M2_Development/) |
 | M3 | Implementation & Prelaunch - testing, security, feedback | Evidence published - [evidence](docs/M3_Implementation/) |
 | M4 | Launch & Rollout - public launch, announcements, rollout support | Evidence published - [evidence](docs/M4_LaunchRollout/) |
-| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | In progress |
+| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | Evidence published - [evidence](docs/M5_Closeout/) |
 
 ## Getting Started
 
