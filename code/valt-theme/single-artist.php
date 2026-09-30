@@ -53,7 +53,14 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 <div class="valt-site">
 	<?php valt_render_nav(); ?>
 
-	<section class="valt-artist-hero" <?php if ( $thumb_url ) : ?>style="background-image:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)),url('<?php echo esc_url( $thumb_url ); ?>');"<?php endif; ?>>
+	<?php
+	// Background focus per artist (CSS background-position), so faces stay in frame; default 35% from the top.
+	$hero_focus = (string) get_post_meta( $artist_id, 'valt_hero_focus', true );
+	if ( ! preg_match( '/^(center|left|right|\d{1,3}%)( (top|center|bottom|\d{1,3}%))?$/', $hero_focus ) ) {
+		$hero_focus = 'center 35%';
+	}
+	?>
+	<section class="valt-artist-hero" <?php if ( $thumb_url ) : ?>style="background-image:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)),url('<?php echo esc_url( $thumb_url ); ?>');background-position:<?php echo esc_attr( $hero_focus ); ?>;"<?php endif; ?>>
 		<div class="valt-container valt-artist-hero__inner">
 			<?php if ( $thumb_url ) : ?>
 				<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $name ); ?>" class="valt-artist-hero__photo">

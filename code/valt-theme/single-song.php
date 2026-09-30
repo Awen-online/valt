@@ -68,9 +68,27 @@ $t = function_exists( 'valt_track_data' ) ? valt_track_data( $song_id ) : [ 'src
 <div class="valt-site">
 	<?php valt_render_nav(); ?>
 
-	<section class="valt-song-hero" <?php if ( $image_url ) : ?>style="background-image:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.85)),url('<?php echo esc_url( $image_url ); ?>');"<?php endif; ?>>
+	<?php
+	// Background focus per song (CSS background-position), same rule as the artist hero; default 35% from the top.
+	$hero_focus = (string) get_post_meta( $song_id, 'valt_hero_focus', true );
+	if ( ! preg_match( '/^(center|left|right|\d{1,3}%)( (top|center|bottom|\d{1,3}%))?$/', $hero_focus ) ) {
+		$hero_focus = 'center 35%';
+	}
+	?>
+	<section class="valt-song-hero" <?php if ( $image_url ) : ?>style="background-image:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.85)),url('<?php echo esc_url( $image_url ); ?>');background-position:<?php echo esc_attr( $hero_focus ); ?>;"<?php endif; ?>>
 		<div class="valt-container valt-song-hero__inner">
-			<?php if ( $image_url ) : ?>
+			<?php
+			// Optional public music-video preview (short muted teaser; the full video stays holder-only).
+			$teaser = (string) get_post_meta( $song_id, 'valt_teaser_url', true );
+			if ( $teaser ) : ?>
+				<figure class="valt-song-hero__teaser">
+					<video autoplay muted loop playsinline preload="metadata"<?php if ( $image_url ) : ?> poster="<?php echo esc_url( $image_url ); ?>"<?php endif; ?> aria-label="<?php echo esc_attr( $title . ' music video preview' ); ?>">
+						<source src="<?php echo esc_url( $teaser ); ?>" type="video/mp4">
+					</video>
+					<script>/* Reduced motion: hold the poster frame. */(function(v){if(v&&window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){v.removeAttribute('autoplay');v.pause();}})(document.currentScript&&document.currentScript.previousElementSibling);</script>
+					<figcaption>Music video preview · the full video is for collectors</figcaption>
+				</figure>
+			<?php elseif ( $image_url ) : ?>
 				<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" class="valt-song-hero__art">
 			<?php endif; ?>
 			<div class="valt-song-hero__info">

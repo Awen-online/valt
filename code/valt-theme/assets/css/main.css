@@ -504,7 +504,8 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 
 /* ─── Artist Hero ─────────────────────────────────────────────────── */
 .valt-artist-hero {
-	padding: 4rem 0; background-size: cover; background-position: center; background-color: var(--valt-dark);
+	/* Top-aligned so faces in portrait photos stay in frame behind the dark overlay. */
+	padding: 4rem 0; background-size: cover; background-position: center top; background-color: var(--valt-dark);
 }
 .valt-artist-hero__inner { display: flex; align-items: center; gap: 2rem; }
 .valt-artist-hero__photo {
@@ -540,6 +541,9 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 .valt-song-hero__info { flex: 1; }
+.valt-song-hero__teaser { margin: 0; width: 440px; max-width: 100%; flex-shrink: 0; }
+.valt-song-hero__teaser video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--valt-radius); background: #000; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+.valt-song-hero__teaser figcaption { margin-top: 0.5rem; font-size: var(--valt-fs-small); color: var(--valt-tan); }
 .valt-song-hero__info h1 { color: var(--valt-cream); }
 .valt-song-hero__artist { font-size: 1.1rem; }
 .valt-song-hero__artist a { color: var(--valt-coral); }
@@ -559,6 +563,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 @media (max-width: 640px) {
 	.valt-song-hero__inner { flex-direction: column; align-items: center; text-align: center; }
 	.valt-song-hero__art { width: 200px; height: 200px; }
+	.valt-song-hero__teaser { width: 100%; }
 	.valt-song-hero__meta { justify-content: center; }
 	.valt-song-hero__badges { justify-content: center; }
 }
