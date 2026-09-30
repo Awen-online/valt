@@ -39,8 +39,9 @@ Project Catalyst Fund 11, project 1100019. Written to the Catalyst PCV rules
 
 ### Part 1: the challenge and the funding (0:00 to 0:35)
 **Shot 1.** Intro card, then tab 1, the homepage. Scroll once, slowly.
+> Hi, I'm Ian McCullough from Awen.
 > Streaming made music easy to hear and hard to support. Valt gives independent artists a direct line to their superfans: collect a limited edition of a song, and it unlocks that artist's private Valt, owned on Cardano.
-> I'm Ian McCullough from Awen. This is Valt, the Afrocharts Web3 Artist Portal, project 1100019, funded in Project Catalyst Fund 11 under Cardano Use Cases: Concept.
+> This is Valt, the Afrocharts Web3 Artist Portal, project 1100019, funded in Project Catalyst Fund 11 under Cardano Use Cases: Concept.
 
 ### Part 2: progress, KPIs, learnings, gaps (0:35 to 1:40)
 **Shot 2.** Tab 7, Final Report section 3 (the numbers grid). Hold.

@@ -115,6 +115,8 @@ Here you can find links to all necessary documentation for each of the milestone
 >
 >[Screens](M5_Closeout/screens) - the live portal as delivered (homepage, featured release, how to collect, a token-gated Valt)
 >
+>[Launch Communications](M5_Closeout/M5_Launch_Communications.pdf) - every published launch and artist post and the pre-launch email, as published, with dates, links and reach
+>
 >**Verify**
 >
 >[Live portal](https://www.valt.digital) - the Web3 artist portal on the Cardano pre-production testnet
@@ -122,3 +124,5 @@ Here you can find links to all necessary documentation for each of the milestone
 >[Open-source code](../code) - the curated platform, with tests and CI on every push
 >
 >[CardanoPress v1.36.1](https://github.com/CardanoPress/cardanopress/releases/tag/v1.36.1) - the critical wallet-authentication fix we reported upstream, credited in the release notes
+>
+>[Launch Communications](M5_Closeout/M5_Launch_Communications.pdf) - launch and artist posts with reach, used in the recognition evaluation
