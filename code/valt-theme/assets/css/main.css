@@ -1575,6 +1575,7 @@ body.valt-player-open { padding-bottom: 84px; }
 	color: #FFE1C2; background: rgba(212,165,116,0.18); border: 1px solid rgba(212,165,116,0.55);
 }
 .valt-scarcity__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--valt-coral); box-shadow: 0 0 0 0 rgba(212,165,116,0.7); animation: valt-scarcity-pulse 1.8s ease-out infinite; }
+.valt-scarcity--calm { color: var(--valt-tan); background: rgba(155,142,130,0.12); border-color: rgba(155,142,130,0.4); font-weight: 600; }
 .valt-scarcity--hot { color: #FFF1E6; background: rgba(232,124,124,0.2); border-color: rgba(232,124,124,0.6); }
 .valt-scarcity--hot .valt-scarcity__dot { background: var(--valt-red); }
 @keyframes valt-scarcity-pulse { 0% { box-shadow: 0 0 0 0 rgba(232,140,110,0.6); } 70% { box-shadow: 0 0 0 7px rgba(232,140,110,0); } 100% { box-shadow: 0 0 0 0 rgba(232,140,110,0); } }

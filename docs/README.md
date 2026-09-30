@@ -74,7 +74,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >[Proof of Achievement](M4_LaunchRollout/M4_Proof_of_Achievement.pdf) - the milestone summary: the public launch, the launch announcements, the initial adoption phase, and how a reviewer can verify each acceptance criterion
 >
->[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from 7 August to 30 September 2026 with its root cause, resolution and commit or deploy record (36 resolved), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
+>[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from 7 August to 30 September 2026 with its root cause, resolution and commit or deploy record (38 resolved, each mapped to the public code), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
 >
 >[Project Status Report (M4)](M4_LaunchRollout/M4_Project_Status.pdf) - current project status
 >
@@ -89,6 +89,8 @@ Here you can find links to all neccessary documentation for each of the mileston
 >[How to collect](https://www.valt.digital/how-to-collect/) - the step-by-step guide for new users on testnet
 >
 >[On-chain policy (Cardanoscan preprod)](https://preprod.cardanoscan.io/tokenPolicy/bf5a88ac0a236c22c2772a51ff2fa33301e17c42aa8f95fcd585b86a) - the song NFTs minted under policy `bf5a88ac…`
+>
+>On-chain test purchases through the public checkout (30 Sep 2026): [Freakshow a01-a02](https://preprod.cardanoscan.io/transaction/1d28cc8412209b1e661449223c34cbee0d87efe0c453aaf60fc7220b2be03ea1), [London a01-a05](https://preprod.cardanoscan.io/transaction/466e4369b6db390ca70d2e7b1ee859273d1988e71d85b73411119ffeb9c8ea5c), [London #15 from a mobile wallet](https://preprod.cardanoscan.io/transaction/47c9af06cebc70ee2561113f939781861902ef450f74bd6ac20d92437afe9dd3) - payment and mint in one transaction
 >
 >[Launch announcement on X (7 Aug 2026)](https://x.com/awen_online/status/2085778010221781268) and [Instagram](https://www.instagram.com/p/Dbv0KD1oGKf/) - the public launch
 

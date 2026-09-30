@@ -29,23 +29,26 @@ Built on WordPress, powered by Cardano, and funded by **Project Catalyst Fund 11
 
 - **Server-side NFT token-gating** - content is released only to wallets that hold the artist's song NFT, checked against the CardanoPress asset cache on the server
 - **Artist Valts** - per-artist gated fan-club zones, configurable from the artist dashboard
-- **Collect songs as Cardano NFTs** - minting and edition copies via NMKR, with full music-token metadata
+- **Collect songs as Cardano NFTs** - an in-page wallet checkout for featured releases (built on the Anvil transaction API, 1 to 5 editions per order, payment and mint in one transaction) plus NMKR Pay for the rest of the catalogue
 - **Artist Dashboard** - a frontend profile editor and release manager with media uploaders
 - **In-product feedback survey** - a persisted NPS and ownership-model survey (the M3 feedback deliverable), live at [/feedback](https://www.valt.digital/feedback/)
 - **REST API** - namespaced discovery and ownership-status endpoints (`/wp-json/valt/v1/`)
-- **Automated tests and CI** - a PHPUnit suite plus a load harness, run on PHP 8.0-8.3 via GitHub Actions on every push
+- **Automated tests and CI** - a PHPUnit suite plus a load harness, run on PHP 8.1-8.3 via GitHub Actions on every push
 
 ## Repository Structure
 
 ```
 valt/
-├── code/                      # Curated open-source subset of the platform (plugin + theme)
-│   ├── valt-platform/         # Token-gating, NMKR minting, REST API, artist dashboard
-│   └── valt-theme/            # Hello Elementor child: templates, Pods, site chrome
+├── code/                      # Curated open-source subset of the platform
+│   ├── valt-platform/         # Token-gating, checkout (Anvil + NMKR), REST API, artist dashboard
+│   ├── valt-theme/            # Hello Elementor child: templates, player, survey, intake
+│   ├── mu-plugins/            # Login throttle, slug redirects, survey prompt
+│   └── valt-mint/             # Node fallback minting tool + disclosed checkout test script
 ├── docs/                      # Project Catalyst milestone evidence
 │   ├── M1_Initialization/     # Setup report, API docs, status + timeline
 │   ├── M2_Development/        # Development report, launch-partner roster, evidence
-│   └── M3_Implementation/     # Test & bug-fix, security audit, feedback + roadmap, PoA
+│   ├── M3_Implementation/     # Test & bug-fix, security audit, feedback + roadmap, PoA
+│   └── M4_LaunchRollout/      # PoA, rollout bug log, status + timeline
 ├── tests/                     # PHPUnit suite + load harness
 └── README.md
 ```
@@ -63,9 +66,9 @@ valt/
 | Page Builder | Elementor Pro |
 | Data Layer | Pods (CPTs: Artists, Albums, Songs) |
 | Wallet | CardanoPress (CIP-30 connection, delegation, NFT assets) |
-| Minting | NMKR (mint-and-send, IPFS pinning) |
+| Minting / checkout | Anvil transaction API (in-page checkout, project policy key) and NMKR (NMKR Pay, IPFS pinning) |
 | Token-Gating | valt-platform plugin (server-side, CardanoPress asset cache) |
-| Tests / CI | PHPUnit + GitHub Actions (PHP 8.0-8.3) + semgrep |
+| Tests / CI | PHPUnit + GitHub Actions (PHP 8.1-8.3) + semgrep |
 
 ## Project Catalyst Fund 11
 
@@ -76,12 +79,12 @@ Valt is funded by a **100,000 ADA** grant from [Cardano Project Catalyst Fund 11
 | M1 | Initialization - infrastructure & design | Delivered |
 | M2 | Development - core platform & launch partners | Delivered - [evidence](docs/M2_Development/) |
 | M3 | Implementation & Prelaunch - testing, security, feedback | Evidence published - [evidence](docs/M3_Implementation/) |
-| M4 | Launch & Rollout | Upcoming |
+| M4 | Launch & Rollout - public launch, announcements, rollout support | Evidence published - [evidence](docs/M4_LaunchRollout/) |
 | M5 | Closeout & Evaluation | Upcoming |
 
 ## Getting Started
 
-See **[code/README.md](code/README.md)** for installation, configuration, and the shortcode and REST API reference. The published build is verified on every push: `composer install && vendor/bin/phpunit` (expect `OK, 15 tests, 25 assertions`), and `php tests/load-plugin.php code/valt-platform` reports `VERDICT=LOADED`.
+See **[code/README.md](code/README.md)** for installation, configuration, and the shortcode and REST API reference. The published build is verified on every push: `composer install && vendor/bin/phpunit` (expect `OK (19 tests, 41 assertions)`), and `php tests/load-plugin.php code/valt-platform` reports `VERDICT=LOADED`.
 
 ## License
 

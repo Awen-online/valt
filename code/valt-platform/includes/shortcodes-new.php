@@ -310,7 +310,10 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 					<span class="valt-mint__price-usd">test ADA</span>
 				<?php endif; ?>
 				<?php if ( $max_supply ) : ?>
-					<span class="valt-mint__supply"><?php echo $mint_count > 0 ? $mint_count . ' / ' . $max_supply . ' collected' : 'Edition of ' . $max_supply; ?></span>
+					<?php // On testnet every mint so far is an Awen test collect: say so, so the count never reads as demand. ?>
+					<span class="valt-mint__supply"><?php echo $mint_count > 0
+						? ( $config['mode'] !== 'mainnet' ? $mint_count . ' / ' . $max_supply . ' minted on testnet (includes Awen test collects)' : $mint_count . ' / ' . $max_supply . ' collected' )
+						: 'Edition of ' . $max_supply; ?></span>
 				<?php endif; ?>
 				<?php echo valt_scarcity_badge( $song_id ); ?>
 			</div>
@@ -690,6 +693,10 @@ function valt_scarcity_badge( int $song_id ): string {
 	$n = valt_song_stock( $song_id );
 	if ( $n === null ) return '';
 	if ( $n < 1 || $n > VALT_SCARCITY_THRESHOLD ) return '';
+	// Testnet: a plain count, no urgency (the collects so far are Awen tests, not demand).
+	if ( function_exists( 'valt_nmkr_config' ) && valt_nmkr_config()['mode'] !== 'mainnet' ) {
+		return '<span class="valt-scarcity valt-scarcity--calm">' . esc_html( $n === 1 ? '1 edition left' : "{$n} editions left" ) . '</span>';
+	}
 	$label = $n === 1 ? 'Last one' : "Only {$n} left";
 	return '<span class="valt-scarcity' . ( $n <= 2 ? ' valt-scarcity--hot' : '' ) . '"><span class="valt-scarcity__dot" aria-hidden="true"></span>' . esc_html( $label ) . '</span>';
 }
