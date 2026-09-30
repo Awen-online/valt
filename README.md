@@ -28,12 +28,13 @@ Built on WordPress, powered by Cardano, and funded by **Project Catalyst Fund 11
 ## Features
 
 - **Server-side NFT token-gating** - content is released only to wallets that hold the artist's song NFT, checked against the CardanoPress asset cache on the server
+- **Holder-only media** - private video stored outside the web root and streamed only to wallets that hold that artist's NFT
 - **Artist Valts** - per-artist gated fan-club zones, configurable from the artist dashboard
 - **Collect songs as Cardano NFTs** - an in-page wallet checkout for featured releases (built on the Anvil transaction API, 1 to 5 editions per order, payment and mint in one transaction) plus NMKR Pay for the rest of the catalogue
 - **Artist Dashboard** - a frontend profile editor and release manager with media uploaders
 - **In-product feedback survey** - a persisted NPS and ownership-model survey (the M3 feedback deliverable), live at [/feedback](https://www.valt.digital/feedback/)
 - **REST API** - namespaced discovery and ownership-status endpoints (`/wp-json/valt/v1/`)
-- **Automated tests and CI** - a PHPUnit suite plus a load harness, run on PHP 8.1-8.3 via GitHub Actions on every push
+- **Automated tests and CI** - a PHPUnit suite plus a load harness, run on PHP 8.1-8.3 via GitHub Actions on every push, with a semgrep security scan
 
 ## Repository Structure
 
@@ -42,15 +43,19 @@ valt/
 ├── code/                      # Curated open-source subset of the platform
 │   ├── valt-platform/         # Token-gating, checkout (Anvil + NMKR), REST API, artist dashboard
 │   ├── valt-theme/            # Hello Elementor child: templates, player, survey, intake
-│   ├── mu-plugins/            # Login throttle, slug redirects, survey prompt
+│   ├── mu-plugins/            # Login throttle, slug redirects, survey-pulse endpoint
 │   └── valt-mint/             # Node fallback minting tool + disclosed checkout test script
 ├── docs/                      # Project Catalyst milestone evidence
+│   ├── assets/                # Banner image
 │   ├── M1_Initialization/     # Setup report, API docs, status + timeline
 │   ├── M2_Development/        # Development report, launch-partner roster, evidence
 │   ├── M3_Implementation/     # Test & bug-fix, security audit, feedback + roadmap, PoA
 │   ├── M4_LaunchRollout/      # PoA, rollout bug log, status + timeline
-│   └── M5_Closeout/           # final report, close-out report, video script
+│   └── M5_Closeout/           # Final report, close-out report, video + script, screens
 ├── tests/                     # PHPUnit suite + load harness
+├── .github/workflows/ci.yml   # CI: lint + PHPUnit (PHP 8.1-8.3) + semgrep
+├── composer.json              # Dev dependencies for the test suite
+├── LICENSE                    # MIT
 └── README.md
 ```
 
@@ -66,22 +71,22 @@ valt/
 | Parent Theme | Hello Elementor |
 | Page Builder | Elementor Pro |
 | Data Layer | Pods (CPTs: Artists, Albums, Songs) |
-| Wallet | CardanoPress (CIP-30 connection, delegation, NFT assets) |
+| Wallet | CardanoPress (CIP-30 connection, delegation, NFT assets); v1.36.1 includes the critical wallet-authentication fix Awen reported |
 | Minting / checkout | Anvil transaction API (in-page checkout, project policy key) and NMKR (NMKR Pay, IPFS pinning) |
 | Token-Gating | valt-platform plugin (server-side, CardanoPress asset cache) |
 | Tests / CI | PHPUnit + GitHub Actions (PHP 8.1-8.3) + semgrep |
 
 ## Project Catalyst Fund 11
 
-Valt is funded by a **100,000 ADA** grant from [Cardano Project Catalyst Fund 11](https://projectcatalyst.io/funds/11/cardano-use-cases-concept/afrocharts-or-web3-artist-portal-awen) under the **Cardano Use Cases** category (Project #1100019).
+Valt is funded by a **100,000 ADA** grant from [Cardano Project Catalyst Fund 11](https://projectcatalyst.io/funds/11/cardano-use-cases-concept/afrocharts-or-web3-artist-portal-awen) under the **Cardano Use Cases: Concept** category (Project #1100019). The platform runs on the Cardano pre-production (preprod) testnet.
 
 | Milestone | Focus | Status |
 |-----------|-------|--------|
-| M1 | Initialization - infrastructure & design | Delivered |
-| M2 | Development - core platform & launch partners | Delivered - [evidence](docs/M2_Development/) |
+| M1 | Initialization - infrastructure & design | Delivered - [evidence](docs/M1_Initialization/) |
+| M2 | Development - core platform & launch partners | Delivered (approved) - [evidence](docs/M2_Development/) |
 | M3 | Implementation & Prelaunch - testing, security, feedback | Evidence published - [evidence](docs/M3_Implementation/) |
-| M4 | Launch & Rollout - public launch, announcements, rollout support | Evidence published - [evidence](docs/M4_LaunchRollout/) |
-| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | Evidence published - [evidence](docs/M5_Closeout/) |
+| M4 | Launch & Rollout - public launch, announcements, rollout support | Evidence published, PoA submitted 30 Sep 2026 - [evidence](docs/M4_LaunchRollout/) |
+| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | Evidence published - [evidence](docs/M5_Closeout/), [close-out video](https://awen.online/valt-closeout) (final cut being finalised) |
 
 ## Getting Started
 
@@ -91,7 +96,7 @@ See **[code/README.md](code/README.md)** for installation, configuration, and th
 
 The code released in this repository is licensed under the **[MIT License](LICENSE)**, as committed in the Project Catalyst Fund 11 application. Copyright (c) 2026 Awen LLC.
 
-The hosted Valt platform at [valt.digital](https://www.valt.digital), along with platform-specific operational logic that is not part of this repository (the NMKR minting pipeline, feedback-pulse bridge, admin tooling, etc.), remains proprietary to Awen LLC.
+The hosted Valt platform at [valt.digital](https://www.valt.digital), along with platform-specific operational logic that is not part of this repository (deployment tooling, admin documentation screens, and dormant modules such as gamification, campaigns and leaderboards), remains proprietary to Awen LLC.
 
 ---
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/valt-banner.png" alt="Valt — Token-gated music platform on Cardano" width="100%">
+  <img src="assets/valt-banner.png" alt="Valt - Token-gated music platform on Cardano" width="100%">
 </p>
 
 # Afrocharts | Web3 Artist Portal (Awen)
@@ -8,7 +8,7 @@ Visit our domain: https://valt.digital
 
 ## Documentation
 
-Here you can find links to all neccessary documentation for each of the milestones throughout the progress of this project.
+Here you can find links to all necessary documentation for each of the milestones throughout the progress of this project.
 ### Milestone 1 - Initialization
 >**Documents**
 >
@@ -36,7 +36,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >[Project Timeline (M2)](M2_Development/Awen%20x%20AfroCharts%20Project%20Timeline%20M2.pdf) - updated roadmap, timeline, and responsibilities
 >
->[Evidence Screenshots](M2_Development/screenshots) - the E1-E10 evidence set (NMKR Studio + inventory, Cardanoscan, live portal, wallet connection, the full minting sequence, The Valt unlocked, NFT Monitor backend)
+>[Evidence Screenshots](M2_Development/screenshots) - the E1-E12 evidence set (NMKR Studio + inventory, Cardanoscan, live portal, wallet connection, the full minting sequence, The Valt unlocked, NFT Monitor backend, the Valt terms clauses and signatures) plus the S1-S5 supporting screens
 >
 >**Verify**
 >
@@ -53,7 +53,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >[Test & Bug-Fix Report](M3_Implementation/M3_Test_and_Bugfix_Report.pdf) - the test suite and its results, the six defects found and resolved, repository reconciliation, known limitations
 >
->[Security Audit Report](M3_Implementation/M3_Security_Audit_Report.pdf) - automated scanning (semgrep) plus an autonomous-style assessment, the manual and on-chain security reviews, findings with dispositions, and mainnet prerequisites
+>[Security Audit Report](M3_Implementation/M3_Security_Audit_Report.pdf) - an internal security review (not an independent third-party audit): automated scanning (semgrep) plus an autonomous-style assessment, the manual and on-chain security reviews, findings with dispositions, and mainnet prerequisites
 >
 >[User Feedback & Roadmap](M3_Implementation/M3_User_Feedback_and_Roadmap.pdf) - feedback channels, the in-product survey, the analysis (n=5: artists and collectors), improvements made, and the updated roadmap through M4/M5
 >
@@ -63,7 +63,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >**Verify**
 >
->[Test suite](../tests) - 15 tests / 25 assertions: `composer install && vendor/bin/phpunit`
+>[Test suite](../tests) - 15 tests / 25 assertions at M3, now 19 tests / 41 assertions after the M4 checkout tests: `composer install && vendor/bin/phpunit`
 >
 >[CI workflow](../.github/workflows/ci.yml) - lint + suite on PHP 8.1-8.3 (8.0 dropped at M4: PHPUnit 10 needs 8.1) plus a semgrep security scan, on every push
 >
@@ -72,7 +72,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 ### Milestone 4 - Launch and Rollout
 >**Documents**
 >
->[Proof of Achievement](M4_LaunchRollout/M4_Proof_of_Achievement.pdf) - the milestone summary: the public launch, the launch announcements, the initial adoption phase, and how a reviewer can verify each acceptance criterion
+>[Proof of Achievement](M4_LaunchRollout/M4_Proof_of_Achievement.pdf) - submitted 30 Sep 2026; the milestone summary: the public launch, the launch announcements, the initial adoption phase, and how a reviewer can verify each acceptance criterion
 >
 >[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from 7 August to 30 September 2026 with its root cause, resolution and commit or deploy record (38 resolved, each mapped to the public code), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
 >
@@ -100,7 +100,7 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >Featured release promo, London by Hazzy Jo (30 Sep 2026): [X](https://x.com/awen_online/status/2105201059018760418), [Instagram](https://www.instagram.com/reel/Dd50c76AIVA/), [LinkedIn](https://www.linkedin.com/feed/update/urn:li:ugcPost:7510966925615824898/)
 >
->[CI](../.github/workflows/ci.yml) - lint + PHPUnit (19 tests) on PHP 8.1-8.3 plus a semgrep scan, on every push
+>[CI](../.github/workflows/ci.yml) - lint + PHPUnit (19 tests, 41 assertions) on PHP 8.1-8.3 plus a semgrep scan, on every push
 
 ### Milestone 5 - Closeout & Evaluation
 >**Documents**
@@ -108,6 +108,8 @@ Here you can find links to all neccessary documentation for each of the mileston
 >[Final Report](M5_Closeout/M5_Final_Report.pdf) - final design, results and evaluation: the architecture, the metrics dashboard, user feedback and a named artist testimonial, the per-artist evaluation of recognition, opportunities and compensation, the ecosystem contribution, and the next phase
 >
 >[Project Close-out Report](M5_Closeout/M5_Project_Closeout_Report.pdf) - the Catalyst close-out summary: challenge and project KPIs, key achievements, learnings and next steps
+>
+>[Close-out video](https://awen.online/valt-closeout) - the close-out video (the final cut is being finalised)
 >
 >[Close-out video script](M5_Closeout/M5_Closeout_Video_Script.md) - the script and shot list for the close-out video
 >

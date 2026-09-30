@@ -1,6 +1,6 @@
 # valt-theme
 
-Custom WordPress child theme for [valt.digital](https://valt.digital) — a Cardano blockchain-integrated platform for managing NFTs, digital assets, artists, albums, and songs.
+Custom WordPress child theme for [valt.digital](https://valt.digital), a token-gated music platform on the Cardano preprod testnet where fans collect songs as NFTs from artists, albums and songs managed in WordPress.
 
 ## Overview
 
@@ -22,7 +22,7 @@ Custom WordPress child theme for [valt.digital](https://valt.digital) — a Card
 | Parent theme | Hello Elementor |
 | Page builder | Elementor Pro |
 | Data layer | Pods framework |
-| Blockchain | CardanoPress (Cardano) |
+| Blockchain | CardanoPress (CIP-30 wallets, Cardano preprod) |
 | Local dev | Local by Flywheel |
 
 ## Project Structure
@@ -34,6 +34,7 @@ valt-theme/
 |-- page-valt.php                Full-page template: hero (image or looping video), CTA cards
 |-- single-artist.php            Artist page and the Valt (gated zone, collected/sync states)
 |-- single-song.php              Song page: player, collect / sold-out panel, about
+|-- 404.php                      Branded not-found page
 |-- assets/
 |   |-- css/main.css             Primary styles (player, spotlight, checkout, sold-out, survey hooks)
 |   |-- css/survey.css, intake.css
@@ -45,9 +46,11 @@ valt-theme/
 |   |-- svg-icons.php            Inline icon set
 |   |-- survey/                  (M3/M4) Feedback survey, see functions/survey/README.md
 |   |-- intake/                  (M4) Artist intake form and leads screen
+|   |-- pods/datatag/            Elementor dynamic tag: related artist featured image
 |   |-- elementor.php            Elementor query filters via Pods relationships
 |   |-- pods.php                 Pods framework integration
 |   `-- shortcodes/pods_artist_featured_image.php
+|-- scripts/afrocharts-api-sync.py   Historical AfroCharts API song import (M1 era)
 `-- cardanopress/                Cardano wallet template overrides
 ```
 
@@ -106,7 +109,7 @@ Enqueue new assets in the `wp_enqueue_scripts` hook inside `functions.php`.
 
 ### Elementor + Pods
 
-`functions/elementor.php` hooks into Elementor's dynamic query system to filter content by Pods relationships — for example, filtering Songs or Albums by a related Artist.
+`functions/elementor.php` hooks into Elementor's dynamic query system to filter content by Pods relationships, for example filtering Songs or Albums by a related Artist.
 
 ## Deployment
 

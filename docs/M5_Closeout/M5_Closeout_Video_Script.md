@@ -16,7 +16,22 @@ Project Catalyst Fund 11, project 1100019. Written to the Catalyst PCV rules
 
 ## Before you record
 - Browser at 1280 px, signed out, no wallet connected, notifications off. **No admin screens.**
-- Tabs in order: 1 valt.digital · 2 /song/london/ · 3 /how-to-collect/ · 4 /artist/hazzy-jo/ · 5 /artist/mie/ · 6 github.com/Awen-online/valt · 7 the Final Report PDF (section 3).
+- Browser tabs to open, in this order (signed out of wp-admin; a normal visitor view):
+
+| Tab | Page | URL | Used in |
+|---|---|---|---|
+| 1 | Homepage | https://www.valt.digital/ | Shot 1, 3a, 4 |
+| 2 | London by Hazzy Jo (collect page) | https://www.valt.digital/song/london/ | Shot 3b |
+| 3 | How to collect | https://www.valt.digital/how-to-collect/ | Shot 3d |
+| 4 | Hazzy Jo's Valt (locked view) | https://www.valt.digital/artist/hazzy-jo/ | Shot 3c |
+| 5 | Mie's page | https://www.valt.digital/artist/mie/ | Shot 4 |
+| 6 | Public GitHub repo | https://github.com/Awen-online/valt | Shot 3e |
+| 7 | Final Report PDF (section 3, the numbers) | https://github.com/Awen-online/valt/blob/main/docs/M5_Closeout/M5_Final_Report.pdf | Shot 2 |
+| 8 | M4 Rollout Bug Log PDF | https://github.com/Awen-online/valt/blob/main/docs/M4_LaunchRollout/M4_Rollout_Bug_Log.pdf | Shot 3e |
+| 9 | CardanoPress v1.36.1 release (credit) | https://github.com/CardanoPress/cardanopress/releases/tag/v1.36.1 | Shot 2 (optional) |
+
+  Open them all at once in Brave (PowerShell):
+  `$b="C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"; & $b --new-window https://www.valt.digital/ https://www.valt.digital/song/london/ https://www.valt.digital/how-to-collect/ https://www.valt.digital/artist/hazzy-jo/ https://www.valt.digital/artist/mie/ https://github.com/Awen-online/valt https://github.com/Awen-online/valt/blob/main/docs/M5_Closeout/M5_Final_Report.pdf https://github.com/Awen-online/valt/blob/main/docs/M4_LaunchRollout/M4_Rollout_Bug_Log.pdf https://github.com/CardanoPress/cardanopress/releases/tag/v1.36.1`
 - **Never complete a real payment on camera.** Show the edition picker and stop before signing.
 - Intro card (first 3 s): *Valt · Project Catalyst Fund 11 · Project 1100019 · Awen LLC*.
 
@@ -24,8 +39,8 @@ Project Catalyst Fund 11, project 1100019. Written to the Catalyst PCV rules
 
 ### Part 1: the challenge and the funding (0:00 to 0:35)
 **Shot 1.** Intro card, then tab 1, the homepage. Scroll once, slowly.
-> I'm Ian McCullough from Awen. This is the close-out video for Valt, Project 1100019, funded in Project Catalyst Fund 11 under Cardano Use Cases: Concept.
-> The problem: independent musicians have few ways to earn directly from their most engaged fans. Our approach was a portal on Cardano where fans collect limited song editions, and owning one unlocks that artist's private space, their Valt.
+> Streaming made music easy to hear and hard to support. Valt gives independent artists a direct line to their superfans: collect a limited edition of a song, and it unlocks that artist's private Valt, owned on Cardano.
+> I'm Ian McCullough from Awen. This is Valt, the Afrocharts Web3 Artist Portal, project 1100019, funded in Project Catalyst Fund 11 under Cardano Use Cases: Concept.
 
 ### Part 2: progress, KPIs, learnings, gaps (0:35 to 1:40)
 **Shot 2.** Tab 7, Final Report section 3 (the numbers grid). Hold.

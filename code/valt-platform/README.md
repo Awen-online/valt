@@ -23,7 +23,9 @@ CardanoPress provides wallet connection and NFT asset storage. Pods provides the
 
 1. Copy `valt-platform/` into `wp-content/plugins/`
 2. Activate in **wp-admin → Plugins**
-3. Visit **Valt Platform → Shortcode Reference** in the admin sidebar for live documentation
+3. Configure keys under **Settings** (`wp-admin/admin.php?page=valt-settings`) and watch mints in the
+   **NFT Monitor** (`wp-admin/admin.php?page=valt-nft-monitor`). In the curated build these pages have no
+   sidebar parent, because the admin docs module that adds the **Valt Platform** menu is not included.
 
 ---
 
@@ -61,9 +63,9 @@ All shortcodes are Elementor-droppable. Drop them via the Shortcode widget or pa
 
 ---
 
-### `[valt_gated_content]` — Enclosing
+### `[valt_gated_content]` (enclosing)
 
-Server-side NFT policy gate. Non-holders **never receive the inner HTML** — the content is withheld on the server, not merely hidden with CSS.
+Server-side NFT policy gate. Non-holders **never receive the inner HTML**: the content is withheld on the server, not merely hidden with CSS.
 
 ```
 [valt_gated_content
@@ -92,7 +94,7 @@ Server-side NFT policy gate. Non-holders **never receive the inner HTML** — th
 
 **Examples:**
 ```
-[valt_gated_content policy_id="a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481809"
+[valt_gated_content policy_id="bf5a88ac0a236c22c2772a51ff2fa33301e17c42aa8f95fcd585b86a"
     locked_message="Hold a Valt NFT to unlock this content."]
   <p>Exclusive fan-club content here.</p>
 [/valt_gated_content]
@@ -104,7 +106,7 @@ Server-side NFT policy gate. Non-holders **never receive the inner HTML** — th
 
 ---
 
-### `[valt_connect_prompt]` — Self-closing
+### `[valt_connect_prompt]` (self-closing)
 
 Renders the CardanoPress wallet connect modal trigger. **Silent if the visitor already has a wallet connected.**
 
@@ -124,9 +126,9 @@ Renders the CardanoPress wallet connect modal trigger. **Silent if the visitor a
 
 ---
 
-### `[valt_artist_profile]` — Self-closing
+### `[valt_artist_profile]` (self-closing)
 
-Renders a public artist card. No gating — visible to all visitors.
+Renders a public artist card. No gating: visible to all visitors.
 
 ```
 [valt_artist_profile artist_id=""]
@@ -145,9 +147,9 @@ Renders a public artist card. No gating — visible to all visitors.
 
 ---
 
-### `[valt_artist_valt]` — Enclosing
+### `[valt_artist_valt]` (enclosing)
 
-Combines a public artist header with a gated fan-club zone below it. The policy ID comes from the artist's own `valt_policy_id` meta — no attribute needed.
+Combines a public artist header with a gated fan-club zone below it. The policy ID comes from the artist's own `valt_policy_id` meta, so no attribute is needed.
 
 ```
 [valt_artist_valt artist_id=""]
@@ -172,7 +174,7 @@ Combines a public artist header with a gated fan-club zone below it. The policy 
 
 ---
 
-### `[valt_artist_dashboard]` — Self-closing
+### `[valt_artist_dashboard]` (self-closing)
 
 Full frontend artist management dashboard. Requires the visitor to be **logged in** and have a linked Artist CPT (`post_author` = their WP user ID).
 
@@ -182,7 +184,7 @@ Full frontend artist management dashboard. Requires the visitor to be **logged i
 
 No attributes.
 
-**Profile tab** — editable fields saved via AJAX (`valt_save_artist_profile`):
+**Profile tab**: editable fields saved via AJAX (`valt_save_artist_profile`):
 
 | Field | Stored as |
 |-------|-----------|
@@ -194,14 +196,14 @@ No attributes.
 | Profile photo | Post thumbnail (via `wp.media()`) |
 
 **Releases tab:**
-- **Add Release form** — title, audio file (`wp.media()` audio picker), album, duration, track number. Creates a Song CPT via `valt_add_release` with `valt_release_status = 1`.
-- **Releases table** — title · album · duration · status badge · mint count.
+- **Add Release form**: title, audio file (`wp.media()` audio picker), album, duration, track number. Creates a Song CPT via `valt_add_release` with `valt_release_status = 1`.
+- **Releases table**: title · album · duration · status badge · mint count.
 
 **Admin setup:** In wp-admin, edit the Artist CPT and set the **Author** field to the WP user who manages it.
 
 ---
 
-### `[valt_release_status]` — Self-closing
+### `[valt_release_status]` (self-closing)
 
 Renders a small inline badge showing a Song CPT's current release status.
 
@@ -359,17 +361,36 @@ is claimed. Unknown stock (for example an API hiccup) never reads as sold out.
 
 Shortcodes that belong to the omitted dormant modules (`valt_leaderboard`, `valt_user_points`,
 `valt_user_badges`, `valt_campaign_card`, `valt_active_campaigns`) are registered but not part of
-the milestone functionality.
+the milestone functionality; their back ends are not included in this build.
+
+---
+
+## REST API (`/wp-json/valt/v1/`)
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/discover/artists` | GET | Artist directory (`search`, `genre`, `country`, `sort`, `page`, `per_page`) |
+| `/discover/genres` | GET | Genres in use |
+| `/discover/trending` | GET | Trending artists |
+| `/nft/status/<song_id>` | GET | Mint status for a song (logged-in users) |
+| `/collect` | POST | NMKR Pay multi-edition checkout (see Collecting) |
+| `/anvil/build`, `/anvil/submit`, `/anvil/cancel`, `/anvil/status` | POST / GET | In-page wallet checkout (see Collecting) |
+
+`rest-api.php` also registers `/leaderboard`, `/user/points`, `/user/badges` and `/campaigns` routes
+for the dormant modules, which are not included in this build. The theme adds `/survey`,
+`/survey-results`, `/survey-export`, `/artist-intake` and `/artist-intake-csv`, and the mu-plugin adds
+`/survey-pulse`.
 
 ---
 
 ## Post Meta Reference
 
-All three keys are registered with `register_post_meta()` and `show_in_rest => true`.
+The core keys below are registered with `register_post_meta()` and `show_in_rest => true` (see
+`includes/rest-meta.php` for the rest, such as social links, NFT pricing and supply).
 
 | Post Type | Meta Key | Type | Purpose |
 |-----------|----------|------|---------|
-| `artist` | `valt_policy_id` | string | Cardano NFT policy ID — gates this artist's Valt fan-club zone |
+| `artist` | `valt_policy_id` | string | Cardano NFT policy ID; gates this artist's Valt fan-club zone |
 | `song` | `valt_release_status` | integer (1–3) | Release stage. Default: `1`. |
 | `song` | `valt_mint_count` | integer | Number of copies minted. Shown on badge and in dashboard. |
 
@@ -377,20 +398,23 @@ All three keys are registered with `register_post_meta()` and `show_in_rest => t
 
 ## Admin Features
 
-### Song edit screen — Valt Release Info meta box
+### Song edit screen: Valt Release Info meta box
 Allows admins to advance a song's `valt_release_status` (1 → 2 → 3) and set the `valt_mint_count`.
 
-### Artist list — Policy ID column
+### Artist list: Policy ID column
 The `valt_policy_id` value for each artist is shown as a column in the wp-admin Artist post list for quick reference.
 
-### Valt Platform menu
-A top-level **Valt Platform** item appears in the wp-admin sidebar with a **Shortcode Reference** page — the same documentation rendered inline with live syntax highlighting.
+### Settings and NFT Monitor
+**Settings** (`valt-settings`) holds the NMKR and Pinata settings and the module toggles, with secret fields that keep
+their stored value when left empty. **NFT Monitor** (`valt-nft-monitor`) shows NMKR project status,
+minted NFTs and the event log. On the full platform both sit under a top-level **Valt Platform** menu
+with a **Shortcode Reference** page; that admin docs module is not included in this build.
 
 ---
 
 ## AJAX Actions
 
-Both actions POST to `admin-ajax.php`. Every request includes `nonce` (`valtPlatform.nonce`) and `action`. Handlers are in `includes/artist-dashboard.php`.
+The dashboard's two actions POST to `admin-ajax.php`. Every request includes `nonce` (`valtPlatform.nonce`) and `action`. Handlers are in `includes/artist-dashboard.php`; the admin mint, upload and follow actions are in `includes/ajax-handlers.php`.
 
 | Action | Auth | POST fields | Response |
 |--------|------|-------------|----------|
