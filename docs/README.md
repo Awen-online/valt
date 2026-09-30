@@ -92,6 +92,14 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >On-chain test purchases through the public checkout (30 Sep 2026): [Freakshow a01-a02](https://preprod.cardanoscan.io/transaction/1d28cc8412209b1e661449223c34cbee0d87efe0c453aaf60fc7220b2be03ea1), [London a01-a05](https://preprod.cardanoscan.io/transaction/466e4369b6db390ca70d2e7b1ee859273d1988e71d85b73411119ffeb9c8ea5c), [London #15 from a mobile wallet](https://preprod.cardanoscan.io/transaction/47c9af06cebc70ee2561113f939781861902ef450f74bd6ac20d92437afe9dd3) - payment and mint in one transaction
 >
->[Launch announcement on X (7 Aug 2026)](https://x.com/awen_online/status/2085778010221781268) and [Instagram](https://www.instagram.com/p/Dbv0KD1oGKf/) - the public launch
+>Launch announcements (7 Aug 2026): [X](https://x.com/awen_online/status/2085778010221781268), [Instagram](https://www.instagram.com/p/Dbv0KD1oGKf/), [LinkedIn](https://www.linkedin.com/feed/update/urn:li:share:7491543690490929153/), [Facebook](https://www.facebook.com/1520214066786625) and the [launch article](https://awen.online/news/valt-is-live/) (published 5 Aug)
+>
+>Artist announcement (Cullah, 8 Aug 2026): [X](https://x.com/CullahMusic/status/2086145493663428971), [Instagram](https://www.instagram.com/p/DbycCdGIB05/), [LinkedIn](https://www.linkedin.com/feed/update/urn:li:share:7491911173290774530/)
+>
+>Follow-up, one month on (21 Sep 2026): [X](https://x.com/awen_online/status/2101953731768049855), [Instagram](https://www.instagram.com/p/Ddiv0V5EkIG/), [article](https://awen.online/news/valt-one-month-on/)
+>
+>Featured release promo, London by Hazzy Jo (30 Sep 2026): [X](https://x.com/awen_online/status/2105201059018760418), [Instagram](https://www.instagram.com/reel/Dd50c76AIVA/), [LinkedIn](https://www.linkedin.com/feed/update/urn:li:ugcPost:7510966925615824898/)
+>
+>[CI](../.github/workflows/ci.yml) - lint + PHPUnit (19 tests) on PHP 8.1-8.3 plus a semgrep scan, on every push
 
 ### Milestone 5 - Closeout & Evaluation

@@ -80,7 +80,7 @@ Valt is funded by a **100,000 ADA** grant from [Cardano Project Catalyst Fund 11
 | M2 | Development - core platform & launch partners | Delivered - [evidence](docs/M2_Development/) |
 | M3 | Implementation & Prelaunch - testing, security, feedback | Evidence published - [evidence](docs/M3_Implementation/) |
 | M4 | Launch & Rollout - public launch, announcements, rollout support | Evidence published - [evidence](docs/M4_LaunchRollout/) |
-| M5 | Closeout & Evaluation | Upcoming |
+| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | In progress |
 
 ## Getting Started
 
