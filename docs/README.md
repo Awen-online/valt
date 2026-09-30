@@ -76,6 +76,10 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from 7 August to 30 September 2026 with its root cause, resolution and commit or deploy record (36 resolved), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
 >
+>[Project Status Report (M4)](M4_LaunchRollout/M4_Project_Status.pdf) - current project status
+>
+>[Project Timeline (M4)](M4_LaunchRollout/M4_Project_Timeline.pdf) - updated roadmap, timeline, and responsibilities
+>
 >**Verify**
 >
 >[Live portal](https://www.valt.digital) - the public web3 portal on the Cardano pre-production testnet
