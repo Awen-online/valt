@@ -47,20 +47,73 @@ function valt_resolve_artist_id( int $song_id ): int {
 /**
  * Get NMKR configuration for the active environment.
  */
+/**
+ * wp-config.php constant names that can pin each NMKR/IPFS secret, most
+ * specific first. A mode-specific constant wins over the generic one.
+ *
+ * @param string $key  One of 'api_key', 'project_uid', 'pinata_jwt'.
+ * @param string $mode 'preprod' or 'mainnet'.
+ * @return string[]
+ */
+function valt_secret_constants( string $key, string $mode ): array {
+	$up = strtoupper( $mode );
+	switch ( $key ) {
+		case 'api_key':
+			return [ "VALT_NMKR_{$up}_API_KEY", 'VALT_NMKR_API_KEY' ];
+		case 'project_uid':
+			return [ "VALT_NMKR_{$up}_PROJECT_UID", 'VALT_NMKR_PROJECT_UID' ];
+		case 'pinata_jwt':
+			return [ 'VALT_PINATA_JWT' ];
+	}
+	return [];
+}
+
+/**
+ * Whether any of the named wp-config.php constants pins this secret. When true
+ * the value lives in wp-config.php, the database option is ignored, and the
+ * settings field should be masked/disabled.
+ *
+ * @param string[] $constants
+ */
+function valt_secret_pinned( array $constants ): bool {
+	foreach ( $constants as $c ) {
+		if ( defined( $c ) && '' !== (string) constant( $c ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Resolve a secret. A wp-config.php constant is AUTHORITATIVE: when set it wins
+ * over the database option, so mainnet-custody credentials can be moved out of
+ * the options table (and out of any DB dump or the settings screen) entirely.
+ * Falls back to the option only when no constant is defined, so existing
+ * installs are unaffected until an operator moves the secret to wp-config.php.
+ *
+ * @param string[] $constants Constant names, most specific first.
+ * @param string   $option    Database option name to fall back to.
+ */
+function valt_secret( array $constants, string $option ): string {
+	foreach ( $constants as $c ) {
+		if ( defined( $c ) && '' !== (string) constant( $c ) ) {
+			return (string) constant( $c );
+		}
+	}
+	return (string) get_option( $option, '' );
+}
+
 function valt_nmkr_config(): array {
 	$mode = get_option( 'valt_nmkr_mode', 'preprod' );
 	return [
 		'mode'        => $mode,
-		'api_key'     => get_option( "valt_nmkr_{$mode}_api_key" )
-			?: ( defined( 'VALT_NMKR_API_KEY' ) ? VALT_NMKR_API_KEY : '' ),
-		'project_uid' => get_option( "valt_nmkr_{$mode}_project_uid" )
-			?: ( defined( 'VALT_NMKR_PROJECT_UID' ) ? VALT_NMKR_PROJECT_UID : '' ),
+		'api_key'     => valt_secret( valt_secret_constants( 'api_key', $mode ), "valt_nmkr_{$mode}_api_key" ),
+		'project_uid' => valt_secret( valt_secret_constants( 'project_uid', $mode ), "valt_nmkr_{$mode}_project_uid" ),
 		'policy_id'   => get_option( 'valt_nmkr_policy_id', '' ),
 		'api_url'     => $mode === 'mainnet'
 			? 'https://studio-api.nmkr.io/v2'
 			: 'https://studio-api.preprod.nmkr.io/v2',
-		'pinata_jwt'  => get_option( 'valt_pinata_jwt', '' )
-			?: ( defined( 'VALT_PINATA_JWT' ) ? VALT_PINATA_JWT : '' ),
+		'pinata_jwt'  => valt_secret( valt_secret_constants( 'pinata_jwt', $mode ), 'valt_pinata_jwt' ),
 	];
 }
 

@@ -19,14 +19,24 @@ add_action( 'admin_menu', function () {
 
 // Register settings.
 add_action( 'admin_init', function () {
-	// NMKR settings.
+	// NMKR settings. Secret fields (API keys, Pinata JWT) use a keep-on-empty
+	// sanitizer: submitting a blank value preserves the saved key rather than
+	// wiping it. This lets the settings screen render the field empty (never
+	// echoing the secret into the page) and lets a wp-config.php constant pin
+	// the value with the field disabled, without either path clearing storage.
+	$keep_on_empty = function ( string $option ): callable {
+		return function ( $value ) use ( $option ) {
+			$value = is_string( $value ) ? trim( $value ) : '';
+			return '' === $value ? get_option( $option, '' ) : $value;
+		};
+	};
 	register_setting( 'valt_settings_nmkr', 'valt_nmkr_mode' );
-	register_setting( 'valt_settings_nmkr', 'valt_nmkr_preprod_api_key' );
-	register_setting( 'valt_settings_nmkr', 'valt_nmkr_mainnet_api_key' );
+	register_setting( 'valt_settings_nmkr', 'valt_nmkr_preprod_api_key', [ 'sanitize_callback' => $keep_on_empty( 'valt_nmkr_preprod_api_key' ) ] );
+	register_setting( 'valt_settings_nmkr', 'valt_nmkr_mainnet_api_key', [ 'sanitize_callback' => $keep_on_empty( 'valt_nmkr_mainnet_api_key' ) ] );
 	register_setting( 'valt_settings_nmkr', 'valt_nmkr_preprod_project_uid' );
 	register_setting( 'valt_settings_nmkr', 'valt_nmkr_mainnet_project_uid' );
 	register_setting( 'valt_settings_nmkr', 'valt_nmkr_policy_id' );
-	register_setting( 'valt_settings_nmkr', 'valt_pinata_jwt' );
+	register_setting( 'valt_settings_nmkr', 'valt_pinata_jwt', [ 'sanitize_callback' => $keep_on_empty( 'valt_pinata_jwt' ) ] );
 
 	// Gamification settings.
 	register_setting( 'valt_settings_gamification', 'valt_points_config' );
@@ -81,13 +91,11 @@ function valt_render_nmkr_settings(): void {
 			</tr>
 			<tr>
 				<th>Preprod API Key</th>
-				<td><input type="password" name="valt_nmkr_preprod_api_key" value="<?php echo esc_attr( get_option( 'valt_nmkr_preprod_api_key' ) ); ?>" class="regular-text" autocomplete="off">
-				<?php if ( defined( 'VALT_NMKR_API_KEY' ) ) : ?><p class="description">Constant VALT_NMKR_API_KEY is set in wp-config.php (used as fallback).</p><?php endif; ?>
-				</td>
+				<td><?php valt_render_secret_field( 'valt_nmkr_preprod_api_key', valt_secret_constants( 'api_key', 'preprod' ), 'regular-text' ); ?></td>
 			</tr>
 			<tr>
 				<th>Mainnet API Key</th>
-				<td><input type="password" name="valt_nmkr_mainnet_api_key" value="<?php echo esc_attr( get_option( 'valt_nmkr_mainnet_api_key' ) ); ?>" class="regular-text" autocomplete="off"></td>
+				<td><?php valt_render_secret_field( 'valt_nmkr_mainnet_api_key', valt_secret_constants( 'api_key', 'mainnet' ), 'regular-text' ); ?></td>
 			</tr>
 			<tr>
 				<th>Preprod Project UID</th>
@@ -104,13 +112,50 @@ function valt_render_nmkr_settings(): void {
 			</tr>
 			<tr>
 				<th>Pinata JWT</th>
-				<td><input type="password" name="valt_pinata_jwt" value="<?php echo esc_attr( get_option( 'valt_pinata_jwt' ) ); ?>" class="large-text" autocomplete="off">
-				<p class="description">For IPFS uploads of NFT cover art and audio.</p></td>
+				<td><?php valt_render_secret_field( 'valt_pinata_jwt', valt_secret_constants( 'pinata_jwt', $mode ), 'large-text', 'For IPFS uploads of NFT cover art and audio.' ); ?></td>
 			</tr>
 		</table>
 		<?php submit_button( 'Save NMKR Settings' ); ?>
 	</form>
 	<?php
+}
+
+/**
+ * Render a masked secret input. The saved value is NEVER echoed into the page;
+ * the field shows only whether a key is stored. Submitting it blank preserves
+ * the saved key (see the keep-on-empty sanitizer). When a wp-config.php constant
+ * pins the secret, the field is disabled and the DB copy is ignored.
+ *
+ * @param string   $option    Option name.
+ * @param string[] $constants Constant names that can pin this secret.
+ * @param string   $class     Input CSS class.
+ * @param string   $help      Optional extra help text.
+ */
+function valt_render_secret_field( string $option, array $constants, string $class = 'regular-text', string $help = '' ): void {
+	$pinned = valt_secret_pinned( $constants );
+	$stored = '' !== (string) get_option( $option, '' );
+	if ( $pinned ) {
+		$placeholder = 'Set in wp-config.php';
+	} elseif ( $stored ) {
+		$placeholder = '•••••••• saved (leave blank to keep)';
+	} else {
+		$placeholder = 'not set';
+	}
+	printf(
+		'<input type="password" name="%1$s" value="" class="%2$s" autocomplete="off" placeholder="%3$s"%4$s>',
+		esc_attr( $option ),
+		esc_attr( $class ),
+		esc_attr( $placeholder ),
+		$pinned ? ' disabled' : ''
+	);
+	if ( $pinned ) {
+		printf(
+			'<p class="description">Pinned by the wp-config.php constant <code>%s</code>. This field is ignored and the database copy is not used.</p>',
+			esc_html( $constants[0] )
+		);
+	} elseif ( $help ) {
+		printf( '<p class="description">%s</p>', esc_html( $help ) );
+	}
 }
 
 function valt_render_gamification_settings(): void {

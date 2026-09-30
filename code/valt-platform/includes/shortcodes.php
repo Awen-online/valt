@@ -65,7 +65,14 @@ add_shortcode( 'valt_gated_content', function ( $atts, $content = '' ) {
 	}
 
 	// --- Connected, no matching NFT ---
-	if ( ! valt_user_holds_policy( $policy_id ) ) {
+	// All artists share one policy, so with an artist_id the holder must own THAT artist's
+	// editions (a Cullah holder must not unlock Hazzy Jo's content).
+	if ( ! empty( $atts['artist_id'] ) && function_exists( 'valt_filter_assets_for_artist' ) ) {
+		$holds = ! empty( valt_filter_assets_for_artist( $assets, $policy_id, get_the_title( (int) $atts['artist_id'] ) ) );
+	} else {
+		$holds = valt_user_holds_policy( $policy_id );
+	}
+	if ( ! $holds ) {
 		ob_start();
 		?>
 		<div class="valt-gated valt-gated--locked">

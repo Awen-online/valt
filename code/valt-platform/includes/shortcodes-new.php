@@ -72,10 +72,11 @@ add_shortcode( 'valt_trending_artists', function ( $atts ) {
 // Artist-first hero band. Prefers artists flagged valt_featured; falls back
 // to all artists. Optional genre/country filters let it become a focused
 // showcase (e.g. genre="Afrobeats") once those artists are onboarded.
+// ids="1,2,3" shows exactly those artists in that order (overrides featured).
 // Renders nothing when there are no matching artists, so the home stays clean.
 
 add_shortcode( 'valt_featured_artists', function ( $atts ) {
-	$atts = shortcode_atts( [ 'limit' => 6, 'genre' => '', 'country' => '' ], $atts );
+	$atts = shortcode_atts( [ 'limit' => 6, 'genre' => '', 'country' => '', 'ids' => '' ], $atts );
 
 	$base = [
 		'post_type'      => 'artist',
@@ -86,12 +87,21 @@ add_shortcode( 'valt_featured_artists', function ( $atts ) {
 	if ( $atts['genre'] )   $base['meta_query'][] = [ 'key' => 'genre',   'value' => $atts['genre'],   'compare' => '=' ];
 	if ( $atts['country'] ) $base['meta_query'][] = [ 'key' => 'country', 'value' => $atts['country'], 'compare' => '=' ];
 
-	// Prefer explicitly-featured artists; fall back to any matching artist.
-	$featured = $base;
-	$featured['meta_query'][] = [ 'key' => 'valt_featured', 'value' => '1' ];
-	$query = new WP_Query( $featured );
-	if ( ! $query->have_posts() ) {
+	// Curated list: show exactly these artists, in the given order.
+	$ids = $atts['ids'] ? array_filter( array_map( 'intval', explode( ',', $atts['ids'] ) ) ) : [];
+	if ( $ids ) {
+		$base['post__in']       = $ids;
+		$base['orderby']        = 'post__in';
+		$base['posts_per_page'] = count( $ids );
 		$query = new WP_Query( $base );
+	} else {
+		// Prefer explicitly-featured artists; fall back to any matching artist.
+		$featured = $base;
+		$featured['meta_query'][] = [ 'key' => 'valt_featured', 'value' => '1' ];
+		$query = new WP_Query( $featured );
+		if ( ! $query->have_posts() ) {
+			$query = new WP_Query( $base );
+		}
 	}
 	if ( ! $query->have_posts() ) {
 		return '';
@@ -225,7 +235,13 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 	// Live NMKR inventory for this song (cached). $avail = free editions collectible right now;
 	// null = inventory unknown (no API/config) — in that case we don't disable collecting.
 	$inv       = function_exists( 'valt_song_inventory' ) ? valt_song_inventory() : [];
-	$avail     = array_key_exists( $song_id, $inv ) ? (int) $inv[ $song_id ]['count'] : null;
+	$avail     = valt_song_stock( $song_id );
+	// Songs switched to our own Anvil checkout collect in-page (wallet signs), not via NMKR Pay.
+	$anvil     = function_exists( 'valt_song_uses_anvil' ) && valt_song_uses_anvil( $song_id );
+	if ( $anvil ) {
+		$max_supply = valt_anvil_cap( $song_id ); // this series' own edition count
+		$mint_count = valt_anvil_sold( $song_id );
+	}
 	$avail_uid = ( $avail && ! empty( $inv[ $song_id ]['uid'] ) ) ? $inv[ $song_id ]['uid'] : (string) get_post_meta( $song_id, 'valt_nft_uid', true );
 
 	// NMKR Pay link — song-specific (this song's available edition) so the pay page shows the
@@ -263,29 +279,79 @@ add_shortcode( 'valt_mint_button', function ( $atts ) {
 				<span class="valt-badge valt-badge--amber">Minting...</span>
 				<p class="valt-mint__hint">Your NFT is being minted on Cardano. This can take a few minutes.</p>
 			</div>
-		<?php elseif ( $max_supply > 0 && $mint_count >= $max_supply ) : ?>
-			<span class="valt-badge valt-badge--grey">Sold Out</span>
+		<?php elseif ( ( $max_supply > 0 && $mint_count >= $max_supply ) || valt_song_sold_out( $song_id ) ) : ?>
+			<?php // Every edition is collected or claimed by a paid order: a finished state, not an error.
+			$so_artist = function_exists( 'valt_resolve_artist_id' ) ? valt_resolve_artist_id( $song_id ) : 0; ?>
+			<div class="valt-soldout">
+				<div class="valt-soldout__head">
+					<span class="valt-soldout__stamp">Sold out</span>
+					<span class="valt-soldout__count"><?php echo $max_supply ? 'All ' . (int) $max_supply . ' editions claimed' : 'Every edition claimed'; ?></span>
+				</div>
+				<p class="valt-soldout__text">Thanks to everyone who collected <?php echo esc_html( get_the_title( $song_id ) ); ?>. The full song stays free to stream here<?php echo $so_artist ? ', and ' . esc_html( get_the_title( $so_artist ) ) . '&rsquo;s holders keep access to the Valt' : ''; ?>.</p>
+				<div class="valt-soldout__actions">
+					<?php if ( $so_artist ) : ?>
+						<a href="<?php echo esc_url( get_permalink( $so_artist ) ); ?>" class="valt-btn valt-btn--secondary">Visit <?php echo esc_html( get_the_title( $so_artist ) ); ?>&rsquo;s page</a>
+					<?php endif; ?>
+					<a href="<?php echo esc_url( home_url( '/discover/' ) ); ?>" class="valt-btn valt-btn--primary">Find songs still available</a>
+				</div>
+			</div>
 		<?php elseif ( $avail !== null && $avail <= 0 ) : ?>
-			<?php // No free editions available on NMKR — collecting disabled for this song. ?>
+			<?php // Stock known to be zero but no edition cap recorded: collecting disabled for this song. ?>
 			<span class="valt-badge valt-badge--grey">Not available to collect</span>
 		<?php else : ?>
 			<div class="valt-mint__prices">
 				<?php if ( $price_ada ) : ?>
 					<span class="valt-mint__price-ada"><?php echo esc_html( $price_ada ); ?> ADA</span>
 				<?php endif; ?>
-				<?php if ( $price_usd ) : ?>
+				<?php // Testnet ADA has no dollar value; showing one next to a "not real" disclaimer confuses. ?>
+				<?php if ( $price_usd && $config['mode'] === 'mainnet' ) : ?>
 					<span class="valt-mint__price-usd">~$<?php echo number_format( $price_usd / 100, 2 ); ?> USD</span>
+				<?php elseif ( $config['mode'] !== 'mainnet' ) : ?>
+					<span class="valt-mint__price-usd">test ADA</span>
 				<?php endif; ?>
 				<?php if ( $max_supply ) : ?>
-					<span class="valt-mint__supply"><?php echo $mint_count; ?> / <?php echo $max_supply; ?> collected</span>
+					<span class="valt-mint__supply"><?php echo $mint_count > 0 ? $mint_count . ' / ' . $max_supply . ' collected' : 'Edition of ' . $max_supply; ?></span>
 				<?php endif; ?>
+				<?php echo valt_scarcity_badge( $song_id ); ?>
 			</div>
 
-			<?php if ( $nmkr_pay_url ) : ?>
-				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-btn--large valt-mint__btn">
-					<?php echo valt_svg_wallet( 16 ); ?> <?php echo $owned > 0 ? 'Collect another copy' : 'Collect with ADA'; ?>
+			<?php if ( $anvil || $nmkr_pay_url ) : ?>
+				<?php
+				// Quantity picker: only when the live stock is known and more than one edition is free.
+				$qty_max = ( $avail !== null && get_post_status( $song_id ) === 'publish' && defined( 'VALT_COLLECT_MAX_QTY' ) ) ? min( VALT_COLLECT_MAX_QTY, (int) $avail ) : 1;
+				$label1  = $anvil ? 'Collect' : ( $owned > 0 ? 'Collect another copy' : 'Collect with ADA' );
+				?>
+				<?php if ( $qty_max > 1 ) : ?>
+				<div class="valt-qty" data-valt-qty data-max="<?php echo (int) $qty_max; ?>" data-price="<?php echo esc_attr( (float) $price_ada ); ?>">
+					<span class="valt-qty__label" id="valt-qty-label-<?php echo $song_id; ?>">Editions</span>
+					<div class="valt-qty__stepper" role="group" aria-labelledby="valt-qty-label-<?php echo $song_id; ?>">
+						<button type="button" class="valt-qty__btn" data-step="-1" aria-label="One fewer edition" disabled>&minus;</button>
+						<output class="valt-qty__val" aria-live="polite">1</output>
+						<button type="button" class="valt-qty__btn" data-step="1" aria-label="One more edition">+</button>
+					</div>
+					<span class="valt-qty__total" aria-live="polite"><?php echo esc_html( $price_ada ); ?> ADA</span>
+					<span class="valt-qty__max">up to <?php echo (int) $qty_max; ?> per order</span>
+				</div>
+				<?php endif; ?>
+				<?php if ( $anvil ) : ?>
+				<button type="button" class="valt-btn valt-btn--primary valt-btn--large valt-mint__btn"
+					data-valt-anvil="<?php echo (int) $song_id; ?>" data-label1="<?php echo esc_attr( $label1 ); ?>">
+					<?php echo valt_svg_wallet( 16 ); ?> <span class="valt-mint__btn-label"><?php echo esc_html( $label1 ); ?></span>
+				</button>
+				<div class="valt-mint__wallets" hidden></div>
+				<?php else : ?>
+				<a href="<?php echo esc_url( $nmkr_pay_url ); ?>" target="_blank" rel="noopener" class="valt-btn valt-btn--primary valt-btn--large valt-mint__btn"
+					data-valt-collect="<?php echo (int) $song_id; ?>" data-label1="<?php echo esc_attr( $label1 ); ?>">
+					<?php echo valt_svg_wallet( 16 ); ?> <span class="valt-mint__btn-label"><?php echo esc_html( $label1 ); ?></span>
 				</a>
-				<p class="valt-mint__hint">Pay with your Cardano wallet. The NFT is minted and delivered automatically.</p>
+				<?php endif; ?>
+				<p class="valt-mint__msg" role="alert" hidden></p>
+				<div class="valt-mint__done-box" hidden></div>
+				<p class="valt-mint__hint"><?php echo $anvil ? 'Pay with your Cardano wallet. Your edition is minted straight to your wallet in the same transaction.<br>Fees are about 1.2 test ADA per edition. Another 1.2 test ADA per edition travels with the token into your wallet (a Cardano minimum), so it stays yours.' : 'Pay with your Cardano wallet. The NFT is minted and delivered automatically.'; ?>
+					<?php if ( $config['mode'] !== 'mainnet' ) : ?>
+						<br>Testnet preview: you'll need a Preprod wallet and free test ADA. <a href="<?php echo esc_url( home_url( '/how-to-collect/' ) ); ?>">How to collect</a>
+					<?php endif; ?>
+				</p>
 			<?php endif; ?>
 		<?php endif; ?>
 	</div>
@@ -536,6 +602,107 @@ function valt_user_owns_song( string $song_title ): int {
 	return $count;
 }
 
+// ─── 14b. Track data + play button (feeds the theme's sticky player) ─
+
+/**
+ * Everything the player needs to play one song, or null src when no audio is attached.
+ * Audio source order: song_url (hosted file) then the audio_file attachment.
+ */
+function valt_track_data( $sid ) {
+	$sid = (int) $sid;
+	$aid = function_exists( 'valt_resolve_artist_id' ) ? valt_resolve_artist_id( $sid ) : 0;
+	$src = trim( (string) get_post_meta( $sid, 'song_url', true ) );
+	if ( ! $src ) {
+		$att = (int) get_post_meta( $sid, 'audio_file', true );
+		if ( $att ) $src = (string) wp_get_attachment_url( $att );
+	}
+	$img = (int) get_post_meta( $sid, 'valt_nft_image_id', true ) ?: get_post_thumbnail_id( $sid );
+	$art = $img ? wp_get_attachment_image_url( $img, 'medium' ) : ( $aid ? get_the_post_thumbnail_url( $aid, 'medium' ) : '' );
+	$genre = get_post_meta( $sid, 'genre', true ) ?: ( $aid ? get_post_meta( $aid, 'genre', true ) : '' );
+	return [
+		'id'         => $sid,
+		'title'      => html_entity_decode( get_the_title( $sid ), ENT_QUOTES ),
+		'url'        => get_permalink( $sid ),
+		'artist'     => $aid ? html_entity_decode( get_the_title( $aid ), ENT_QUOTES ) : '',
+		'artist_url' => $aid ? get_permalink( $aid ) : '',
+		'art'        => $art ?: '',
+		'src'        => $src,
+		'genre'      => is_array( $genre ) ? implode( ', ', $genre ) : (string) $genre,
+		'price_ada'  => (string) get_post_meta( $sid, 'valt_nft_price_ada', true ),
+		'duration'   => (string) get_post_meta( $sid, 'duration', true ),
+	];
+}
+
+/** Round gold play button carrying its track as JSON. Renders nothing when there's no audio. */
+function valt_play_button( $track, $size = '', $label = '' ) {
+	if ( empty( $track['src'] ) ) return '';
+	$payload = wp_json_encode( array_intersect_key( $track, array_flip( [ 'id', 'title', 'url', 'artist', 'artist_url', 'art', 'src' ] ) ) );
+	$label   = $label ?: 'Play ' . $track['title'] . ( $track['artist'] ? ' by ' . $track['artist'] : '' );
+	return sprintf(
+		'<button type="button" class="valt-play%s" data-valt-track="%s" aria-label="%s">'
+		. '<svg class="valt-play__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>'
+		. '<svg class="valt-play__pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+		. '</button>',
+		$size ? ' valt-play--' . esc_attr( $size ) : '',
+		esc_attr( $payload ),
+		esc_attr( $label )
+	);
+}
+
+if ( ! defined( 'VALT_SCARCITY_THRESHOLD' ) ) {
+	define( 'VALT_SCARCITY_THRESHOLD', 5 ); // show "Only N left" at or below this many free editions
+}
+
+/**
+ * True when a limited-edition song has no free editions left on NMKR (every edition is sold or
+ * reserved by a paid order). False when stock is unknown, so an API hiccup never shows "Sold out".
+ */
+function valt_song_sold_out( int $song_id ): bool {
+	if ( get_post_status( $song_id ) !== 'publish' ) return false;
+	if ( (int) get_post_meta( $song_id, 'valt_nft_max_supply', true ) < 1 ) return false;
+	$n = valt_song_stock( $song_id );
+	return $n !== null && $n < 1;
+}
+
+/**
+ * Editions collectible right now: from our Anvil ledger when the song is on Anvil checkout,
+ * otherwise from NMKR's free inventory. Null when unknown.
+ */
+function valt_song_stock( int $song_id ): ?int {
+	if ( function_exists( 'valt_anvil_available' ) ) {
+		$a = valt_anvil_available( $song_id );
+		if ( $a !== null ) return $a;
+	}
+	if ( ! function_exists( 'valt_song_inventory' ) ) return null;
+	$inv = valt_song_inventory();
+	return isset( $inv[ $song_id ] ) ? (int) $inv[ $song_id ]['count'] : null;
+}
+
+/**
+ * "Only N left" / "Last one" badge from live NMKR stock (inventory is cached ~60s), or a
+ * "Sold out" chip once every edition is claimed. Renders nothing when stock is unknown or plentiful.
+ */
+function valt_scarcity_badge( int $song_id ): string {
+	if ( get_post_status( $song_id ) !== 'publish' ) return '';
+	if ( valt_song_sold_out( $song_id ) ) {
+		return '<span class="valt-scarcity valt-scarcity--out">Sold out</span>';
+	}
+	$n = valt_song_stock( $song_id );
+	if ( $n === null ) return '';
+	if ( $n < 1 || $n > VALT_SCARCITY_THRESHOLD ) return '';
+	$label = $n === 1 ? 'Last one' : "Only {$n} left";
+	return '<span class="valt-scarcity' . ( $n <= 2 ? ' valt-scarcity--hot' : '' ) . '"><span class="valt-scarcity__dot" aria-hidden="true"></span>' . esc_html( $label ) . '</span>';
+}
+
+/** Genre pills from a comma list. */
+function valt_genre_pills( $genre, $max = 3 ) {
+	$parts = array_slice( array_filter( array_map( 'trim', explode( ',', (string) $genre ) ) ), 0, $max );
+	if ( ! $parts ) return '';
+	$out = '<div class="valt-pills">';
+	foreach ( $parts as $g ) $out .= '<span class="valt-pill">' . esc_html( $g ) . '</span>';
+	return $out . '</div>';
+}
+
 // ─── 15. [valt_song_grid] ───────────────────────────────────────────
 
 add_shortcode( 'valt_song_grid', function ( $atts ) {
@@ -559,35 +726,154 @@ add_shortcode( 'valt_song_grid', function ( $atts ) {
 	ob_start(); ?>
 	<div class="valt-song-grid valt-song-grid--cols-<?php echo (int) $atts['columns']; ?>">
 		<?php while ( $songs->have_posts() ) : $songs->the_post();
-			$sid = get_the_ID(); $aid = valt_resolve_artist_id( $sid );
-			$a = $aid ? get_post( $aid ) : null;
+			$sid = get_the_ID(); $t = valt_track_data( $sid );
 			$img = (int) get_post_meta( $sid, 'valt_nft_image_id', true ) ?: get_post_thumbnail_id( $sid );
+			$aid = valt_resolve_artist_id( $sid );
 			$img_url = $img ? wp_get_attachment_image_url( $img, 'large' ) : ( $aid ? get_the_post_thumbnail_url( $aid, 'large' ) : '' );
-			$pusd = (int) get_post_meta( $sid, 'valt_nft_price_usd', true );
-			$pada = get_post_meta( $sid, 'valt_nft_price_ada', true );
-			$dur = get_post_meta( $sid, 'duration', true );
 			$owned = valt_user_owns_song( get_the_title() );
 		?>
-		<a href="<?php the_permalink(); ?>" class="valt-song-grid__item <?php echo $owned ? 'valt-song-grid__item--owned' : ''; ?>">
+		<?php // Card = <article>; the title link stretches over it so the play button can be a real sibling control. ?>
+		<article class="valt-song-grid__item <?php echo $owned ? 'valt-song-grid__item--owned' : ''; ?>" data-valt-song="<?php echo (int) $sid; ?>">
 			<div class="valt-song-grid__art">
-				<?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
+				<?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt="" loading="lazy">
 				<?php else : ?><div class="valt-song-grid__placeholder"></div><?php endif; ?>
 				<?php if ( $owned ) : ?>
 					<span class="valt-song-grid__owned"><?php echo $owned; ?> owned</span>
+				<?php else : ?>
+					<?php echo valt_scarcity_badge( $sid ); ?>
 				<?php endif; ?>
+				<?php echo valt_play_button( $t ); ?>
 			</div>
 			<div class="valt-song-grid__info">
-				<strong class="valt-song-grid__title"><?php the_title(); ?></strong>
-				<?php if ( $a ) : ?><span class="valt-song-grid__artist"><?php echo esc_html( $a->post_title ); ?></span><?php endif; ?>
-				<span class="valt-song-grid__meta">
-					<?php if ( $dur ) echo esc_html( $dur ); ?>
-					<?php if ( $pusd ) echo ' &middot; $' . number_format( $pusd / 100, 2 ); ?>
-					<?php if ( $pada ) echo ' &middot; ' . esc_html( $pada ) . ' ADA'; ?>
-				</span>
+				<a href="<?php the_permalink(); ?>" class="valt-song-grid__link"><strong class="valt-song-grid__title"><?php the_title(); ?></strong></a>
+				<?php if ( $t['artist'] ) : ?><span class="valt-song-grid__artist"><?php echo esc_html( $t['artist'] ); ?></span><?php endif; ?>
+				<div class="valt-song-grid__foot">
+					<?php echo valt_genre_pills( $t['genre'], 1 ); ?>
+					<?php if ( $t['price_ada'] ) : ?><span class="valt-song-grid__price"><?php echo esc_html( $t['price_ada'] ); ?> ADA</span><?php endif; ?>
+				</div>
 			</div>
-		</a>
+		</article>
 		<?php endwhile; wp_reset_postdata(); ?>
 	</div>
+	<?php return ob_get_clean();
+} );
+
+// ─── 15a. [valt_spotlight] — a big featured release (homepage) ─────
+
+/**
+ * [valt_spotlight song_id="300" size="lg|md" kicker="New release" teaser="https://…mp4" blurb="…"]
+ * lg = full-width feature; md = compact horizontal card. Either can take an optional muted, looping teaser clip.
+ * Mentions the holder-only extra when the artist's Valt has exclusive content.
+ */
+add_shortcode( 'valt_spotlight', function ( $atts ) {
+	$a   = shortcode_atts( [ 'song_id' => 0, 'size' => 'lg', 'kicker' => '', 'teaser' => '', 'blurb' => '' ], $atts );
+	$sid = (int) $a['song_id'];
+	if ( ! $sid || get_post_status( $sid ) !== 'publish' ) return '';
+	$t    = valt_track_data( $sid );
+	$aid  = valt_resolve_artist_id( $sid );
+	$lg   = $a['size'] !== 'md';
+	$img  = (int) get_post_meta( $sid, 'valt_nft_image_id', true ) ?: get_post_thumbnail_id( $sid );
+	$art  = $img ? wp_get_attachment_image_url( $img, $lg ? 'full' : 'large' ) : $t['art'];
+	$max  = (int) get_post_meta( $sid, 'valt_nft_max_supply', true );
+	$blurb = $a['blurb'] ?: wp_trim_words( wp_strip_all_tags( strip_shortcodes( get_post_field( 'post_content', $sid ) ) ), $lg ? 34 : 18 );
+	$has_exclusive = $aid && ( get_post_meta( $aid, 'valt_exclusive_content', true ) || has_shortcode( get_post_field( 'post_content', $sid ), 'valt_gated_content' ) );
+	// Say what holders actually get, from the artist's Valt content heading (e.g. "(short film)").
+	$excl_html  = $aid ? (string) get_post_meta( $aid, 'valt_exclusive_content', true ) : '';
+	$excl_title = preg_match( '#<h4[^>]*>(.*?)</h4>#is', $excl_html, $mm ) ? strtolower( wp_strip_all_tags( html_entity_decode( $mm[1] ) ) ) : '';
+	if ( strpos( $excl_title, 'film' ) !== false ) {
+		$unlock_label = 'Holders unlock the short film';
+	} elseif ( strpos( $excl_title, 'video' ) !== false || has_shortcode( get_post_field( 'post_content', $sid ), 'valt_gated_content' ) ) {
+		$unlock_label = 'Holders unlock the official music video';
+	} else {
+		$unlock_label = 'Holders unlock exclusive content';
+	}
+	$testnet = function_exists( 'valt_nmkr_config' ) && valt_nmkr_config()['mode'] !== 'mainnet';
+
+	ob_start(); ?>
+	<article class="valt-spotlight valt-spotlight--<?php echo $lg ? 'lg' : 'md'; ?>" data-valt-song="<?php echo $sid; ?>">
+		<div class="valt-spotlight__media">
+			<?php if ( $art ) : /* Cover sits under any teaser, so reduced motion (teaser hidden) still shows the art. */ ?>
+				<img src="<?php echo esc_url( $art ); ?>" alt="" loading="<?php echo $lg ? 'eager' : 'lazy'; ?>">
+			<?php endif; ?>
+			<?php if ( $a['teaser'] ) : ?>
+				<video class="valt-spotlight__teaser" autoplay muted loop playsinline preload="metadata" poster="<?php echo esc_url( $art ); ?>" aria-hidden="true">
+					<source src="<?php echo esc_url( $a['teaser'] ); ?>" type="video/mp4">
+				</video>
+			<?php endif; ?>
+			<?php echo valt_play_button( $t, $lg ? 'xl' : '' ); ?>
+		</div>
+		<div class="valt-spotlight__body">
+			<?php if ( $a['kicker'] ) : ?><span class="valt-kicker"><?php echo esc_html( $a['kicker'] ); ?></span><?php endif; ?>
+			<h3 class="valt-spotlight__title"><a href="<?php echo esc_url( $t['url'] ); ?>"><?php echo esc_html( $t['title'] ); ?></a></h3>
+			<?php if ( $t['artist'] ) : ?><a class="valt-spotlight__artist" href="<?php echo esc_url( $t['artist_url'] ); ?>"><?php echo esc_html( $t['artist'] ); ?></a><?php endif; ?>
+			<?php echo valt_genre_pills( $t['genre'], $lg ? 3 : 2 ); ?>
+			<?php if ( $blurb ) : ?><p class="valt-spotlight__blurb"><?php echo esc_html( $blurb ); ?></p><?php endif; ?>
+			<?php if ( $has_exclusive ) : ?>
+				<p class="valt-spotlight__unlock">
+					<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>
+					<?php echo esc_html( $unlock_label ); ?>
+				</p>
+			<?php endif; ?>
+			<div class="valt-spotlight__meta">
+				<?php if ( $t['price_ada'] ) : ?><span class="valt-spotlight__price"><?php echo esc_html( $t['price_ada'] ); ?> ADA<?php echo $testnet ? ' <small>test ADA</small>' : ''; ?></span><?php endif; ?>
+				<?php if ( $max ) : ?><span>Edition of <?php echo $max; ?></span><?php endif; ?>
+				<?php echo valt_scarcity_badge( $sid ); ?>
+				<?php if ( $t['duration'] ) : ?><span><?php echo esc_html( $t['duration'] ); ?></span><?php endif; ?>
+			</div>
+			<div class="valt-spotlight__cta">
+				<a class="valt-btn valt-btn--primary<?php echo $lg ? ' valt-btn--large' : ''; ?>" href="<?php echo esc_url( $t['url'] ); ?>"><?php echo valt_song_sold_out( $sid ) ? 'Listen to ' : 'Collect '; ?><?php echo esc_html( $t['title'] ); ?></a>
+				<?php if ( $lg && $t['artist_url'] ) : ?><a class="valt-btn valt-btn--secondary" href="<?php echo esc_url( $t['artist_url'] ); ?>">Enter <?php echo esc_html( $t['artist'] ); ?>&rsquo;s Valt</a><?php endif; ?>
+			</div>
+		</div>
+	</article>
+	<?php return ob_get_clean();
+} );
+
+// ─── 15b. [valt_tracklist] — compact playable rows (artist releases, "more from") ─
+
+add_shortcode( 'valt_tracklist', function ( $atts ) {
+	$atts = shortcode_atts( [ 'artist_id' => 0, 'limit' => 20, 'exclude' => '', 'ids' => '', 'play_all' => '1' ], $atts );
+	$qa = [ 'post_type' => 'song', 'post_status' => 'publish', 'posts_per_page' => (int) $atts['limit'], 'orderby' => 'date', 'order' => 'ASC', 'meta_query' => [] ];
+	if ( $atts['ids'] ) {
+		$ids = array_filter( array_map( 'intval', explode( ',', $atts['ids'] ) ) );
+		if ( $ids ) { $qa['post__in'] = $ids; $qa['orderby'] = 'post__in'; unset( $qa['order'] ); }
+	}
+	if ( (int) $atts['artist_id'] ) $qa['meta_query'][] = [ 'key' => 'artist', 'value' => (int) $atts['artist_id'] ];
+	if ( $atts['exclude'] ) $qa['post__not_in'] = array_map( 'intval', explode( ',', $atts['exclude'] ) );
+	$songs = get_posts( $qa );
+	if ( ! $songs ) return '<p class="valt-empty">No releases yet.</p>';
+
+	$tracks   = array_map( function ( $p ) { return valt_track_data( $p->ID ); }, $songs );
+	$playable = array_values( array_filter( $tracks, function ( $t ) { return $t['src']; } ) );
+	$uid      = 'valt-tl-' . wp_generate_password( 6, false );
+
+	ob_start(); ?>
+	<?php if ( $atts['play_all'] && count( $playable ) > 1 ) : $first = $playable[0]; ?>
+	<div class="valt-playall">
+		<?php echo str_replace( 'data-valt-track=', 'data-valt-queue="#' . esc_attr( $uid ) . '" data-valt-track=', valt_play_button( $first, 'lg', 'Play all' ) ); ?>
+		<div class="valt-playall__text">
+			<span class="valt-playall__label">Play all</span>
+			<span class="valt-playall__sub"><?php echo count( $playable ); ?> tracks<?php echo count( $playable ) < count( $tracks ) ? ' with previews' : ''; ?></span>
+		</div>
+	</div>
+	<?php endif; ?>
+	<ol class="valt-tracklist" id="<?php echo esc_attr( $uid ); ?>">
+		<?php foreach ( $tracks as $i => $t ) : ?>
+		<li class="valt-track" data-valt-song="<?php echo (int) $t['id']; ?>">
+			<span class="valt-track__lead">
+				<span class="valt-track__num"><?php echo $i + 1; ?></span>
+				<?php echo valt_play_button( $t, 'sm' ); ?>
+			</span>
+			<?php if ( $t['art'] ) : ?><img class="valt-track__art" src="<?php echo esc_url( $t['art'] ); ?>" alt="" loading="lazy"><?php else : ?><span class="valt-track__art"></span><?php endif; ?>
+			<span class="valt-track__main">
+				<a class="valt-track__title" href="<?php echo esc_url( $t['url'] ); ?>"><?php echo esc_html( $t['title'] ); ?></a>
+				<span class="valt-track__sub"><?php echo esc_html( trim( $t['artist'] . ( $t['duration'] ? ' · ' . $t['duration'] : '' ), ' ·' ) ); ?></span>
+			</span>
+			<span class="valt-track__pills"><?php echo valt_genre_pills( $t['genre'], 1 ); ?></span>
+			<span class="valt-track__price"><?php echo $t['price_ada'] ? esc_html( $t['price_ada'] ) . ' ADA' : ''; ?></span>
+		</li>
+		<?php endforeach; ?>
+	</ol>
 	<?php return ob_get_clean();
 } );
 
@@ -712,8 +998,9 @@ add_shortcode( 'valt_follow_button', function ( $atts ) {
 				<?php echo valt_svg_wallet( 14 ); ?> Connect to Follow
 			</a>
 		<?php endif; ?>
-		<span class="valt-follow__count" data-follow-count><?php echo $count; ?></span>
-		<span class="valt-follow__label">follower<?php echo $count !== 1 ? 's' : ''; ?></span>
+		<?php // Hidden until there's at least one follower; "0 followers" reads as an empty room. ?>
+		<span class="valt-follow__count" data-follow-count<?php echo $count ? '' : ' hidden'; ?>><?php echo $count; ?></span>
+		<span class="valt-follow__label"<?php echo $count ? '' : ' hidden'; ?>>follower<?php echo $count !== 1 ? 's' : ''; ?></span>
 	</div>
 	<?php return ob_get_clean();
 } );

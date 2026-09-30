@@ -10,7 +10,7 @@ collect those songs as NFTs, and holding an artist's song NFT unlocks that artis
 
 > **Scope.** This is the **curated open-source core** published for Project Catalyst review — the
 > application logic that delivers the milestone's graded functionality (wallet connection, minting,
-> NFT-gating). Operational deploy tooling and a few non-milestone modules (payments, gamification)
+> NFT-gating). Operational deploy tooling and a few non-milestone modules (payments, gamification, campaigns, leaderboard)
 > live in a private repository and are out of scope here.
 >
 > **No secrets are committed.** Credentials (NMKR API key, Blockfrost project id, Pinata JWT) are
@@ -26,6 +26,16 @@ collect those songs as NFTs, and holding an artist's song NFT unlocks that artis
   **The Valt**, song page + Collect/mint, and the wallet collection, with Pods (Artists/Albums/Songs)
   and CardanoPress wiring.
 
+## Added at M4 (Launch & Rollout)
+
+- **In-page collect checkout** (`valt-platform/includes/anvil.php`) replacing the hosted NMKR Pay redirect for switched songs, with a pending/confirmation panel in `valt-platform/assets/js/valt-platform.js`.
+- **Holder-only video** (`media-gate.php`, `assets/js/hls-video.js`) behind per-artist gating.
+- **Listen-first player** (`valt-theme/assets/js/player.js`), the in-product **feedback survey** (`valt-theme/functions/survey/`) and the **artist intake** form (`valt-theme/functions/intake/`).
+- **mu-plugins/**: login throttling and slug rescue redirects from the rollout bug log (R-17, R-18), and the survey prompt.
+- **valt-mint/**: a Node fallback minting tool (dry-run by default, keys kept outside the repo) and `bin/collect-test.js`, the script behind the disclosed multi-wallet checkout test in the M4 bug log.
+
+Every change is recorded with its root cause in [docs/M4_LaunchRollout/M4_Rollout_Bug_Log.pdf](../docs/M4_LaunchRollout/M4_Rollout_Bug_Log.pdf).
+
 ## Tech stack
 
 | Layer | Technology |
@@ -34,7 +44,8 @@ collect those songs as NFTs, and holding an artist's song NFT unlocks that artis
 | Web3 / superfan logic | `valt-platform` plugin |
 | Front-end | `valt-theme` (Hello Elementor child) + Elementor Pro + Alpine.js |
 | Wallet / CIP-30 | CardanoPress |
-| Minting / NFT mgmt / IPFS | NMKR (pre-production) |
+| Collect checkout (since M4) | Anvil API: one transaction pays and mints to the buyer; the server verifies it and co-signs with the project policy key |
+| Minting / NFT mgmt / IPFS | NMKR (pre-production), still used for song uploads and older editions |
 | On-chain queries | Blockfrost (pre-production) |
 | Content modeling | Pods — `artist`, `album`, `song` custom post types |
 
@@ -66,6 +77,9 @@ edit PHP/CSS/JS directly; WordPress loads changes on refresh.
 | `shortcodes-new.php` | Front-end building blocks (mint button, song grids, collection, …) |
 | `admin-nft-monitor.php` | Admin **NFT Monitor** — NMKR project stats, policy, mint event log |
 | `helpers.php` | Config (keys via WP options) + the NMKR request wrapper |
+| `anvil.php` (M4) | In-page collect checkout: edition ledger with short holds, Anvil build, transaction verification before the policy co-signature, submit, on-chain status, WP-CLI tools (`wp valt anvil ...`) |
+| `checkout.php` (M4) | Multi-edition NMKR Pay checkout (1 to 5 editions) and the collect token |
+| `media-gate.php` (M4) | Holder-only video: files stored outside the web root, streamed only to wallets holding that artist's NFT (HLS, range requests) |
 
 ## How NFT-gating works
 

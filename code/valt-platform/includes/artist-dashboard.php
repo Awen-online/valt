@@ -7,6 +7,10 @@ defined( 'ABSPATH' ) || exit;
  * Called by the [valt_artist_dashboard] shortcode.
  */
 function valt_render_artist_dashboard( WP_Post $artist ): string {
+	// The photo/audio pickers use wp.media(); load it only here, not on every public page.
+	if ( function_exists( 'wp_enqueue_media' ) ) {
+		wp_enqueue_media();
+	}
 
 	$artist_id = $artist->ID;
 

@@ -66,6 +66,21 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 				</div>
 				<?php if ( $bio ) : ?><p class="valt-artist-hero__bio"><?php echo wp_kses_post( $bio ); ?></p><?php endif; ?>
 				<div class="valt-artist-hero__actions">
+					<?php
+					// Play-all: queue every playable release in the grid below, starting at the first.
+					$first_playable = null;
+					if ( function_exists( 'valt_track_data' ) ) {
+						foreach ( get_posts( [ 'post_type' => 'song', 'post_status' => 'publish', 'posts_per_page' => 20, 'orderby' => 'date', 'order' => 'DESC', 'meta_query' => [ [ 'key' => 'artist', 'value' => $artist_id ] ] ] ) as $s ) {
+							$td = valt_track_data( $s->ID );
+							if ( $td['src'] ) { $first_playable = $td; break; }
+						}
+					}
+					if ( $first_playable ) : ?>
+					<span class="valt-playall" style="margin:0">
+						<?php echo str_replace( 'data-valt-track=', 'data-valt-queue="#valt-releases" data-valt-track=', valt_play_button( $first_playable, 'lg', 'Play all by ' . $name ) ); ?>
+						<span class="valt-playall__label">Play</span>
+					</span>
+					<?php endif; ?>
 					<?php echo do_shortcode( '[valt_follow_button artist_id="' . $artist_id . '"]' ); ?>
 					<div class="valt-artist-hero__social">
 						<?php if ( $social_x ) : ?><a href="https://x.com/<?php echo esc_attr( $social_x ); ?>" target="_blank" rel="noopener">X</a><?php endif; ?>
@@ -99,20 +114,38 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 						<button class="valt-btn valt-btn--primary valt-btn--large valt-vault__open-btn" data-action="open-valt">
 							<?php echo valt_svg_wallet( 18 ); ?> Open Valt
 						</button>
-					<?php elseif ( $gate_state === 'disconnected' ) : ?>
+					<?php elseif ( $gate_state === 'disconnected' && isset( $_GET['collected'] ) ) : ?>
+						<?php // Arrived from a just-confirmed collect: the edition is theirs, they only need to connect. ?>
 						<div class="valt-vault__status valt-vault__status--locked">
-							<p>Connect your wallet to enter</p>
-							<?php cardanoPress()->template( 'part/modal-trigger', [ 'text' => 'Connect Wallet' ] ); ?>
+							<p>Your edition is confirmed. Connect the wallet you collected with to open this Valt.</p>
+							<div class="valt-locked-cta">
+								<?php cardanoPress()->template( 'part/modal-trigger', [ 'text' => 'Connect wallet', 'class' => 'valt-btn--primary' ] ); ?>
+							</div>
+						</div>
+					<?php elseif ( $gate_state === 'disconnected' ) : ?>
+						<?php // Connecting alone doesn't open it; owning a song does. Say so, and point at the songs. ?>
+						<div class="valt-vault__status valt-vault__status--locked">
+							<p>Collect any <?php echo esc_html( $name ); ?> song to unlock this Valt.</p>
+							<div class="valt-locked-cta">
+								<a href="#valt-releases" class="valt-btn valt-btn--primary"><?php echo valt_svg_music( 16 ); ?> Choose a song</a>
+								<?php cardanoPress()->template( 'part/modal-trigger', [ 'text' => 'Already collected? Connect', 'class' => 'valt-btn--secondary' ] ); ?>
+							</div>
 						</div>
 					<?php elseif ( $gate_state === 'needs-sync' ) : ?>
 						<div class="valt-vault__status valt-vault__status--locked">
 							<p>Wallet connected — sync your NFTs</p>
 							<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-btn valt-btn--primary">Sync Wallet</a>
 						</div>
+					<?php elseif ( isset( $_GET['collected'] ) ) : ?>
+						<?php // Locked only because the connected wallet's NFT list predates the collect. ?>
+						<div class="valt-vault__status valt-vault__status--locked">
+							<p>Your edition is confirmed. Sync your wallet so Valt can see it, then come back here.</p>
+							<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-btn valt-btn--primary">Sync Wallet</a>
+						</div>
 					<?php else : ?>
 						<?php // locked ?>
 						<div class="valt-vault__status valt-vault__status--locked">
-							<p>Collect an NFT to unlock this artist's Valt</p>
+							<p>You don&rsquo;t hold a <?php echo esc_html( $name ); ?> song yet. Collect one to unlock this Valt.</p>
 							<?php
 							// Find a song to buy.
 							$songs = get_posts( [ 'post_type' => 'song', 'posts_per_page' => 1, 'meta_query' => [ [ 'key' => 'artist', 'value' => $artist_id ] ] ] );
@@ -151,6 +184,11 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 						</div>
 						<?php endif; ?>
 
+						<?php // Artist-specific holder content (valt_exclusive_content meta); placeholders otherwise.
+						$exclusive = (string) get_post_meta( $artist_id, 'valt_exclusive_content', true ); ?>
+						<?php if ( $exclusive ) : ?>
+						<div class="valt-vault__exclusive"><?php echo do_shortcode( $exclusive ); // admin-set meta; may hold a video iframe ?></div>
+						<?php else : ?>
 						<div class="valt-vault__grid">
 							<div class="valt-card">
 								<h4><?php echo valt_svg_music( 18 ); ?> Exclusive Tracks</h4>
@@ -161,14 +199,17 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 								<p>Studio photos, creative process, and direct messages from the artist.</p>
 							</div>
 						</div>
+						<?php endif; ?>
 					</div>
 				</div>
 				<?php endif; ?>
 			</section>
 			<?php endif; ?>
 
-			<h2>Releases</h2>
-			<?php echo do_shortcode( '[valt_song_grid artist_id="' . $artist_id . '"]' ); ?>
+			<section id="valt-releases" class="valt-releases" style="scroll-margin-top:90px">
+				<h2>Releases</h2>
+				<?php echo do_shortcode( '[valt_song_grid artist_id="' . $artist_id . '"]' ); ?>
+			</section>
 
 		</div>
 	</main>

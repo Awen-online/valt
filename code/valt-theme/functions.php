@@ -20,14 +20,36 @@ add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
 //ADD CSS
 //
 add_action('wp_enqueue_scripts', function() {
-    
-    $style_version = '2.1.' . time(); // Cache bust
-    
+
+    $dir = get_stylesheet_directory();
+    $uri = get_stylesheet_directory_uri();
+    // Version by file mtime so browsers cache CSS/JS until the file actually changes
+    // (the old time()-based version defeated caching on every page view).
+    $ver = function ( $rel ) use ( $dir ) {
+        $f = $dir . $rel;
+        return file_exists( $f ) ? (string) filemtime( $f ) : '1';
+    };
+
+    // Ruda, the brand typeface. Enqueued as a real stylesheet: the old @import sat after
+    // :root in main.css, which browsers ignore, so the site silently fell back to system fonts.
+    wp_enqueue_style( 'valt-ruda', 'https://fonts.googleapis.com/css2?family=Ruda:wght@400;500;600;700;800;900&display=swap', array(), null );
+
+    // Load Valt's styles AFTER the Hello Elementor parent CSS. Its reset.css sets
+    // body{background:#fff;color:#333;font-family:system} and pink #c36 buttons, and it used to
+    // load later and win. Only depend on handles that are actually registered.
+    $deps = array_values( array_filter(
+        array( 'hello-elementor', 'hello-elementor-theme-style', 'hello-elementor-header-footer', 'valt-ruda' ),
+        function ( $h ) { return wp_style_is( $h, 'registered' ); }
+    ) );
+
     //
     //ADD CSS
     //
-    wp_enqueue_style('custom-style', get_stylesheet_directory_uri() . '/assets/css/main.css', array(), $style_version);
-    wp_enqueue_style('cardano-press-style', get_stylesheet_directory_uri() . '/assets/css/cardanopress_styles.css', array(), $style_version);
+    wp_enqueue_style('custom-style', $uri . '/assets/css/main.css', $deps, $ver('/assets/css/main.css'));
+    wp_enqueue_style('cardano-press-style', $uri . '/assets/css/cardanopress_styles.css', array('custom-style'), $ver('/assets/css/cardanopress_styles.css'));
+
+    // Valt player: sticky bottom bar that plays songs from any [data-valt-track] on the page.
+    wp_enqueue_script('valt-player', $uri . '/assets/js/player.js', array(), $ver('/assets/js/player.js'), true);
     // wp_enqueue_style('my-account-style', get_stylesheet_directory_uri() . '/assets/css/my-account.css', array(), $style_version);
 
     // Pass current post ID to music player on CPT single pages so it can
@@ -82,18 +104,38 @@ add_action('wp_enqueue_scripts', function() {
     //     }
     //     return $tag;
     // }
-    
 
 
-});
 
-// SVG favicon
+}, 20); // After Hello Elementor (priority 10) registers its styles, so the deps above resolve.
+
+// SVG favicon + font preconnect + browser chrome colour.
 add_action( 'wp_head', function () {
-	echo '<link rel="icon" href="' . get_stylesheet_directory_uri() . '/assets/img/favicon.svg" type="image/svg+xml">';
-} );
+	echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
+	echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
+	echo '<link rel="icon" href="' . get_stylesheet_directory_uri() . '/assets/img/favicon.svg" type="image/svg+xml">' . "\n";
+	echo '<meta name="theme-color" content="#1B1A2B">' . "\n";
+}, 1 );
+
+// Google Analytics 4 (gtag.js) — property G-4Q5EDNY0F7. Front-end only.
+add_action( 'wp_head', function () {
+	$gid = 'G-4Q5EDNY0F7';
+	?>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $gid ); ?>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '<?php echo esc_js( $gid ); ?>');
+</script>
+	<?php
+}, 2 );
 
 require get_stylesheet_directory().'/functions/elementor.php';
 require get_stylesheet_directory().'/functions/pods.php';
 require get_stylesheet_directory().'/functions/shortcodes/pods_artist_featured_image.php';
 require get_stylesheet_directory().'/functions/svg-icons.php';
 require get_stylesheet_directory().'/functions/site-chrome.php';
+require get_stylesheet_directory().'/functions/survey/loader.php';
+require get_stylesheet_directory().'/functions/intake/loader.php';

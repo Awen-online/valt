@@ -80,7 +80,7 @@ function valt_upload_to_ipfs( int $attachment_id ) {
  * @param string $audio_cid  IPFS CID for audio file (optional).
  * @return array CIP-25 compliant metadata structure.
  */
-function valt_build_cip25_metadata( int $song_id, string $image_cid, string $audio_cid = '' ): array {
+function valt_build_cip25_metadata( int $song_id, string $image_cid, string $audio_cid = '', string $image_mime = 'image/jpeg' ): array {
 	$config     = valt_nmkr_config();
 	$song       = get_post( $song_id );
 	// 'artist' is a Pods relationship (stored as an array/object), so a raw (int) cast yields 1
@@ -104,19 +104,22 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
 		$desc = preg_match( '/^(.{1,64}?[.!?])(\s|$)/u', $desc, $dmm ) ? $dmm[1] : rtrim( substr( $desc, 0, 64 ) );
 	}
 
+	// Titles are stored with WordPress HTML entities (e.g. &#8217;); on-chain text must be plain UTF-8.
+	$plain = function ( $s ) { return html_entity_decode( (string) $s, ENT_QUOTES | ENT_HTML5, 'UTF-8' ); };
+
 	$metadata = [
-		'name'        => $song->post_title,
+		'name'        => $plain( $song->post_title ),
 		'image'       => 'ipfs://' . $image_cid,
-		'mediaType'   => 'image/png',
+		'mediaType'   => $image_mime ?: 'image/jpeg',
 		'description' => $desc,
-		'artist'      => $artist ? $artist->post_title : 'Unknown Artist',
+		'artist'      => $artist ? $plain( $artist->post_title ) : 'Unknown Artist',
 		'platform'    => 'Valt',
 		'website'     => home_url(),
 		'music_metadata_version' => 3,
 	];
 
 	if ( $album ) {
-		$metadata['album'] = $album->post_title;
+		$metadata['album'] = $plain( $album->post_title );
 	}
 	if ( $genre ) {
 		$metadata['genre'] = $genre;
@@ -158,7 +161,7 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
 	if ( $audio_cid ) {
 		$metadata['files'] = [
 			[
-				'name'      => $song->post_title . '.mp3',
+				'name'      => $plain( $song->post_title ) . '.mp3',
 				'mediaType' => 'audio/mpeg',
 				'src'       => 'ipfs://' . $audio_cid,
 			],
@@ -179,6 +182,18 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
 	];
 }
 
+/**
+ * Replace the metadata of one uploaded (not yet minted) NFT on NMKR.
+ */
+function valt_nmkr_update_metadata( string $nft_uid, array $cip25 ) {
+	$config = valt_nmkr_config();
+	$res    = valt_nmkr_request( 'POST', "UpdateMetadata/{$config['project_uid']}/{$nft_uid}", [ 'metadata' => wp_json_encode( $cip25 ) ] );
+	if ( is_wp_error( $res ) ) {
+		valt_log_event( 'metadata_error', "UpdateMetadata failed for {$nft_uid}", [ 'error' => $res->get_error_message() ] );
+	}
+	return $res;
+}
+
 // ─── Upload to NMKR (list for sale) ──────────────────────────────────
 
 /**
@@ -188,7 +203,7 @@ function valt_build_cip25_metadata( int $song_id, string $image_cid, string $aud
  * @param int $song_id Song post ID.
  * @return array|WP_Error { nft_uid, payment_url, message }
  */
-function valt_upload_song_to_nmkr( int $song_id ) {
+function valt_upload_song_to_nmkr( int $song_id, int $editions = 0 ) {
 	$config = valt_nmkr_config();
 	$song   = get_post( $song_id );
 	if ( ! $song ) {
@@ -210,70 +225,104 @@ function valt_upload_song_to_nmkr( int $song_id ) {
 		return new WP_Error( 'valt_no_image', 'No cover art found. Upload album or artist artwork first.' );
 	}
 
-	// Build asset name and metadata.
-	$asset_name = valt_generate_asset_name( $song->post_title, $song_id );
-	$price_ada  = get_post_meta( $song_id, 'valt_nft_price_ada', true );
+	// Each edition is a distinct NMKR NFT with a unique …eNN token name, so a
+	// song can be collected by more than one fan. NMKR's UploadNft mints one NFT
+	// per call, so we loop.
+	$asset_base     = valt_generate_asset_name( $song->post_title, $song_id );
+	$price_ada      = get_post_meta( $song_id, 'valt_nft_price_ada', true );
 	$price_lovelace = $price_ada ? (int) ( (float) $price_ada * 1000000 ) : 5000000;
 
-	// Build CIP-25 metadata (use empty IPFS hash — NMKR will set the image from upload).
-	$cip25 = valt_build_cip25_metadata( $song_id, 'PLACEHOLDER', '' );
+	// Edition count: explicit arg wins, else the song's max supply, else 1.
+	if ( $editions <= 0 ) {
+		$editions = (int) get_post_meta( $song_id, 'valt_nft_max_supply', true );
+	}
+	$editions = max( 1, min( 500, $editions ) ); // hard safety cap
 
-	// Build upload payload.
-	$upload_body = [
-		'tokenname'        => $asset_name,
-		'displayname'      => $song->post_title,
-		'metadataOverride' => wp_json_encode( $cip25 ),
-		'priceInLovelace'  => $price_lovelace,
-	];
-
-	// Attach cover art as base64.
+	// Cover art + metadata are identical across editions — prepare once.
 	$file_path = get_attached_file( $image_id );
-	if ( $file_path && file_exists( $file_path ) ) {
-		$mime = get_post_mime_type( $image_id ) ?: 'image/jpeg';
-		$upload_body['previewImageNft'] = [
-			'mimetype'       => $mime,
-			'fileFromBase64' => base64_encode( file_get_contents( $file_path ) ),
-		];
-	} else {
+	if ( ! $file_path || ! file_exists( $file_path ) ) {
 		return new WP_Error( 'valt_file_missing', 'Cover art file not found on disk.' );
 	}
+	$mime         = get_post_mime_type( $image_id ) ?: 'image/jpeg';
+	$image_base64 = base64_encode( file_get_contents( $file_path ) );
+	// The image CID is only known after NMKR pins the first upload. Use an already-known CID for
+	// this song if we have one; otherwise the first edition is uploaded, then its metadata is
+	// corrected via UpdateMetadata once NMKR returns ipfsHashMainnft (see below). Never ship a
+	// placeholder image: wallets would show NFTs with no artwork.
+	$known_cid    = (string) get_post_meta( $song_id, 'valt_nft_ipfs_hash', true );
+	$cip25        = valt_build_cip25_metadata( $song_id, $known_cid ?: 'PENDING', '', $mime );
 
-	// Upload to NMKR.
-	$result = valt_nmkr_request( 'POST', "UploadNft/{$config['project_uid']}", $upload_body );
-	if ( is_wp_error( $result ) ) {
-		valt_log_event( 'upload_error', "NMKR upload failed for song {$song_id}", [
-			'error' => $result->get_error_message(),
-		] );
-		return $result;
+	$first_uid  = '';
+	$first_ipfs = '';
+	$created    = 0;
+	$failed     = 0;
+
+	for ( $i = 1; $i <= $editions; $i++ ) {
+		$body = [
+			'tokenname'        => $asset_base . 'e' . str_pad( (string) $i, 2, '0', STR_PAD_LEFT ),
+			'displayname'      => $song->post_title,
+			'metadataOverride' => wp_json_encode( $cip25 ),
+			'priceInLovelace'  => $price_lovelace,
+			'previewImageNft'  => [ 'mimetype' => $mime, 'fileFromBase64' => $image_base64 ],
+		];
+
+		$result = valt_nmkr_request( 'POST', "UploadNft/{$config['project_uid']}", $body );
+
+		if ( is_wp_error( $result ) || empty( $result['nftUid'] ) ) {
+			$failed++;
+			valt_log_event( 'upload_error', "NMKR upload failed for song {$song_id} edition {$i}", [
+				'error' => is_wp_error( $result ) ? $result->get_error_message() : 'no nftUid',
+			] );
+			continue;
+		}
+
+		$created++;
+		if ( '' === $first_uid ) {
+			$first_uid  = $result['nftUid'];
+			$first_ipfs = $result['ipfsHashMainnft'] ?? '';
+			// First upload without a known CID: rebuild metadata with the real image and fix this edition.
+			if ( ! $known_cid && $first_ipfs ) {
+				$cip25 = valt_build_cip25_metadata( $song_id, $first_ipfs, '', $mime );
+				valt_nmkr_update_metadata( $first_uid, $cip25 );
+			}
+		}
+
+		// Space calls out so NMKR's rate limiter doesn't reject the batch.
+		if ( $i < $editions ) {
+			usleep( 350000 );
+		}
 	}
 
-	$nft_uid = $result['nftUid'] ?? '';
-	if ( empty( $nft_uid ) ) {
-		return new WP_Error( 'valt_upload_failed', 'NMKR returned no nftUid.' );
+	if ( 0 === $created ) {
+		return new WP_Error( 'valt_upload_failed', 'No editions were created on NMKR.' );
 	}
 
-	// Store the UID and update status.
-	update_post_meta( $song_id, 'valt_nft_uid', $nft_uid );
+	// Store the first edition's UID (the collect flow resolves any free edition
+	// under this song's token-name prefix at purchase time).
+	update_post_meta( $song_id, 'valt_nft_uid', $first_uid );
 	update_post_meta( $song_id, 'valt_release_status', 2 ); // "In NFT Collection"
-	if ( ! empty( $result['ipfsHashMainnft'] ) ) {
-		update_post_meta( $song_id, 'valt_nft_ipfs_hash', $result['ipfsHashMainnft'] );
+	if ( $first_ipfs ) {
+		update_post_meta( $song_id, 'valt_nft_ipfs_hash', $first_ipfs );
 	}
 
-	// Build payment URL.
 	$project_clean = str_replace( '-', '', $config['project_uid'] );
-	$nft_clean     = str_replace( '-', '', $nft_uid );
+	$nft_clean     = str_replace( '-', '', $first_uid );
 	$pay_base      = $config['mode'] === 'mainnet' ? 'https://pay.nmkr.io' : 'https://pay.preprod.nmkr.io';
 	$payment_url   = "{$pay_base}/?p={$project_clean}&n={$nft_clean}";
 
-	valt_log_event( 'nft_listed', "Song {$song_id} listed on NMKR for {$price_ada} ADA", [
-		'nft_uid'     => $nft_uid,
-		'payment_url' => $payment_url,
+	valt_log_event( 'nft_listed', "Song {$song_id} listed on NMKR — {$created} edition(s) at {$price_ada} ADA", [
+		'nft_uid'          => $first_uid,
+		'editions_created' => $created,
+		'editions_failed'  => $failed,
+		'payment_url'      => $payment_url,
 	] );
 
 	return [
-		'message'     => 'Song listed for sale on NMKR.',
-		'nft_uid'     => $nft_uid,
-		'payment_url' => $payment_url,
+		'message'          => "Song listed on NMKR — {$created} edition(s) created.",
+		'nft_uid'          => $first_uid,
+		'editions_created' => $created,
+		'editions_failed'  => $failed,
+		'payment_url'      => $payment_url,
 	];
 }
 
@@ -593,26 +642,36 @@ function valt_song_inventory(): array {
 	if ( empty( $config['project_uid'] ) || empty( $config['api_key'] ) ) {
 		return [];
 	}
-	$free = valt_nmkr_request( 'GET', "GetNfts/{$config['project_uid']}/free/50/1" );
-	if ( is_wp_error( $free ) || ! is_array( $free ) ) {
-		return is_array( $cached ) ? $cached : [];
+	// NMKR pages GetNfts at 50. Read every page: with 100+ free editions, a single page left
+	// later songs looking sold out ("Not available to collect").
+	$free = [];
+	for ( $page = 1; $page <= 20; $page++ ) {
+		$batch = valt_nmkr_request( 'GET', "GetNfts/{$config['project_uid']}/free/50/{$page}" );
+		if ( is_wp_error( $batch ) || ! is_array( $batch ) ) {
+			if ( 1 === $page ) {
+				return is_array( $cached ) ? $cached : [];
+			}
+			break;
+		}
+		$free = array_merge( $free, $batch );
+		if ( count( $batch ) < 50 ) {
+			break;
+		}
 	}
 	$songs = get_posts( [ 'post_type' => 'song', 'posts_per_page' => -1, 'post_status' => 'publish', 'fields' => 'ids' ] );
 	$map = [];
 	foreach ( $songs as $sid ) {
 		$base  = strtolower( valt_generate_asset_name( get_the_title( $sid ), (int) $sid ) );
-		$count = 0;
-		$uid   = '';
+		$uids  = []; // every free edition of this song (multi-edition checkout picks from these)
 		foreach ( $free as $nft ) {
 			$name = strtolower( (string) ( $nft['name'] ?? '' ) );
-			if ( $name !== '' && strpos( $name, $base ) === 0 ) {
-				$count++;
-				if ( ! $uid ) {
-					$uid = (string) ( $nft['uid'] ?? '' );
-				}
+			if ( $name !== '' && strpos( $name, $base ) === 0 && ! empty( $nft['uid'] ) ) {
+				$uids[] = (string) $nft['uid'];
 			}
 		}
-		$map[ (int) $sid ] = [ 'count' => $count, 'uid' => $uid ];
+		$count = count( $uids );
+		$uid   = $uids[0] ?? '';
+		$map[ (int) $sid ] = [ 'count' => $count, 'uid' => $uid, 'uids' => $uids ];
 		if ( $uid ) {
 			update_post_meta( $sid, 'valt_nft_uid', $uid );
 		} else {

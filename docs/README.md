@@ -65,9 +65,27 @@ Here you can find links to all neccessary documentation for each of the mileston
 >
 >[Test suite](../tests) - 15 tests / 25 assertions: `composer install && vendor/bin/phpunit`
 >
->[CI workflow](../.github/workflows/ci.yml) - lint + suite on PHP 8.0-8.3 plus a semgrep security scan, on every push
+>[CI workflow](../.github/workflows/ci.yml) - lint + suite on PHP 8.1-8.3 (8.0 dropped at M4: PHPUnit 10 needs 8.1) plus a semgrep security scan, on every push
 >
 >[Load check](../tests/load-plugin.php) - `php tests/load-plugin.php code/valt-platform` boots the published build against a stubbed WordPress API and reports `VERDICT=LOADED`
 
 ### Milestone 4 - Launch and Rollout
+>**Documents**
+>
+>[Proof of Achievement](M4_LaunchRollout/M4_Proof_of_Achievement.pdf) - the milestone summary: the public launch, the launch announcements, the initial adoption phase, and how a reviewer can verify each acceptance criterion
+>
+>[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from 7 August to 30 September 2026 with its root cause, resolution and commit or deploy record (36 resolved), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
+>
+>**Verify**
+>
+>[Live portal](https://www.valt.digital) - the public web3 portal on the Cardano pre-production testnet
+>
+>[Featured release: London by Hazzy Jo](https://www.valt.digital/song/london/) - the in-page collect flow (1 to 5 editions per checkout) and the artist's token-gated Valt
+>
+>[How to collect](https://www.valt.digital/how-to-collect/) - the step-by-step guide for new users on testnet
+>
+>[On-chain policy (Cardanoscan preprod)](https://preprod.cardanoscan.io/tokenPolicy/bf5a88ac0a236c22c2772a51ff2fa33301e17c42aa8f95fcd585b86a) - the song NFTs minted under policy `bf5a88ac…`
+>
+>[Launch announcement on X (7 Aug 2026)](https://x.com/awen_online/status/2085778010221781268) and [Instagram](https://www.instagram.com/p/Dbv0KD1oGKf/) - the public launch
+
 ### Milestone 5 - Closeout & Evaluation

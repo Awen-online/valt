@@ -6,31 +6,37 @@
 
 /* ─── Design Tokens ───────────────────────────────────────────────── */
 /*
- * VALT Color System — WCAG AA compliant on navy backgrounds.
+ * VALT Color System — measured WCAG contrast (not estimated), 2026-09-27.
  *
- * Primary:    Gold spectrum for headings, accents, and interactive elements
- * Neutral:    Navy/brown spectrum for surfaces, text hierarchy
- * Semantic:   Coral (links/danger), Green (success/connected)
- *
- * All buttons use --valt-cream text for readability.
+ * Surfaces: a deep page (--valt-bg) with raised cards (--valt-dark); the whole site is
+ * dark. Nothing renders on white (the old white came from Hello Elementor's reset.css).
+ * Gold spectrum for headings/accents; primary buttons are GOLD with DARK text
+ * (cream-on-gold measured 2.2:1 and failed).
  */
 :root {
 	/* ── Gold spectrum ── */
-	--valt-gold:       #E8C48B;   /* headings, accents, borders — 7.5:1 on navy */
-	--valt-gold-dark:  #C9A66B;   /* primary button bg — warmer, better contrast base */
-	--valt-gold-light: #F2D9A9;   /* hover highlights */
-	--valt-cream:      #FFF8ED;   /* button text, bold text — 13:1 on navy, 6:1 on gold-dark */
+	--valt-gold:       #E8C48B;   /* headings, accents — 10.3:1 on --valt-bg */
+	--valt-gold-dark:  #C9A66B;   /* borders, secondary accents */
+	--valt-gold-light: #F2D9A9;   /* hover highlights, gradient start */
+	--valt-cream:      #FFF8ED;   /* bright text on dark surfaces */
+	--valt-ink:        #1B1A2B;   /* text ON gold (buttons, badges) — 10:1 on gold */
 
 	/* ── Neutral spectrum ── */
-	--valt-navy:       #3D3C56;   /* body background */
+	--valt-bg:         #1B1A2B;   /* page background (deep) */
+	--valt-navy:       #3D3C56;   /* brand navy: hero washes, accents */
 	--valt-dark:       #2A2940;   /* cards, nav, elevated surfaces */
 	--valt-darker:     #1E1D30;   /* deepest bg (modals, dropdowns) */
+	--valt-raised:     #33324C;   /* hover / nested surfaces */
 	--valt-brown:      #493D3C;   /* dark accent */
-	--valt-mid:        #9B8E82;   /* muted text, labels — 4.5:1 on navy */
-	--valt-tan:        #C5AD90;   /* body text — 6.2:1 on navy */
+	--valt-mid:        #A89B8E;   /* muted text — 6.3:1 on bg, 5.2:1 on cards (was #9B8E82, 4.4:1 on cards) */
+	--valt-tan:        #C5AD90;   /* body text — 7.9:1 on bg */
+
+	/* ── Brand gradients ── */
+	--valt-grad-gold:  linear-gradient(135deg, #F2D9A9 0%, #E8C48B 45%, #D4A574 100%);
+	--valt-grad-text:  linear-gradient(100deg, #FFF3DC 0%, #E8C48B 40%, #D4A574 100%);
 
 	/* ── Semantic ── */
-	--valt-coral:      #D4A574;   /* warm link color — gold-adjacent, not red. 5.5:1 on navy */
+	--valt-coral:      #D4A574;   /* warm link color — gold-adjacent, not red. 7.7:1 on bg */
 	--valt-green:      #4ADE80;   /* success, connected states */
 	--valt-red:        #E87C7C;   /* errors, danger buttons only — not used for links */
 
@@ -61,13 +67,24 @@
 }
 
 /* ─── Reset & Base ────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Ruda:wght@400;500;600;700&display=swap');
+/* Ruda is enqueued as a stylesheet in functions.php (an @import here came after :root and was ignored). */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
 	font-family: var(--valt-font);
-	background: var(--valt-navy);
+	background-color: var(--valt-bg);
+	/* Immersive layer: warm gold glow top-left, navy wash top-right, a faint coral floor,
+	   and two offset layers of sparse gold "dust" (the Valt answer to sync.land's starfield). */
+	background-image:
+		radial-gradient(1100px 620px at 12% -8%, rgba(232,196,139,0.10), transparent 62%),
+		radial-gradient(900px 520px at 100% 0%, rgba(61,60,86,0.65), transparent 66%),
+		radial-gradient(1000px 700px at 50% 112%, rgba(212,165,116,0.07), transparent 60%),
+		radial-gradient(rgba(232,196,139,0.13) 1px, transparent 1.4px),
+		radial-gradient(rgba(242,217,169,0.08) 1px, transparent 1.6px);
+	background-size: auto, auto, auto, 47px 47px, 83px 83px;
+	background-position: 0 0, 0 0, 0 0, 0 0, 23px 31px;
+	background-attachment: fixed;
 	color: var(--valt-gold);
 	line-height: 1.6;
 	-webkit-font-smoothing: antialiased;
@@ -75,10 +92,15 @@ body {
 
 a { color: var(--valt-coral); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--valt-gold); }
+/* Links inside running text are underlined — colour alone (coral vs tan, 1.03:1) can't carry them. */
+p a, li a, .valt-prose a { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+
+/* Visible keyboard focus everywhere. */
+:focus-visible { outline: 2px solid var(--valt-gold); outline-offset: 3px; border-radius: 4px; }
 
 img { max-width: 100%; height: auto; display: block; }
 
-h1, h2, h3, h4 { font-weight: 600; color: var(--valt-gold); line-height: 1.2; margin-bottom: 0.5em; }
+h1, h2, h3, h4 { font-weight: 700; color: var(--valt-gold); line-height: 1.15; margin-bottom: 0.5em; letter-spacing: -0.01em; text-wrap: balance; }
 h1 { font-size: var(--valt-fs-h1); }
 h2 { font-size: var(--valt-fs-h2); margin-top: 2rem; }
 h3 { font-size: var(--valt-fs-h3); }
@@ -177,8 +199,8 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 /* Cardano wordmark in the footer — rendered white on the dark footer via filter. */
 .valt-cardano-wordmark { height: 20px; width: auto; display: block; filter: brightness(0) invert(1); opacity: 0.95; }
 /* Cardano wordmark inline within a heading/sentence ([valt_cardano wordmark="1"]) — scales with text.
-   Shown in its native Cardano blue (the heading sits on a light background). */
-.valt-cardano-wordmark-text { height: 0.82em; width: auto; display: inline-block; vertical-align: -0.06em; margin-left: 0.18em; }
+   Rendered light: every surface is dark now (the native blue was for the old white page). */
+.valt-cardano-wordmark-text { height: 0.82em; width: auto; display: inline-block; vertical-align: -0.06em; margin-left: 0.18em; filter: brightness(0) invert(1); opacity: 0.92; }
 .valt-nav__links {
 	display: flex;
 	align-items: center;
@@ -210,8 +232,8 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 /* ─── Hero ────────────────────────────────────────────────────────── */
 .valt-hero {
 	position: relative;
-	height: 70vh;
-	min-height: 400px;
+	min-height: max(70vh, 520px);
+	padding: 4.5rem 0 4rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -223,21 +245,29 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 	background-size: cover; background-position: center;
 }
 .valt-hero__overlay {
-	position: absolute; inset: 0; background: linear-gradient(180deg, rgba(61,60,86,0.4) 0%, rgba(42,41,64,0.9) 100%); z-index: 1;
+	position: absolute; inset: 0; z-index: 1;
+	/* Dark pool behind the headline so gradient text stays legible over busy photo/video. */
+	background:
+		radial-gradient(ellipse 60% 55% at 50% 50%, rgba(27,26,43,0.82) 0%, rgba(27,26,43,0.55) 70%, transparent 100%),
+		linear-gradient(180deg, rgba(27,26,43,0.55) 0%, rgba(27,26,43,0.95) 100%);
 }
 .valt-hero__content {
-	position: relative; z-index: 2; text-align: center; max-width: 640px; padding: var(--valt-gap);
+	position: relative; z-index: 2; text-align: center; max-width: 860px; padding: var(--valt-gap);
 }
 .valt-hero__title {
-	font-size: var(--valt-fs-hero); font-weight: 700; color: var(--valt-cream);
-	text-shadow: 0 2px 30px rgba(0,0,0,0.6); letter-spacing: 0.04em;
+	font-size: clamp(2.4rem, 6.2vw, 4.4rem); font-weight: 900; color: var(--valt-cream);
+	text-shadow: 0 2px 30px rgba(0,0,0,0.6); letter-spacing: -0.01em; line-height: 1.04;
 }
 .valt-hero__subtitle {
-	font-size: 1.25rem; color: var(--valt-gold-light); margin-top: 0.5rem;
-	text-shadow: 0 1px 10px rgba(0,0,0,0.4);
+	font-size: clamp(1.05rem, 1.6vw, 1.25rem); color: var(--valt-tan); margin: 1rem auto 0; max-width: 560px;
+	text-shadow: 0 1px 10px rgba(0,0,0,0.4); line-height: 1.55;
 }
 .valt-hero__cta {
 	margin-top: 2rem;
+}
+.valt-hero__cta--2 { margin-left: 0.7rem; }
+@media (max-width: 480px) {
+	.valt-hero__cta--2 { margin-left: 0; }
 }
 .valt-hero__logo { margin-bottom: 1.5rem; }
 
@@ -247,7 +277,80 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 
 @media (max-width: 640px) {
-	.valt-hero { height: 50vh; min-height: 300px; }
+	.valt-hero { min-height: 0; padding: 3rem 0 2.5rem; }
+}
+
+/* ─── Logo-forward hero variants (no video; the animated mark is the star) ── */
+.valt-hero--grooves .valt-hero__logo svg,
+.valt-hero--spotlight .valt-hero__logo svg,
+.valt-hero--aurora .valt-hero__logo svg {
+	width: 168px; height: 168px;
+	filter: drop-shadow(0 0 26px rgba(232,196,139,0.28));
+}
+/* Lighten the default overlay so the custom backgrounds read through */
+.valt-hero--grooves .valt-hero__overlay,
+.valt-hero--aurora .valt-hero__overlay {
+	background: linear-gradient(180deg, rgba(20,19,30,0) 0%, rgba(20,19,30,0.55) 100%);
+}
+
+/* 1) Vinyl grooves — concentric gold rings + a slow turntable sheen */
+.valt-hero--grooves { background: radial-gradient(circle at 50% 44%, #34324f 0%, #211f36 72%); }
+.valt-hero--grooves::before {
+	content: ""; position: absolute; inset: 0; z-index: 0;
+	background: repeating-radial-gradient(circle at 50% 44%, rgba(232,196,139,0.07) 0 1.5px, transparent 1.5px 26px);
+}
+.valt-hero--grooves::after {
+	content: ""; position: absolute; top: 50%; left: 50%; z-index: 0;
+	width: 160vmax; height: 160vmax; transform: translate(-50%, -50%);
+	background: conic-gradient(from 0deg, transparent 0 80%, rgba(232,196,139,0.10) 90%, transparent 100%);
+	animation: valt-hero-spin 28s linear infinite;
+}
+
+/* 2) Spotlight — warm gold glow pulsing behind the logo on deep navy */
+.valt-hero--spotlight { background: radial-gradient(circle at 50% 42%, #2c2a44 0%, #161520 78%); }
+.valt-hero--spotlight::before {
+	content: ""; position: absolute; inset: 0; z-index: 0;
+	background: radial-gradient(circle at 50% 42%, rgba(232,196,139,0.24) 0%, rgba(232,196,139,0.05) 32%, transparent 55%);
+	animation: valt-hero-glow 5.5s ease-in-out infinite;
+}
+
+/* 3) Aurora — slow-shifting brand gradient */
+.valt-hero--aurora {
+	background: linear-gradient(120deg, #2a2940 0%, #3d3c56 28%, #4a3a5e 52%, #35507a 74%, #2a2940 100%);
+	background-size: 320% 320%;
+	animation: valt-hero-aurora 20s ease infinite;
+}
+
+@keyframes valt-hero-spin  { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes valt-hero-glow  { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes valt-hero-aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+@media (prefers-reduced-motion: reduce) {
+	.valt-hero--grooves::after, .valt-hero--spotlight::before, .valt-hero--aurora { animation: none !important; }
+}
+
+/* 4) Video hero, calm treatment. The clip itself is pre-slowed, blurred and vignetted
+   (valt-hero-calm.mp4), so CSS only adds a vignette, a text pool and a gold halo.
+   Knobs: --valt-hero-vignette (edge darkness), --valt-hero-halo (gold glow strength).
+   Live CSS blur is deliberately not used: it costs GPU every frame on mobile. */
+.valt-hero--video {
+	--valt-hero-vignette: 0.70;
+	--valt-hero-halo: 0.26;
+}
+.valt-hero--video .valt-hero__overlay {
+	background:
+		radial-gradient(ellipse 46% 30% at 50% 50%, rgba(20,19,30,0.50) 0%, rgba(20,19,30,0.18) 65%, transparent 100%),
+		radial-gradient(ellipse 110% 90% at 50% 45%, transparent 45%, rgba(14,13,22,var(--valt-hero-vignette)) 100%),
+		linear-gradient(180deg, rgba(20,19,30,0.30) 0%, rgba(20,19,30,0.06) 45%, rgba(20,19,30,0.55) 100%);
+}
+/* Frame the video on the record (lower part of the clip) so it reads as a turntable, not just texture. */
+.valt-hero--video .valt-hero__bg { object-position: 50% 82%; }
+@media (max-width: 760px) { .valt-hero--video .valt-hero__bg { object-position: 34% 85%; } }
+.valt-hero--video .valt-hero__logo { position: relative; }
+.valt-hero--video .valt-hero__logo::before {
+	content: ""; position: absolute; left: 50%; top: 50%; z-index: -1; pointer-events: none;
+	width: min(560px, 130vw); aspect-ratio: 1; transform: translate(-50%, -46%);
+	background: radial-gradient(circle, rgba(232,196,139,var(--valt-hero-halo)) 0%, rgba(232,196,139,calc(var(--valt-hero-halo) * 0.35)) 32%, transparent 62%);
 }
 
 /* ─── Buttons ─────────────────────────────────────────────────────── */
@@ -262,14 +365,15 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-btn:hover { transform: translateY(-1px); box-shadow: var(--valt-shadow); }
 .valt-btn:active { transform: translateY(0); }
 
-/* Primary — dark gold bg, cream text. High contrast. */
+/* Primary — gold gradient, DARK ink text (10:1). The old cream-on-gold measured 2.2:1. */
 .valt-btn--primary {
-	background: var(--valt-gold-dark); color: var(--valt-cream);
-	border-color: var(--valt-gold-dark);
+	background: var(--valt-grad-gold); color: var(--valt-ink);
+	border-color: transparent; font-weight: 700;
+	box-shadow: 0 6px 24px -6px rgba(232,196,139,0.45);
 }
 .valt-btn--primary:hover {
-	background: var(--valt-gold); color: var(--valt-darker);
-	border-color: var(--valt-gold);
+	background: linear-gradient(135deg, #FFF0D4 0%, #F2D9A9 45%, #E8C48B 100%); color: var(--valt-ink);
+	box-shadow: 0 10px 30px -6px rgba(232,196,139,0.6);
 }
 .valt-btn--primary .valt-icon { stroke: currentColor; }
 
@@ -314,7 +418,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-badge--grey   { background: rgba(155,142,130,0.15); color: var(--valt-mid); }
 .valt-badge--amber  { background: rgba(232,196,139,0.2); color: var(--valt-gold); }
-.valt-badge--gold   { background: var(--valt-gold-dark); color: var(--valt-cream); }
+.valt-badge--gold   { background: var(--valt-gold); color: var(--valt-ink); }
 .valt-badge--level  { background: rgba(232,196,139,0.12); color: var(--valt-gold); }
 
 /* ─── Forms ───────────────────────────────────────────────────────── */
@@ -366,9 +470,9 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-song-grid__art { position: relative; }
 .valt-song-grid__art img { width: 100%; aspect-ratio: 1; object-fit: cover; }
 .valt-song-grid__owned {
-	position: absolute; bottom: 8px; right: 8px;
+	position: absolute; top: 8px; left: 8px;
 	padding: 0.2rem 0.6rem; border-radius: var(--valt-radius-sm);
-	background: var(--valt-gold-dark); color: var(--valt-cream);
+	background: var(--valt-gold); color: var(--valt-ink);
 	font-size: var(--valt-fs-xs); font-weight: 600;
 	box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
@@ -556,6 +660,8 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-mint__pending p { margin-top: 0.5rem; }
 
 .valt-mint__btn { display: inline-flex; align-items: center; gap: 0.5rem; }
+/* The checkout hides parts of itself with the hidden attribute; don't let display rules undo that. */
+.valt-mint [hidden] { display: none !important; }
 .valt-mint__btn .valt-icon { stroke: var(--valt-brown); }
 
 /* Price tiers */
@@ -567,11 +673,11 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 }
 .valt-mint__tier:hover { transform: translateY(-2px); box-shadow: var(--valt-shadow); }
 .valt-mint__tier--primary {
-	background: var(--valt-gold-dark); border: 2px solid var(--valt-gold-dark);
+	background: var(--valt-gold); border: 2px solid var(--valt-gold);
 }
-.valt-mint__tier--primary .valt-mint__tier-label { color: var(--valt-cream); font-weight: 600; font-size: var(--valt-fs-small); }
-.valt-mint__tier--primary .valt-mint__tier-price { color: var(--valt-cream); font-size: 1.3rem; font-weight: 700; }
-.valt-mint__tier--primary .valt-mint__tier-usd { color: rgba(255,248,237,0.6); font-size: var(--valt-fs-xs); }
+.valt-mint__tier--primary .valt-mint__tier-label { color: var(--valt-ink); font-weight: 600; font-size: var(--valt-fs-small); }
+.valt-mint__tier--primary .valt-mint__tier-price { color: var(--valt-ink); font-size: 1.3rem; font-weight: 700; }
+.valt-mint__tier--primary .valt-mint__tier-usd { color: rgba(27,26,43,0.7); font-size: var(--valt-fs-xs); }
 .valt-mint__tier--primary:hover { background: var(--valt-gold); border-color: var(--valt-gold); }
 .valt-mint__tier--primary:hover .valt-mint__tier-label,
 .valt-mint__tier--primary:hover .valt-mint__tier-price { color: var(--valt-darker); }
@@ -595,7 +701,7 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-connect-mint__nudge a { color: var(--valt-coral); }
 
 /* ─── Music Player Wrap ───────────────────────────────────────────── */
-.valt-player-wrap { position: sticky; bottom: 0; z-index: 500; }
+/* (Legacy FML player wrapper — superseded by the Valt player at the end of this file.) */
 
 /* ─── Artist Fans (mini leaderboard) ──────────────────────────────── */
 .valt-artist-fans__item {
@@ -1096,3 +1202,427 @@ a.valt-nft-card__artist-link:hover { color: var(--valt-gold); }
 .valt-site .container { max-width: var(--valt-container); margin: 0 auto; padding: 0 var(--valt-gap); }
 .valt-site h2.mb-0 { margin-bottom: 0; }
 .valt-site .wallet-button { display: none; } /* Hide old CardanoPress buttons, we use valt-wallet-btn */
+
+/* ═══════════════════════════════════════════════════════════════════
+   LISTEN-FIRST LAYER (2026-09 redesign)
+   The sync.land feel, in Valt's own colours: music is one tap away
+   everywhere, a persistent player carries you between pages, and
+   every card / row can be played without leaving it.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Play button (round, gold) ───────────────────────────────────── */
+.valt-play {
+	--size: 48px;
+	width: var(--size); height: var(--size); border-radius: 50%;
+	display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+	background: var(--valt-grad-gold); color: var(--valt-ink);
+	border: 0; padding: 0; cursor: pointer;
+	box-shadow: 0 6px 20px -4px rgba(232,196,139,0.55), inset 0 1px 0 rgba(255,255,255,0.45);
+	transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.22s ease;
+}
+.valt-play:hover { transform: scale(1.07); box-shadow: 0 10px 28px -4px rgba(232,196,139,0.7), inset 0 1px 0 rgba(255,255,255,0.45); }
+.valt-play:active { transform: scale(0.96); }
+.valt-play svg { width: 44%; height: 44%; fill: currentColor; }
+.valt-play .valt-play__pause { display: none; }
+.valt-play.is-playing .valt-play__icon  { display: none; }
+.valt-play.is-playing .valt-play__pause { display: block; }
+.valt-play--sm { --size: 36px; }
+.valt-play--lg { --size: 64px; }
+.valt-play--xl { --size: 76px; }
+.valt-play[disabled] { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+/* Animated eq bars, shown on whatever is currently playing */
+.valt-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.valt-eq i { width: 3px; background: currentColor; border-radius: 1px; animation: valt-eq 0.9s ease-in-out infinite; }
+.valt-eq i:nth-child(2) { animation-delay: -0.3s; }
+.valt-eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes valt-eq { 0%,100% { height: 25%; } 50% { height: 100%; } }
+.is-paused .valt-eq i { animation-play-state: paused; }
+
+/* ─── Song grid: stretched-link card with play overlay ───────────── */
+/* The card is an <article>; the title link stretches over it, the play
+   button sits above the link (z-index) so both are real controls. */
+.valt-song-grid__item { position: relative; }
+.valt-song-grid__link { color: inherit; text-decoration: none; }
+.valt-song-grid__link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.valt-song-grid__link:focus-visible { outline: none; }
+.valt-song-grid__item:focus-within { outline: 2px solid var(--valt-gold); outline-offset: 3px; }
+.valt-song-grid__art { overflow: hidden; }
+.valt-song-grid__art img { display: block; transition: transform 0.5s ease; }
+.valt-song-grid__item:hover .valt-song-grid__art img { transform: scale(1.04); }
+.valt-song-grid__art::after {
+	content: ""; position: absolute; inset: 0; pointer-events: none;
+	background: linear-gradient(to top, rgba(20,19,33,0.75) 0%, transparent 45%);
+	opacity: 0; transition: opacity 0.25s ease;
+}
+.valt-song-grid__item:hover .valt-song-grid__art::after,
+.valt-song-grid__item.is-current .valt-song-grid__art::after { opacity: 1; }
+.valt-song-grid__art .valt-play {
+	position: absolute; right: 12px; bottom: 12px; z-index: 2;
+	opacity: 0; transform: translateY(8px);
+}
+.valt-song-grid__item:hover .valt-song-grid__art .valt-play,
+.valt-song-grid__art .valt-play:focus-visible,
+.valt-song-grid__item.is-current .valt-song-grid__art .valt-play { opacity: 1; transform: none; }
+@media (hover: none) { .valt-song-grid__art .valt-play { opacity: 1; transform: none; } }
+.valt-song-grid__item.is-current { border-color: rgba(232,196,139,0.45); }
+.valt-song-grid__owned { z-index: 2; }
+.valt-song-grid__info { display: flex; flex-direction: column; gap: 0.35rem; }
+.valt-song-grid__title { font-weight: 700; font-size: 1rem; }
+.valt-song-grid__artist { margin-top: 0; }
+.valt-song-grid__price { color: var(--valt-cream); font-weight: 700; font-size: var(--valt-fs-small); font-variant-numeric: tabular-nums; }
+.valt-song-grid__foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.2rem; }
+
+/* ─── Genre / mood pills ──────────────────────────────────────────── */
+.valt-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.valt-pill {
+	display: inline-flex; align-items: center; gap: 0.35rem;
+	padding: 0.2rem 0.65rem; border-radius: 999px;
+	font-size: var(--valt-fs-xs); font-weight: 600; letter-spacing: 0.01em;
+	color: var(--valt-cream); background: rgba(232,196,139,0.1);
+	border: 1px solid rgba(232,196,139,0.22);
+}
+.valt-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--valt-gold); }
+.valt-pill--mood::before { background: var(--valt-coral); }
+
+/* ─── Tracklist rows ──────────────────────────────────────────────── */
+.valt-tracklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.valt-track {
+	position: relative;
+	display: grid; grid-template-columns: 36px 52px minmax(0,1fr) auto auto; align-items: center; gap: 0.9rem;
+	padding: 0.5rem 0.9rem 0.5rem 0.6rem; border-radius: var(--valt-radius-sm);
+	background: rgba(42,41,64,0.55); border: 1px solid transparent;
+	transition: background 0.2s ease, border-color 0.2s ease;
+}
+.valt-track:hover { background: var(--valt-raised); border-color: rgba(232,196,139,0.15); }
+.valt-track.is-current { background: rgba(232,196,139,0.08); border-color: rgba(232,196,139,0.35); }
+.valt-track__lead { position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.valt-track__num { color: var(--valt-mid); font-variant-numeric: tabular-nums; font-size: var(--valt-fs-small); }
+.valt-track__lead .valt-play { position: absolute; inset: 0; z-index: 2; opacity: 0; }
+.valt-track:hover .valt-track__lead .valt-play,
+.valt-track__lead .valt-play:focus-visible,
+.valt-track.is-current .valt-track__lead .valt-play { opacity: 1; }
+.valt-track:hover .valt-track__num, .valt-track.is-current .valt-track__num { visibility: hidden; }
+@media (hover: none) { .valt-track__lead .valt-play { opacity: 1; } .valt-track__num { visibility: hidden; } }
+.valt-track__art { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: var(--valt-darker); }
+.valt-track__main { min-width: 0; display: flex; flex-direction: column; }
+.valt-track__title { color: var(--valt-cream); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+.valt-track__title::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.valt-track__title:hover { color: var(--valt-gold); }
+.valt-track.is-current .valt-track__title { color: var(--valt-gold); }
+.valt-track__sub { color: var(--valt-mid); font-size: var(--valt-fs-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.valt-track__pills { display: flex; gap: 0.35rem; }
+.valt-track__price { color: var(--valt-tan); font-weight: 700; font-size: var(--valt-fs-small); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 720px) {
+	.valt-track { grid-template-columns: 36px 44px minmax(0,1fr) auto; gap: 0.7rem; }
+	.valt-track__art { width: 44px; height: 44px; }
+	.valt-track__pills { display: none; }
+}
+
+/* Play-all header above a tracklist */
+.valt-playall { display: flex; align-items: center; gap: 1rem; margin: 0 0 1.25rem; }
+.valt-playall__text { display: flex; flex-direction: column; }
+.valt-playall__label { color: var(--valt-cream); font-weight: 700; }
+.valt-playall__sub { color: var(--valt-mid); font-size: var(--valt-fs-small); }
+
+/* ─── Song hero: play + value line ────────────────────────────────── */
+.valt-song-hero__listen { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0 0.5rem; }
+.valt-song-hero__listen-label { display: flex; flex-direction: column; }
+.valt-song-hero__listen-label strong { color: var(--valt-cream); }
+.valt-song-hero__listen-label span { color: var(--valt-mid); font-size: var(--valt-fs-small); }
+.valt-song-hero .valt-pills { margin-top: 0.75rem; }
+.valt-unlocks {
+	display: flex; gap: 0.75rem; align-items: flex-start;
+	margin: 0 0 1.25rem; padding: 0.9rem 1rem; border-radius: var(--valt-radius-sm);
+	background: rgba(232,196,139,0.07); border: 1px solid rgba(232,196,139,0.2); color: var(--valt-tan);
+}
+.valt-unlocks strong { color: var(--valt-gold); }
+.valt-unlocks svg { flex-shrink: 0; width: 20px; height: 20px; stroke: var(--valt-gold); margin-top: 2px; }
+@media (max-width: 640px) {
+	.valt-song-hero__listen { justify-content: center; }
+	.valt-song-hero .valt-pills { justify-content: center; }
+}
+
+/* ─── Homepage ────────────────────────────────────────────────────── */
+.valt-kicker {
+	display: inline-block; font-size: var(--valt-fs-xs); font-weight: 700;
+	letter-spacing: 0.22em; text-transform: uppercase; color: var(--valt-mid); margin-bottom: 1rem;
+}
+.valt-grad-text {
+	background: var(--valt-grad-text); -webkit-background-clip: text; background-clip: text;
+	color: transparent; -webkit-text-fill-color: transparent;
+}
+.valt-hero__title.valt-grad-text { text-shadow: none; }
+
+/* Big two-way CTA cards under the hero (fan / artist) */
+.valt-cta-cards { display: grid; grid-template-columns: 1.35fr 1fr; gap: 1rem; max-width: 780px; margin: 2rem auto 0; }
+.valt-cta-card {
+	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;
+	padding: 1.25rem 1.5rem; border-radius: var(--valt-radius); text-decoration: none; text-align: center;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.valt-cta-card:hover { transform: translateY(-3px); text-decoration: none; }
+.valt-cta-card__title { font-size: 1.1rem; font-weight: 800; }
+.valt-cta-card__sub { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.valt-cta-card svg { width: 22px; height: 22px; fill: none; stroke-width: 2; }
+.valt-cta-card--primary { background: var(--valt-grad-gold); color: var(--valt-ink); box-shadow: 0 14px 40px -12px rgba(232,196,139,0.6); }
+.valt-cta-card--primary .valt-cta-card__sub { color: rgba(27,26,43,0.75); }
+.valt-cta-card--primary svg { stroke: var(--valt-ink); }
+.valt-cta-card--primary:hover { color: var(--valt-ink); box-shadow: 0 18px 48px -12px rgba(232,196,139,0.75); }
+.valt-cta-card--ghost { background: rgba(42,41,64,0.6); border: 1px solid rgba(232,196,139,0.25); color: var(--valt-cream); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.valt-cta-card--ghost .valt-cta-card__sub { color: var(--valt-mid); }
+.valt-cta-card--ghost svg { stroke: var(--valt-gold); }
+.valt-cta-card--ghost:hover { color: var(--valt-cream); border-color: rgba(232,196,139,0.55); }
+@media (max-width: 640px) { .valt-cta-cards { grid-template-columns: 1fr; } }
+
+/* Section scaffolding */
+.valt-section { padding: clamp(3rem, 7vw, 5.5rem) 0; }
+.valt-section__head { text-align: center; max-width: 640px; margin: 0 auto 2.5rem; }
+.valt-section__head h2 { font-size: var(--valt-fs-h1); margin-bottom: 0.6rem; }
+.valt-section__head p { color: var(--valt-tan); margin: 0; }
+.valt-section__foot { text-align: center; margin-top: 2rem; }
+.valt-section--band { background: linear-gradient(180deg, rgba(42,41,64,0.55), rgba(42,41,64,0.2)); border-block: var(--valt-border); }
+
+/* How it works: a real sequence, so it is numbered */
+.valt-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--valt-gap); counter-reset: step; list-style: none; padding: 0; margin: 0; }
+.valt-step {
+	counter-increment: step; position: relative;
+	padding: 1.75rem 1.5rem 1.5rem; border-radius: var(--valt-radius);
+	background: rgba(42,41,64,0.7); border: var(--valt-border);
+}
+.valt-step::before {
+	content: counter(step); display: inline-flex; align-items: center; justify-content: center;
+	width: 34px; height: 34px; border-radius: 50%; margin-bottom: 1rem;
+	background: var(--valt-grad-gold); color: var(--valt-ink); font-weight: 800;
+}
+.valt-step h3 { color: var(--valt-cream); margin-bottom: 0.4rem; }
+.valt-step p { color: var(--valt-tan); font-size: var(--valt-fs-small); margin: 0; }
+@media (max-width: 800px) { .valt-steps { grid-template-columns: 1fr; } }
+
+/* Trust band: short facts, not numbered */
+.valt-trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+.valt-trust__item { display: flex; gap: 0.75rem; align-items: flex-start; }
+.valt-trust__item svg { width: 22px; height: 22px; fill: none; stroke: var(--valt-gold); stroke-width: 2; flex-shrink: 0; margin-top: 2px; }
+.valt-trust__item strong { display: block; color: var(--valt-cream); font-size: var(--valt-fs-small); }
+.valt-trust__item span { color: var(--valt-mid); font-size: var(--valt-fs-xs); line-height: 1.45; }
+@media (max-width: 900px) { .valt-trust { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .valt-trust { grid-template-columns: 1fr; } }
+
+/* For-artists band */
+.valt-artist-band {
+	display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: center;
+	padding: clamp(1.75rem, 4vw, 3rem); border-radius: var(--valt-radius-lg);
+	background:
+		radial-gradient(120% 140% at 100% 0%, rgba(232,196,139,0.16), transparent 55%),
+		linear-gradient(135deg, #2E2C47, #211F35);
+	border: 1px solid rgba(232,196,139,0.22);
+}
+.valt-artist-band h2 { margin-bottom: 0.6rem; }
+.valt-artist-band p { color: var(--valt-tan); }
+.valt-artist-band ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; }
+.valt-artist-band li { display: flex; gap: 0.6rem; color: var(--valt-cream); font-size: var(--valt-fs-small); }
+.valt-artist-band li::before { content: ""; width: 8px; height: 8px; margin-top: 0.45em; border-radius: 50%; background: var(--valt-gold); flex-shrink: 0; }
+.valt-artist-band__cta { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; }
+@media (max-width: 800px) { .valt-artist-band { grid-template-columns: 1fr; } }
+
+/* ─── Valt locked state: path to collect ──────────────────────────── */
+.valt-locked-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+
+/* ─── Sticky player bar ───────────────────────────────────────────── */
+.valt-player {
+	position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+	display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1.25rem;
+	padding: 0.65rem clamp(0.75rem, 2vw, 1.5rem);
+	background: rgba(24,23,39,0.92);
+	-webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+	border-top: 1px solid rgba(232,196,139,0.18);
+	box-shadow: 0 -10px 40px rgba(0,0,0,0.45);
+	transform: translateY(110%); visibility: hidden;
+	transition: transform 0.35s cubic-bezier(.2,.8,.2,1), visibility 0s linear 0.35s;
+}
+.valt-player.is-open { transform: none; visibility: visible; transition: transform 0.35s cubic-bezier(.2,.8,.2,1); }
+body.valt-player-open { padding-bottom: 84px; }
+.valt-player__controls { display: flex; align-items: center; gap: 0.6rem; }
+.valt-player__btn {
+	width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+	display: inline-flex; align-items: center; justify-content: center;
+	background: rgba(255,248,237,0.08); color: var(--valt-cream);
+	transition: background 0.2s ease, color 0.2s ease;
+}
+.valt-player__btn:hover { background: rgba(255,248,237,0.16); color: var(--valt-gold); }
+.valt-player__btn svg { width: 16px; height: 16px; fill: currentColor; }
+.valt-player__now { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 0.9rem; align-items: center; min-width: 0; }
+.valt-player__art { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: var(--valt-darker); }
+.valt-player__meta { min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.valt-player__line { display: flex; align-items: baseline; gap: 0.6rem; min-width: 0; }
+.valt-player__line .valt-eq { color: var(--valt-gold); align-self: center; }
+.valt-player__title { color: var(--valt-cream); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+.valt-player__title:hover { color: var(--valt-gold); }
+.valt-player__artist { color: var(--valt-mid); font-size: var(--valt-fs-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+.valt-player__artist:hover { color: var(--valt-coral); }
+.valt-player__bar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.6rem; }
+.valt-player__time { color: var(--valt-mid); font-size: 0.7rem; font-variant-numeric: tabular-nums; min-width: 2.6em; }
+.valt-range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; margin: 0; border-radius: 4px; cursor: pointer;
+	background: linear-gradient(to right, var(--valt-gold) var(--p, 0%), rgba(255,248,237,0.14) var(--p, 0%)); }
+.valt-range::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--valt-gold-light); box-shadow: 0 0 0 3px rgba(232,196,139,0.25); }
+.valt-range::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--valt-gold-light); }
+.valt-player__side { display: flex; align-items: center; gap: 0.75rem; }
+.valt-player__collect { padding: 0.5rem 1.1rem; font-size: var(--valt-fs-small); }
+.valt-player__vol { width: 84px; height: 3px; }
+@media (max-width: 760px) {
+	.valt-player { grid-template-columns: minmax(0, 1fr) auto; gap: 0.75rem; padding-bottom: calc(0.65rem + env(safe-area-inset-bottom)); }
+	.valt-player__now { order: 1; grid-template-columns: 44px minmax(0,1fr); }
+	.valt-player__controls { order: 2; }
+	.valt-player__prev, .valt-player__side { display: none; }
+	.valt-player__art { width: 44px; height: 44px; }
+	.valt-player__time { display: none; }
+	.valt-player__bar { grid-template-columns: 1fr; }
+	body.valt-player-open { padding-bottom: 76px; }
+}
+
+/* ─── Motion preferences ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+	.valt-eq i { animation: none; height: 70%; }
+	.valt-player, .valt-song-grid__art img, .valt-play, .valt-cta-card, .valt-song-grid__item { transition: none; }
+	.valt-song-grid__item:hover, .valt-cta-card:hover, .valt-song-grid__item:hover .valt-song-grid__art img { transform: none; }
+}
+.valt-player__vol-icon svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* ─── Song "About" + holder-only video ────────────────────────────── */
+.valt-song-about { margin: 2rem 0; }
+.valt-song-about h2 { margin-bottom: 0.75rem; }
+.valt-song-about .valt-prose { color: var(--valt-tan); max-width: 70ch; }
+.valt-song-about .valt-gated { margin-top: 1.5rem; max-width: none; }
+.valt-gated__lock { font-size: 1.6rem; }
+.valt-gated__message { color: var(--valt-cream); margin: 0.5rem 0 1rem; }
+.valt-gated--unlocked { padding: 0; background: none; border: 0; text-align: left; }
+.valt-video { position: relative; aspect-ratio: 16 / 9; border-radius: var(--valt-radius); overflow: hidden; background: #000; border: var(--valt-border); }
+.valt-video iframe, .valt-video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+.valt-exclusive__label { display: inline-block; font-size: var(--valt-fs-xs); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--valt-gold); margin-bottom: 0.5rem; }
+.valt-vault__exclusive { margin-top: 1.5rem; display: grid; gap: 0.75rem; }
+.valt-vault__exclusive h4 { color: var(--valt-cream); margin: 0; }
+
+/* ─── Spotlight (featured release) ────────────────────────────────── */
+.valt-spotlight { position: relative; display: grid; align-items: center; border-radius: var(--valt-radius-lg); border: 1px solid rgba(232,196,139,0.2); overflow: hidden; }
+.valt-spotlight--lg {
+	grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem);
+	padding: clamp(1rem, 2.5vw, 1.75rem);
+	background: radial-gradient(120% 120% at 0% 0%, rgba(232,196,139,0.14), transparent 55%), linear-gradient(135deg, #2E2C47, #1E1D30);
+	box-shadow: 0 30px 80px -30px rgba(0,0,0,0.7);
+}
+.valt-spotlight__media { position: relative; aspect-ratio: 1 / 1; border-radius: var(--valt-radius); overflow: hidden; background: var(--valt-darker); }
+.valt-spotlight__media img, .valt-spotlight__teaser { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.valt-spotlight__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(20,19,33,0.55), transparent 40%); pointer-events: none; }
+.valt-spotlight__media .valt-play { position: absolute; left: 18px; bottom: 18px; z-index: 2; }
+.valt-spotlight__body { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; padding: 0.5rem 0.5rem 0.5rem 0; }
+.valt-spotlight__body .valt-kicker { margin-bottom: 0; color: var(--valt-gold); }
+.valt-spotlight__title { margin: 0; line-height: 0.98; }
+.valt-spotlight__title a { color: var(--valt-cream); text-decoration: none; }
+.valt-spotlight__title a:hover { color: var(--valt-gold); }
+.valt-spotlight--lg .valt-spotlight__title { font-size: clamp(3rem, 7vw, 5.75rem); font-weight: 900; letter-spacing: -0.02em; }
+.valt-spotlight__artist { color: var(--valt-gold); font-weight: 700; font-size: 1.25rem; text-decoration: none; }
+.valt-spotlight__artist:hover { color: var(--valt-gold-light); }
+.valt-spotlight__blurb { color: var(--valt-tan); margin: 0.25rem 0 0; max-width: 46ch; }
+.valt-spotlight__unlock { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0.25rem 0 0; padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(232,196,139,0.1); border: 1px solid rgba(232,196,139,0.3); color: var(--valt-cream); font-size: var(--valt-fs-small); font-weight: 600; }
+.valt-spotlight__unlock svg { width: 16px; height: 16px; stroke: var(--valt-gold); }
+.valt-spotlight__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; color: var(--valt-mid); font-size: var(--valt-fs-small); margin-top: 0.25rem; }
+.valt-spotlight__price { color: var(--valt-cream); font-weight: 800; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.valt-spotlight__price small { color: var(--valt-mid); font-weight: 500; font-size: var(--valt-fs-small); margin-left: 0.25rem; }
+.valt-spotlight__cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+
+.valt-spotlight--md { grid-template-columns: 170px minmax(0, 1fr); gap: 1.25rem; padding: 1rem; background: rgba(42,41,64,0.7); transition: border-color 0.2s ease, transform 0.2s ease; }
+.valt-spotlight--md:hover { border-color: rgba(232,196,139,0.45); transform: translateY(-2px); }
+.valt-spotlight--md .valt-spotlight__title { font-size: 1.6rem; font-weight: 800; }
+.valt-spotlight--md .valt-spotlight__artist { font-size: 1rem; }
+.valt-spotlight--md .valt-spotlight__blurb { font-size: var(--valt-fs-small); }
+.valt-spotlight--md .valt-spotlight__media .valt-play { left: 10px; bottom: 10px; }
+.valt-spotlight--md .valt-spotlight__price { font-size: 1.05rem; }
+.valt-spotlight--md .valt-spotlight__cta { margin-top: 0.4rem; }
+.valt-spotlight--md .valt-spotlight__cta .valt-btn { padding: 0.5rem 1rem; font-size: var(--valt-fs-small); }
+.valt-spotlight-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--valt-gap); margin-top: var(--valt-gap); }
+.valt-spotlight.is-current { border-color: rgba(232,196,139,0.55); }
+
+@media (max-width: 900px) {
+	.valt-spotlight--lg { grid-template-columns: 1fr; }
+	.valt-spotlight__body { padding: 0 0.25rem 0.5rem; }
+	.valt-spotlight-pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+	.valt-spotlight--md { grid-template-columns: 110px minmax(0, 1fr); gap: 0.9rem; }
+	.valt-spotlight--md .valt-spotlight__blurb, .valt-spotlight--md .pills { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .valt-spotlight__teaser { display: none; } }
+
+/* ─── Collect quantity picker ─────────────────────────────────────── */
+.valt-qty { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; margin: 0 0 1rem; }
+.valt-qty__label { color: var(--valt-cream); font-weight: 700; font-size: var(--valt-fs-small); }
+.valt-qty__stepper { display: inline-flex; align-items: center; border: 1px solid rgba(232,196,139,0.35); border-radius: 999px; overflow: hidden; }
+.valt-qty__btn { width: 38px; height: 38px; border: 0; background: rgba(232,196,139,0.08); color: var(--valt-gold); font-size: 1.2rem; font-weight: 700; cursor: pointer; }
+.valt-qty__btn:hover:not(:disabled) { background: rgba(232,196,139,0.2); }
+.valt-qty__btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.valt-qty__val { min-width: 2.2em; text-align: center; color: var(--valt-cream); font-weight: 800; font-variant-numeric: tabular-nums; }
+.valt-qty__total { color: var(--valt-cream); font-weight: 700; font-variant-numeric: tabular-nums; }
+.valt-qty__max { color: var(--valt-mid); font-size: var(--valt-fs-xs); }
+.valt-mint__btn[aria-busy="true"] { opacity: 0.75; pointer-events: none; }
+.valt-mint__msg { margin: 0.75rem 0 0; color: var(--valt-red); font-size: var(--valt-fs-small); }
+.valt-exclusive__credit { color: var(--valt-mid); font-size: var(--valt-fs-small); margin: 0.25rem 0 0; }
+
+/* ─── Scarcity badge ("Only N left" / "Last one") ─────────────────── */
+.valt-scarcity {
+	display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+	padding: 0.2rem 0.65rem; border-radius: 999px;
+	font-size: var(--valt-fs-xs); font-weight: 800; letter-spacing: 0.02em;
+	color: #FFE1C2; background: rgba(212,165,116,0.18); border: 1px solid rgba(212,165,116,0.55);
+}
+.valt-scarcity__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--valt-coral); box-shadow: 0 0 0 0 rgba(212,165,116,0.7); animation: valt-scarcity-pulse 1.8s ease-out infinite; }
+.valt-scarcity--hot { color: #FFF1E6; background: rgba(232,124,124,0.2); border-color: rgba(232,124,124,0.6); }
+.valt-scarcity--hot .valt-scarcity__dot { background: var(--valt-red); }
+@keyframes valt-scarcity-pulse { 0% { box-shadow: 0 0 0 0 rgba(232,140,110,0.6); } 70% { box-shadow: 0 0 0 7px rgba(232,140,110,0); } 100% { box-shadow: 0 0 0 0 rgba(232,140,110,0); } }
+.valt-song-grid__art .valt-scarcity { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(27,26,43,0.85); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.valt-mint__prices .valt-scarcity { margin-left: 0.25rem; }
+@media (prefers-reduced-motion: reduce) { .valt-scarcity__dot { animation: none; } }
+.valt-scarcity--out { color: var(--valt-tan); background: rgba(27,26,43,0.85); border-color: rgba(155,142,130,0.45); letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.7rem; }
+
+/* Sold-out state on the song page: a finished edition, calm rather than an error. */
+.valt-soldout { display: grid; gap: 0.85rem; max-width: 36rem; padding: 1.25rem 1.4rem; border: 1px solid rgba(212,165,116,0.35); border-radius: 14px; background: linear-gradient(135deg, rgba(212,165,116,0.08), rgba(27,26,43,0.4)); }
+.valt-soldout__head { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.85rem; }
+.valt-soldout__stamp { display: inline-block; padding: 0.3rem 0.75rem; border: 2px solid var(--valt-gold); border-radius: 6px; color: var(--valt-gold); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.14em; text-transform: uppercase; transform: rotate(-3deg); }
+.valt-soldout__count { color: var(--valt-tan); font-weight: 600; font-variant-numeric: tabular-nums; }
+.valt-soldout__text { margin: 0; color: var(--valt-mid); font-size: 0.95rem; line-height: 1.55; }
+.valt-soldout__actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+@media (max-width: 480px) { .valt-soldout__actions .valt-btn { flex: 1 1 100%; justify-content: center; } }
+/* Compact spotlight cards: smaller play button so the preview stays visible (esp. on phones). */
+@media (max-width: 480px) { .valt-spotlight--md .valt-spotlight__media .valt-play { --size: 38px; left: 6px; bottom: 6px; } }
+
+/* Anvil in-page collect: wallet chooser + success box. */
+.valt-mint__wallets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.75rem; }
+.valt-mint__wallets-label { color: var(--valt-mid); font-size: var(--valt-fs-small); }
+.valt-mint__done-box { max-width: 36rem; padding: 1rem 1.25rem; border: 1px solid rgba(212,165,116,0.45); border-radius: 12px; background: rgba(212,165,116,0.08); }
+.valt-mint__done-box strong { color: var(--valt-gold); font-size: 1.15rem; }
+.valt-mint__done-box p { margin: 0.4rem 0 0.75rem; color: var(--valt-tan); }
+
+/* Collect in progress: the button reads as busy and can't be pressed again. */
+.valt-mint__btn.is-busy { opacity: 0.75; cursor: progress; pointer-events: none; }
+.valt-mint__btn.is-busy::after { content: ""; width: 14px; height: 14px; margin-left: 0.25rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: valt-spin 0.8s linear infinite; }
+
+/* Pending panel after submit: steps + confirmation poll. */
+.valt-collect-status { display: grid; gap: 0.6rem; }
+.valt-collect-status__head { display: flex; align-items: center; gap: 0.6rem; }
+.valt-collect-status__title { color: var(--valt-gold); font-size: 1.15rem; }
+.valt-collect-status__spinner { width: 18px; height: 18px; flex: none; border: 2px solid rgba(212,165,116,0.35); border-top-color: var(--valt-gold); border-radius: 50%; animation: valt-spin 0.9s linear infinite; }
+.valt-collect-status .valt-collect-status__sub { margin: 0; color: var(--valt-tan); font-size: 0.92rem; line-height: 1.5; }
+.valt-collect-status__steps { list-style: none; margin: 0.2rem 0; padding: 0; display: grid; gap: 0.35rem; font-size: 0.9rem; }
+.valt-collect-status__steps li { display: flex; align-items: center; gap: 0.55rem; color: var(--valt-mid); }
+.valt-collect-status__steps li::before { content: ""; width: 10px; height: 10px; flex: none; border-radius: 50%; border: 2px solid rgba(155,142,130,0.6); }
+.valt-collect-status__steps li.is-done { color: var(--valt-tan); }
+.valt-collect-status__steps li.is-done::before { background: var(--valt-gold); border-color: var(--valt-gold); }
+.valt-collect-status__steps li.is-active { color: var(--valt-gold); font-weight: 600; }
+.valt-collect-status__steps li.is-active::before { border-color: var(--valt-gold); border-right-color: transparent; animation: valt-spin 0.9s linear infinite; }
+.valt-collect-status .valt-mint__done-links { margin: 0; }
+.valt-collect-status > .valt-btn { justify-self: start; }
+.valt-collect-status__actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.valt-collect-status.is-confirmed { border-color: rgba(212,165,116,0.7); }
+@media (prefers-reduced-motion: reduce) {
+	.valt-collect-status__spinner, .valt-collect-status__steps li.is-active::before, .valt-mint__btn.is-busy::after { animation: none; }
+}
+.valt-mint__done-links a { color: var(--valt-coral); font-weight: 600; }

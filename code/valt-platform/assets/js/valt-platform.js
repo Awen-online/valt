@@ -319,7 +319,8 @@
 							+ '<div class="valt-song-grid__info">'
 							+ '<strong class="valt-song-grid__title">' + escHtml( a.name ) + '</strong>'
 							+ ( a.genre ? '<span class="valt-song-grid__artist">' + escHtml( a.genre ) + '</span>' : '' )
-							+ '<span class="valt-song-grid__meta">' + ( a.fan_count || 0 ) + ' fans' + ( a.country ? ' &middot; ' + escHtml( a.country ) : '' ) + '</span>'
+							// Only show a fan count once there is one; "0 fans" reads as an empty room.
+							+ ( ( a.fan_count > 0 || a.country ) ? '<span class="valt-song-grid__meta">' + [ a.fan_count > 0 ? a.fan_count + ( a.fan_count === 1 ? ' fan' : ' fans' ) : '', a.country ? escHtml( a.country ) : '' ].filter( Boolean ).join( ' &middot; ' ) + '</span>' : '' )
 							+ '</div></a>';
 					} );
 
@@ -472,9 +473,9 @@
 					$btn.toggleClass( 'valt-btn--primary', ! isFollowing )
 						.toggleClass( 'valt-btn--secondary valt-follow--active', isFollowing )
 						.html( ( isFollowing ? '\u2714 Following' : '+ Follow' ) );
-					$wrap.find( '[data-follow-count]' ).text( r.data.count );
+					$wrap.find( '[data-follow-count]' ).text( r.data.count ).prop( 'hidden', ! r.data.count );
 					var label = r.data.count === 1 ? 'follower' : 'followers';
-					$wrap.find( '.valt-follow__label' ).text( label );
+					$wrap.find( '.valt-follow__label' ).text( label ).prop( 'hidden', ! r.data.count );
 				}
 			} ).always( function () { $btn.prop( 'disabled', false ); } );
 		} );
@@ -482,3 +483,289 @@
 	} );
 
 } )( jQuery );
+
+/**
+ * Collect quantity picker. Quantity 1 follows the direct NMKR link as before; 2+ asks the
+ * server to reserve that many editions of this song and opens NMKR's checkout for all of them.
+ */
+( function () {
+	'use strict';
+
+	function fmt( n ) { return ( Math.round( n * 100 ) / 100 ).toString(); }
+
+	document.addEventListener( 'click', function ( e ) {
+		var step = e.target.closest && e.target.closest( '.valt-qty__btn' );
+		if ( step ) {
+			var box = step.closest( '[data-valt-qty]' );
+			var out = box.querySelector( '.valt-qty__val' );
+			var max = parseInt( box.getAttribute( 'data-max' ), 10 ) || 1;
+			var q   = Math.min( max, Math.max( 1, ( parseInt( out.textContent, 10 ) || 1 ) + parseInt( step.getAttribute( 'data-step' ), 10 ) ) );
+			out.textContent = q;
+			var price = parseFloat( box.getAttribute( 'data-price' ) ) || 0;
+			box.querySelector( '.valt-qty__total' ).textContent = ( q > 1 ? q + ' × ' + fmt( price ) + ' = ' : '' ) + fmt( price * q ) + ' ADA';
+			box.querySelector( '[data-step="-1"]' ).disabled = q <= 1;
+			box.querySelector( '[data-step="1"]' ).disabled  = q >= max;
+			var btn = box.parentNode.querySelector( '[data-valt-collect], [data-valt-anvil]' );
+			if ( btn ) {
+				btn.querySelector( '.valt-mint__btn-label' ).textContent = q > 1 ? 'Collect ' + q + ' editions' : btn.getAttribute( 'data-label1' );
+			}
+			return;
+		}
+
+		var collect = e.target.closest && e.target.closest( '[data-valt-collect]' );
+		if ( ! collect ) return;
+		var wrap = collect.parentNode;
+		var qBox = wrap.querySelector( '[data-valt-qty] .valt-qty__val' );
+		var qty  = qBox ? parseInt( qBox.textContent, 10 ) || 1 : 1;
+		if ( qty <= 1 ) return; // direct single-edition link
+
+		e.preventDefault();
+		var msg = wrap.querySelector( '.valt-mint__msg' );
+		if ( msg ) { msg.hidden = true; msg.textContent = ''; }
+		if ( collect.getAttribute( 'aria-busy' ) === 'true' ) return;
+		collect.setAttribute( 'aria-busy', 'true' );
+		var label = collect.querySelector( '.valt-mint__btn-label' );
+		var was   = label.textContent;
+		label.textContent = 'Reserving ' + qty + ' editions…';
+
+		// Open the tab now (inside the click) so popup blockers allow it; point it at NMKR once ready.
+		var win = window.open( 'about:blank', '_blank' );
+		var cfg = window.valtPlatform || {};
+		fetch( ( cfg.restUrl || '/wp-json/valt/v1/' ) + 'collect', {
+			method: 'POST',
+			// collectToken is user-independent (see checkout.php), so it works whether or not the
+			// visitor is connected; no cookies are needed for this call.
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'omit',
+			body: JSON.stringify( { song_id: parseInt( collect.getAttribute( 'data-valt-collect' ), 10 ), qty: qty, nonce: cfg.collectToken || '' } )
+		} ).then( function ( r ) {
+			return r.json().then( function ( d ) { return { ok: r.ok, d: d }; } );
+		} ).then( function ( res ) {
+			if ( ! res.ok || ! res.d.url ) throw new Error( ( res.d && res.d.message ) || 'Checkout could not be started.' );
+			if ( win && ! win.closed ) { win.location.href = res.d.url; } else { window.location.href = res.d.url; }
+		} ).catch( function ( err ) {
+			if ( win && ! win.closed ) win.close();
+			if ( msg ) { msg.textContent = err.message; msg.hidden = false; }
+		} ).then( function () {
+			collect.removeAttribute( 'aria-busy' );
+			label.textContent = was;
+		} );
+	} );
+} )();
+
+/**
+ * Anvil checkout (songs with valt_checkout = anvil): the fan's own wallet pays and receives the
+ * edition in one transaction. Build on the server → wallet signs → server co-signs with the policy
+ * key and submits. No redirect to a hosted checkout.
+ */
+( function () {
+	'use strict';
+
+	var NAMES = { typhon: 'typhoncip30' };
+
+	function walletKeys() {
+		var c = window.cardano || {};
+		return Object.keys( c ).filter( function ( k ) {
+			return c[ k ] && typeof c[ k ].enable === 'function' && k !== 'typhon';
+		} );
+	}
+
+	/** The wallet CardanoPress connected, if it's installed. */
+	function rememberedWallet() {
+		var v = '';
+		try { v = ( localStorage.getItem( '_x_connectedExtension' ) || '' ).replace( /"/g, '' ).toLowerCase(); } catch ( e ) {}
+		v = NAMES[ v ] || v;
+		return v && window.cardano && window.cardano[ v ] ? v : '';
+	}
+
+	function post( path, body ) {
+		var cfg = window.valtPlatform || {};
+		body.nonce = cfg.collectToken || '';
+		return fetch( ( cfg.restUrl || '/wp-json/valt/v1/' ) + path, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'omit',
+			body: JSON.stringify( body )
+		} ).then( function ( r ) {
+			return r.json().catch( function () { return {}; } ).then( function ( d ) {
+				if ( ! r.ok ) throw new Error( d.message || 'Something went wrong. Please try again.' );
+				return d;
+			} );
+		} );
+	}
+
+	function el( tag, attrs, text ) {
+		var n = document.createElement( tag );
+		Object.keys( attrs || {} ).forEach( function ( k ) { n.setAttribute( k, attrs[ k ] ); } );
+		if ( text ) n.textContent = text;
+		return n;
+	}
+
+	/** Pick a wallet: the remembered one, the only one installed, or ask. Resolves to a key. */
+	function chooseWallet( wrap ) {
+		var k = rememberedWallet();
+		if ( k ) return Promise.resolve( k );
+		var keys = walletKeys();
+		if ( keys.length === 1 ) return Promise.resolve( keys[ 0 ] );
+		if ( ! keys.length ) {
+			return Promise.reject( new Error( 'No Cardano wallet found. Install Eternl or Lace, switch it to the Preprod testnet, then try again.' ) );
+		}
+		var box = wrap.querySelector( '.valt-mint__wallets' );
+		return new Promise( function ( resolve ) {
+			box.innerHTML = '';
+			box.appendChild( el( 'span', { 'class': 'valt-mint__wallets-label' }, 'Choose a wallet:' ) );
+			keys.forEach( function ( key ) {
+				var b = el( 'button', { type: 'button', 'class': 'valt-btn valt-btn--secondary valt-btn--small' }, window.cardano[ key ].name || key );
+				b.addEventListener( 'click', function () { box.hidden = true; resolve( key ); } );
+				box.appendChild( b );
+			} );
+			box.hidden = false;
+		} );
+	}
+
+	/**
+	 * Pending panel after submit: steps (signed, sent, confirming, ready), a live transaction link,
+	 * and a poll of /anvil/status until the tx has a confirmation. Then "Open the Valt".
+	 */
+	function showPending( box, d ) {
+		var n     = d.editions || 1;
+		var what  = n > 1 ? n + ' editions' : 'your edition';
+		box.innerHTML = '';
+		box.classList.add( 'valt-collect-status' );
+		box.setAttribute( 'aria-live', 'polite' );
+
+		var head  = el( 'div', { 'class': 'valt-collect-status__head' } );
+		var spin  = el( 'span', { 'class': 'valt-collect-status__spinner', 'aria-hidden': 'true' } );
+		var title = el( 'strong', { 'class': 'valt-collect-status__title' }, 'Confirming on Cardano' );
+		head.appendChild( spin );
+		head.appendChild( title );
+		box.appendChild( head );
+
+		var sub = el( 'p', { 'class': 'valt-collect-status__sub' }, 'Your payment and ' + what + ' are in one transaction. It usually confirms in under a minute. You can keep this page open.' );
+		box.appendChild( sub );
+
+		var steps = el( 'ol', { 'class': 'valt-collect-status__steps' } );
+		function step( t, state ) {
+			var li = el( 'li', { 'class': 'is-' + state }, t );
+			steps.appendChild( li );
+			return li;
+		}
+		step( 'Signed in your wallet', 'done' );
+		step( 'Sent to the network', 'done' );
+		var sConfirm = step( 'Confirming on-chain', 'active' );
+		var sReady   = step( ( n > 1 ? 'Editions' : 'Edition' ) + ' in your wallet', 'todo' );
+		box.appendChild( steps );
+
+		var links = el( 'p', { 'class': 'valt-mint__done-links' } );
+		links.appendChild( el( 'a', { href: d.explorer, target: '_blank', rel: 'noopener' }, 'View transaction' ) );
+		box.appendChild( links );
+		box.hidden = false;
+
+		var cfg   = window.valtPlatform || {};
+		var base  = cfg.restUrl || '/wp-json/valt/v1/';
+		var tries = 0;
+		function finish() {
+			box.classList.add( 'is-confirmed' );
+			spin.remove();
+			title.textContent = n > 1 ? 'Collected ' + n + ' editions' : 'Collected';
+			sub.textContent = 'Confirmed on-chain. ' + ( n > 1 ? 'They are' : 'It is' ) + ' in your wallet now.';
+			sConfirm.className = 'is-done';
+			sReady.className = 'is-done';
+			var acts = el( 'div', { 'class': 'valt-collect-status__actions' } );
+			if ( d.valt_url ) {
+				acts.appendChild( el( 'a', { href: d.valt_url, 'class': 'valt-btn valt-btn--primary' }, 'Open the Valt' ) );
+			}
+			// A deliberate second purchase: reload for fresh stock rather than re-arming the old button.
+			var more = el( 'button', { type: 'button', 'class': 'valt-btn valt-btn--secondary' }, 'Collect more' );
+			more.addEventListener( 'click', function () { window.location.reload(); } );
+			acts.appendChild( more );
+			box.appendChild( acts );
+		}
+		function slow() {
+			sub.textContent = 'Still confirming. The network is busy, but nothing is lost: ' + what + ' will arrive in your wallet. You can check the transaction link, or come back to the Valt in a few minutes.';
+			if ( d.valt_url ) box.appendChild( el( 'a', { href: d.valt_url, 'class': 'valt-btn valt-btn--secondary' }, 'Go to the Valt' ) );
+		}
+		( function poll() {
+			tries++;
+			fetch( base + 'anvil/status?tx=' + encodeURIComponent( d.tx_hash ), { credentials: 'omit' } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( s ) {
+					if ( s && s.confirmed ) return finish();
+					if ( tries === 36 ) slow(); // ~3 minutes
+					if ( tries < 120 ) setTimeout( poll, 5000 );
+				} )
+				.catch( function () { if ( tries < 120 ) setTimeout( poll, 5000 ); } );
+		} )();
+	}
+
+	document.addEventListener( 'click', function ( e ) {
+		var btn = e.target.closest && e.target.closest( '[data-valt-anvil]' );
+		if ( ! btn || btn.getAttribute( 'aria-busy' ) === 'true' ) return;
+		e.preventDefault();
+
+		var wrap  = btn.parentNode;
+		var qBox  = wrap.querySelector( '[data-valt-qty] .valt-qty__val' );
+		var qty   = qBox ? parseInt( qBox.textContent, 10 ) || 1 : 1;
+		var msg   = wrap.querySelector( '.valt-mint__msg' );
+		var done  = wrap.querySelector( '.valt-mint__done-box' );
+		var label = btn.querySelector( '.valt-mint__btn-label' );
+		var was   = label.textContent;
+		var songId = parseInt( btn.getAttribute( 'data-valt-anvil' ), 10 );
+		var api, buildId;
+
+		var qtyBtns = wrap.querySelectorAll( '[data-valt-qty] button' );
+		var qtyWas  = [];
+		function stage( t ) { label.textContent = t; }
+		// Lock the button and the edition picker for the whole flow, so a second click or a
+		// quantity change can't start another checkout while the wallet is open.
+		function lock( on ) {
+			btn.classList.toggle( 'is-busy', on );
+			btn.setAttribute( 'aria-disabled', on ? 'true' : 'false' );
+			Array.prototype.forEach.call( qtyBtns, function ( b, i ) {
+				if ( on ) { qtyWas[ i ] = b.disabled; b.disabled = true; } else { b.disabled = !! qtyWas[ i ]; }
+			} );
+		}
+		if ( msg ) { msg.hidden = true; msg.textContent = ''; }
+		btn.setAttribute( 'aria-busy', 'true' );
+		lock( true );
+		stage( 'Connecting wallet…' );
+
+		chooseWallet( wrap ).then( function ( key ) {
+			return window.cardano[ key ].enable();
+		} ).then( function ( a ) {
+			api = a;
+			return api.getNetworkId();
+		} ).then( function ( net ) {
+			if ( net !== 0 ) throw new Error( 'Switch your wallet to the Preprod testnet, then try again.' );
+			return Promise.all( [ api.getChangeAddress(), api.getUtxos() ] );
+		} ).then( function ( r ) {
+			stage( 'Preparing transaction…' );
+			return post( 'anvil/build', { song_id: songId, qty: qty, address: r[ 0 ], utxos: r[ 1 ] || [] } );
+		} ).then( function ( b ) {
+			buildId = b.build_id;
+			stage( 'Confirm in your wallet…' );
+			return api.signTx( b.tx, true ).catch( function () {
+				post( 'anvil/cancel', { build_id: buildId } ).catch( function () {} ); // free the held editions now
+				throw new Error( 'Signature declined, so nothing was charged. Press Collect to try again.' );
+			} );
+		} ).then( function ( witness ) {
+			stage( 'Sending…' );
+			return post( 'anvil/submit', { build_id: buildId, witness: witness } );
+		} ).then( function ( d ) {
+			// Submitted. The checkout is finished for the fan: swap the button and picker for a
+			// pending panel (no second Collect), and only offer the Valt once it's on-chain.
+			btn.hidden = true;
+			var qtyBox = wrap.querySelector( '[data-valt-qty]' );
+			if ( qtyBox ) qtyBox.hidden = true;
+			var note = wrap.querySelector( '.valt-mint__hint' );
+			if ( note ) note.hidden = true;
+			showPending( done, d );
+		} ).catch( function ( err ) {
+			if ( msg ) { msg.textContent = ( err && err.message ) || 'Something went wrong. Please try again.'; msg.hidden = false; }
+			stage( was );
+			lock( false );
+		} ).then( function () {
+			btn.removeAttribute( 'aria-busy' );
+		} );
+	} );
+} )();

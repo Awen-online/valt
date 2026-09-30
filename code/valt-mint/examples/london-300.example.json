@@ -1,0 +1,14 @@
+{
+  "_note": "Example only, built from public site data. Regenerate the real file with: wp valt mint-json 300 > london-300.json",
+  "song_id": 300,
+  "title": "London",
+  "artist": "Hazzy Jo",
+  "artist_id": 299,
+  "description": "London is a melodic, atmospheric track blending African-inspired rhythms with contemporary electronic production.",
+  "image_cid": "QmP4ssQS9EN8bxpjiU6hnSyQFbpYYFBJfRwsW9s929FZzf",
+  "image_mime": "image/jpeg",
+  "website": "https://valt.digital",
+  "max_supply": 20,
+  "asset_base": "london300",
+  "onchain_prefix": "valt"
+}

@@ -62,6 +62,7 @@ $image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'large' ) : '';
 if ( ! $image_url && $artist_id ) {
 	$image_url = get_the_post_thumbnail_url( $artist_id, 'large' );
 }
+$t = function_exists( 'valt_track_data' ) ? valt_track_data( $song_id ) : [ 'src' => '', 'genre' => '' ];
 ?>
 
 <div class="valt-site">
@@ -82,6 +83,16 @@ if ( ! $image_url && $artist_id ) {
 					<?php if ( $track ) : ?><span>Track <?php echo (int) $track; ?></span><?php endif; ?>
 					<?php if ( $duration ) : ?><span><?php echo esc_html( $duration ); ?></span><?php endif; ?>
 				</div>
+				<?php if ( function_exists( 'valt_genre_pills' ) ) echo valt_genre_pills( $t['genre'] ); ?>
+				<?php if ( ! empty( $t['src'] ) ) : ?>
+				<div class="valt-song-hero__listen">
+					<?php echo valt_play_button( $t, 'xl' ); ?>
+					<span class="valt-song-hero__listen-label">
+						<strong>Listen before you collect</strong>
+						<span>Full track, free to stream</span>
+					</span>
+				</div>
+				<?php endif; ?>
 				<?php
 				$release_status = (int) get_post_meta( $song_id, 'valt_release_status', true );
 				$nft_status     = get_post_meta( $song_id, 'valt_nft_status', true );
@@ -99,14 +110,32 @@ if ( ! $image_url && $artist_id ) {
 		<div class="valt-container">
 
 			<div class="valt-song-actions">
-				<h2>Collect This Song</h2>
+				<h2><?php echo function_exists( 'valt_song_sold_out' ) && valt_song_sold_out( $song_id ) ? 'Edition Sold Out' : 'Collect This Song'; ?></h2>
+				<?php if ( $artist && get_post_meta( $artist_id, 'valt_policy_id', true ) ) : ?>
+				<p class="valt-unlocks">
+					<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>
+					<span>Owning this song is your key to <strong><?php echo esc_html( $artist->post_title ); ?>&rsquo;s Valt</strong>, the artist&rsquo;s private space for holders.</span>
+				</p>
+				<?php endif; ?>
 				<?php echo do_shortcode( '[valt_connect_mint song_id="' . $song_id . '"]' ); ?>
 			</div>
 
-			<?php if ( $artist_id ) : ?>
-			<div class="valt-section">
+			<?php // Song description + any holder-only block ([valt_gated_content]) from the post body.
+			$body = trim( (string) get_post_field( 'post_content', $song_id ) );
+			if ( $body !== '' ) : ?>
+			<div class="valt-song-about">
+				<h2>About <?php echo esc_html( $title ); ?></h2>
+				<div class="valt-prose"><?php echo apply_filters( 'the_content', $body ); ?></div>
+			</div>
+			<?php endif; ?>
+
+			<?php
+			// Only when the artist has other releases (a one-song artist shouldn't show an empty section).
+			$more = $artist_id ? do_shortcode( '[valt_tracklist artist_id="' . $artist_id . '" exclude="' . $song_id . '" limit="8" play_all="0"]' ) : '';
+			if ( strpos( $more, 'valt-tracklist' ) !== false ) : ?>
+			<div class="valt-section" style="padding-top:1rem">
 				<h2>More from <?php echo esc_html( $artist->post_title ); ?></h2>
-				<?php echo do_shortcode( '[valt_song_grid artist_id="' . $artist_id . '" exclude="' . $song_id . '" limit="4"]' ); ?>
+				<?php echo $more; ?>
 			</div>
 			<?php endif; ?>
 

@@ -1,0 +1,195 @@
+/**
+ * Valt Artist Intake form — Valt palette (navy / gold / cream).
+ */
+
+/* "Why release on Valt" — icon card grid ([valt_artist_benefits]) */
+.valt-benefits {
+	max-width: 900px;
+	margin: 8px auto 44px;
+}
+.valt-benefits__heading {
+	font-size: clamp(22px, 3.4vw, 28px);
+	font-weight: 800;
+	color: var(--valt-navy, #3D3C56);
+	text-align: center;
+	margin: 0 0 26px;
+}
+.valt-benefits__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+}
+.valt-benefits__card {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 28px 28px 26px;
+	background: #fff;
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	border-radius: 14px;
+	box-shadow: 0 6px 22px rgba(43, 42, 61, 0.06);
+	transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.valt-benefits__card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 14px 34px rgba(43, 42, 61, 0.12);
+	border-color: var(--valt-gold, #E8C48B);
+}
+.valt-benefits__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 54px;
+	height: 54px;
+	border-radius: 14px;
+	background: linear-gradient(145deg, var(--valt-gold-light, #F2D9A9), var(--valt-gold, #E8C48B));
+	color: var(--valt-navy, #3D3C56);
+	box-shadow: inset 0 0 0 1px rgba(201, 166, 107, 0.4);
+}
+.valt-benefits__title {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--valt-navy, #3D3C56);
+	margin: 2px 0 0;
+}
+.valt-benefits__body {
+	font-size: 14.5px;
+	line-height: 1.55;
+	color: #6b6980;
+	margin: 0;
+}
+@media (max-width: 640px) {
+	.valt-benefits__grid { grid-template-columns: 1fr; }
+	.valt-benefits__card { padding: 22px 20px; }
+}
+
+.valt-benefits__cta-line {
+	max-width: 620px;
+	margin: 0 auto 22px;
+	text-align: center;
+	font-size: 16px;
+	color: #6b6980;
+}
+
+.valt-intake {
+	max-width: 620px;
+	margin: 0 auto;
+	background: var(--valt-cream, #FFF8ED);
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	border-top: 4px solid var(--valt-gold, #E8C48B);
+	border-radius: 14px;
+	padding: 28px 30px 26px;
+	color: var(--valt-navy, #3D3C56);
+	font-family: 'Ruda', 'Segoe UI', Tahoma, sans-serif;
+	box-shadow: 0 14px 40px rgba(43, 42, 61, .12);
+}
+
+.valt-intake__head h3 {
+	margin: 0 0 6px;
+	font-size: 22px;
+	font-weight: 800;
+	color: var(--valt-navy, #3D3C56);
+}
+.valt-intake__head p {
+	margin: 0 0 18px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: #55536a;
+}
+
+.valt-intake__row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+}
+@media (max-width: 520px) { .valt-intake__row { grid-template-columns: 1fr; } }
+
+.valt-intake__field {
+	display: block;
+	margin-bottom: 14px;
+}
+.valt-intake__field > span {
+	display: block;
+	font-size: 12.5px;
+	font-weight: 700;
+	margin-bottom: 5px;
+	color: var(--valt-navy, #3D3C56);
+}
+.valt-intake__field > span em { color: var(--valt-gold-dark, #C9A66B); font-style: normal; }
+.valt-intake__field > span small { font-weight: 400; color: #8a8798; }
+
+.valt-intake input[type="text"],
+.valt-intake input[type="email"],
+.valt-intake select,
+.valt-intake textarea {
+	width: 100%;
+	box-sizing: border-box;
+	background: #fff;
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	border-radius: 8px;
+	padding: 10px 12px;
+	font-size: 14px;
+	color: var(--valt-navy, #3D3C56);
+	font-family: inherit;
+}
+.valt-intake textarea { resize: vertical; min-height: 74px; }
+.valt-intake input:focus,
+.valt-intake select:focus,
+.valt-intake textarea:focus {
+	outline: none;
+	border-color: var(--valt-gold, #E8C48B);
+	box-shadow: 0 0 0 3px rgba(232, 196, 139, .3);
+}
+.valt-intake input::placeholder,
+.valt-intake textarea::placeholder { color: #a49fb2; }
+
+.valt-intake__consent {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	font-size: 13px;
+	color: #55536a;
+	margin: 4px 0 18px;
+	cursor: pointer;
+}
+.valt-intake__consent input { accent-color: var(--valt-gold-dark, #C9A66B); margin-top: 2px; }
+
+/* `button.` qualifier keeps these ahead of the Hello Elementor parent theme's
+   global `[type="submit"]` button reset regardless of stylesheet load order. */
+button.valt-intake__submit {
+	display: inline-block;
+	width: 100%;
+	background: var(--valt-navy, #3D3C56);
+	color: var(--valt-cream, #FFF8ED);
+	border: none;
+	border-radius: 8px;
+	padding: 13px 24px;
+	font-size: 15px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background .15s;
+	font-family: inherit;
+}
+button.valt-intake__submit:hover:not(:disabled) { background: var(--valt-gold-dark, #C9A66B); color: var(--valt-navy, #3D3C56); }
+button.valt-intake__submit:disabled { opacity: .65; cursor: default; }
+
+.valt-intake__msg { margin: 14px 0 0; font-size: 14.5px; text-align: center; }
+.valt-intake__msg.is-ok { color: #1f7a4d; font-weight: 700; }
+.valt-intake__msg.is-err { color: #a8322d; font-weight: 600; }
+
+/* honeypot — visually hidden but not display:none (bots skip display:none) */
+.valt-intake__hp {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px; height: 1px; overflow: hidden;
+}
+
+/* Dark surfaces (2026-09 redesign): the site body is deep navy now, so the old
+   white cards and navy heading read as a light island / near-invisible text. */
+.valt-benefits__heading { color: var(--valt-gold); }
+.valt-benefits__card { background: rgba(42,41,64,0.75); border-color: rgba(232,196,139,0.18); box-shadow: none; }
+.valt-benefits__card:hover { border-color: rgba(232,196,139,0.45); box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
+.valt-benefits__icon { color: var(--valt-ink); }
+.valt-benefits__title { color: var(--valt-cream); }
+.valt-benefits__body { color: var(--valt-tan); }
+.valt-benefits__cta-line { color: var(--valt-tan); }

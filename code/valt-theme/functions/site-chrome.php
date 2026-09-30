@@ -26,14 +26,17 @@ function valt_is_testnet(): bool {
  */
 function valt_render_meta_tags(): void {
 	$site_name   = get_bloginfo( 'name' );
-	$default_img = home_url( '/wp-content/uploads/2024/10/Valt-logo-1024x1024.png' );
+	// Branded 1200x630 share card (current vinyl-vault logo on navy) used for
+	// links shared to SMS / social when a page has no featured image of its own.
+	$default_img = get_stylesheet_directory_uri() . '/assets/img/valt-og.png';
 
 	if ( is_front_page() || is_home() ) {
 		$title = $site_name;
-		$desc  = 'Own the music you love — discover and collect songs from independent artists on the Cardano blockchain.';
+		$desc  = 'Own the music you love, and more: collect limited editions from independent creators on Cardano.';
 		$url   = home_url( '/' );
-		$image = ( get_queried_object_id() && has_post_thumbnail( get_queried_object_id() ) )
-			? get_the_post_thumbnail_url( get_queried_object_id(), 'large' ) : $default_img;
+		// Always the branded card — never the front page's own featured image,
+		// which historically held an outdated logo upload.
+		$image = $default_img;
 		$type  = 'website';
 	} elseif ( is_singular() ) {
 		$id    = get_queried_object_id();
@@ -50,7 +53,7 @@ function valt_render_meta_tags(): void {
 		$type  = 'website';
 	}
 	if ( ! $desc ) {
-		$desc = 'Discover and collect music from independent artists on Cardano.';
+		$desc = 'Collect limited editions from independent creators on Cardano, starting with music.';
 	}
 
 	$og = [
@@ -64,12 +67,21 @@ function valt_render_meta_tags(): void {
 	foreach ( $og as $prop => $content ) {
 		echo '<meta property="' . esc_attr( $prop ) . '" content="' . esc_attr( $content ) . '">' . "\n";
 	}
+	// Dimensions help previews render immediately; only correct for our own card.
+	if ( $image === $default_img ) {
+		echo '<meta property="og:image:width" content="1200">' . "\n";
+		echo '<meta property="og:image:height" content="630">' . "\n";
+		echo '<meta property="og:image:alt" content="' . esc_attr( $site_name . ' — Own the music you love' ) . '">' . "\n";
+	}
 	echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
 	echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '">' . "\n";
 	echo '<meta name="twitter:description" content="' . esc_attr( $desc ) . '">' . "\n";
 	echo '<meta name="twitter:image" content="' . esc_attr( $image ) . '">' . "\n";
 }
 add_action( 'wp_head', 'valt_render_meta_tags', 5 );
+
+// The SEO plugin already prints <meta name="description">; Hello Elementor's copy would duplicate it.
+add_filter( 'hello_elementor_description_meta_tag', '__return_false' );
 
 /**
  * Render the site navigation bar.
@@ -100,6 +112,12 @@ function valt_render_nav(): void {
 				<?php endif; ?>
 				<?php if ( function_exists( 'valt_feature_enabled' ) && valt_feature_enabled( 'leaderboard' ) ) : ?>
 					<a href="<?php echo esc_url( home_url( '/leaderboard/' ) ); ?>"><?php echo valt_svg_trophy( 16 ); ?> Leaderboard</a>
+				<?php endif; ?>
+				<?php if ( get_page_by_path( 'for-artists' ) ) : ?>
+					<a href="<?php echo esc_url( home_url( '/for-artists/' ) ); ?>">For Artists</a>
+				<?php endif; ?>
+				<?php if ( get_page_by_path( 'faq' ) ) : ?>
+					<a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>">FAQ</a>
 				<?php endif; ?>
 			</div>
 
@@ -145,6 +163,7 @@ function valt_render_footer(): void {
 			<div class="valt-footer__links">
 				<a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>">FAQ</a>
 				<a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Contact</a>
+				<a href="<?php echo esc_url( home_url( '/feedback/' ) ); ?>">Feedback</a>
 				<a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>">Terms</a>
 				<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">Privacy</a>
 			</div>

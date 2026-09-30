@@ -1,0 +1,304 @@
+/**
+ * Valt Feedback Survey modal.
+ * Uses the theme palette (--valt-navy / --valt-gold / --valt-cream) with a
+ * light card, falling back to literals if the vars aren't present.
+ */
+
+.valt-survey-overlay {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(43, 42, 61, 0.6);
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	backdrop-filter: blur(4px);
+}
+
+.valt-survey-container {
+	background: var(--valt-cream, #FFF8ED);
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	border-top: 5px solid var(--valt-gold, #E8C48B);
+	border-radius: 14px;
+	padding: 36px 40px 28px;
+	max-width: 520px;
+	width: 90%;
+	position: relative;
+	color: var(--valt-navy, #3D3C56);
+	box-shadow: 0 20px 60px rgba(43, 42, 61, 0.35);
+	font-family: 'Ruda', 'Segoe UI', Tahoma, sans-serif;
+}
+
+.valt-survey-close {
+	position: absolute;
+	top: 10px;
+	right: 14px;
+	background: none;
+	border: none;
+	color: #9a94ab;
+	font-size: 28px;
+	cursor: pointer;
+	line-height: 1;
+	padding: 4px 8px;
+	transition: color 0.2s;
+}
+.valt-survey-close:hover { color: var(--valt-navy, #3D3C56); }
+
+.valt-survey-step h3 {
+	font-size: 20px;
+	font-weight: 700;
+	margin: 0 0 8px;
+	color: var(--valt-navy, #3D3C56);
+}
+.valt-survey-subtitle {
+	font-size: 13px;
+	color: #6b6980;
+	margin: 0 0 20px;
+}
+
+/* NPS */
+.valt-nps-buttons {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+button.valt-nps-btn {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	background: #fff;
+	color: var(--valt-navy, #3D3C56);
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+button.valt-nps-btn:hover {
+	background: var(--valt-gold-light, #F2D9A9);
+	border-color: var(--valt-gold, #E8C48B);
+}
+button.valt-nps-btn.active {
+	background: var(--valt-gold, #E8C48B);
+	border-color: var(--valt-gold-dark, #C9A66B);
+	color: var(--valt-navy, #3D3C56);
+}
+
+/* Sentiment scale (1..5) — same chip look as NPS, its own JS hook */
+.valt-scale-buttons {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+button.valt-scale-btn {
+	width: 46px;
+	height: 46px;
+	border-radius: 8px;
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	background: #fff;
+	color: var(--valt-navy, #3D3C56);
+	font-size: 15px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+button.valt-scale-btn:hover {
+	background: var(--valt-gold-light, #F2D9A9);
+	border-color: var(--valt-gold, #E8C48B);
+}
+button.valt-scale-btn.active {
+	background: var(--valt-gold, #E8C48B);
+	border-color: var(--valt-gold-dark, #C9A66B);
+}
+.valt-scale-ends {
+	display: flex;
+	justify-content: space-between;
+	max-width: 262px;
+	margin-top: 6px;
+	font-size: 12px;
+	color: #6b6980;
+}
+
+/* Checkboxes / radios */
+.valt-use-case-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+.valt-checkbox-label,
+.valt-radio-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-radius: 8px;
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	background: #fff;
+	cursor: pointer;
+	transition: all 0.15s;
+	font-size: 13px;
+}
+.valt-checkbox-label:hover,
+.valt-radio-label:hover {
+	background: var(--valt-gold-light, #F2D9A9);
+	border-color: var(--valt-gold, #E8C48B);
+}
+.valt-checkbox-label input,
+.valt-radio-label input { accent-color: var(--valt-gold-dark, #C9A66B); }
+
+.valt-radio-group {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+
+/* Stars */
+.valt-stars {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	margin-top: 16px;
+}
+button.valt-star-btn {
+	background: none;
+	border: none;
+	font-size: 36px;
+	color: #e0d8c4;
+	cursor: pointer;
+	transition: color 0.15s, transform 0.15s;
+	padding: 0;
+}
+button.valt-star-btn:hover { color: var(--valt-gold, #E8C48B); transform: scale(1.15); }
+button.valt-star-btn.active { color: var(--valt-gold-dark, #C9A66B); }
+
+/* Textarea */
+.valt-survey-textarea {
+	width: 100%;
+	min-height: 100px;
+	background: #fff;
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	border-radius: 8px;
+	padding: 12px;
+	color: var(--valt-navy, #3D3C56);
+	font-size: 14px;
+	resize: vertical;
+	margin-bottom: 16px;
+	font-family: inherit;
+}
+.valt-survey-textarea:focus { outline: none; border-color: var(--valt-gold, #E8C48B); }
+.valt-survey-textarea::placeholder { color: #a49fb2; }
+
+/* Buttons */
+button.valt-survey-next,
+button.valt-survey-submit {
+	display: inline-block;
+	background: var(--valt-navy, #3D3C56);
+	color: var(--valt-cream, #FFF8ED);
+	border: none;
+	border-radius: 8px;
+	padding: 10px 26px;
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+button.valt-survey-next:hover,
+button.valt-survey-submit:hover {
+	background: var(--valt-gold-dark, #C9A66B);
+	color: var(--valt-navy, #3D3C56);
+}
+
+/* Thank you */
+.valt-survey-thanks { text-align: center; padding: 20px 0; }
+.valt-survey-thanks h3 { font-size: 24px; margin-bottom: 12px; }
+.valt-survey-thanks p { color: #6b6980; }
+
+/* Footer */
+.valt-survey-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 20px;
+	padding-top: 16px;
+	border-top: 1px solid var(--valt-gold-light, #F2D9A9);
+}
+.valt-dont-show {
+	border: none !important;
+	background: none !important;
+	padding: 0 !important;
+	font-size: 12px;
+	color: #6b6980;
+}
+.valt-survey-step-indicator { font-size: 12px; color: #6b6980; }
+
+@media (max-width: 480px) {
+	.valt-survey-container { padding: 24px 20px; margin: 16px; }
+	.valt-use-case-grid { grid-template-columns: 1fr; }
+	button.valt-nps-btn { width: 32px; height: 32px; font-size: 12px; }
+}
+
+/* Inline form — the survey rendered in the body of a dedicated /feedback page */
+.valt-survey-inline {
+	background: var(--valt-cream, #FFF8ED);
+	border: 1px solid var(--valt-gold-light, #F2D9A9);
+	border-top: 5px solid var(--valt-gold, #E8C48B);
+	border-radius: 14px;
+	padding: 30px 36px 34px;
+	max-width: 640px;
+	margin: 8px auto;
+	color: var(--valt-navy, #3D3C56);
+	box-shadow: 0 12px 40px rgba(43, 42, 61, 0.18);
+	font-family: 'Ruda', 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* Off-screen honeypot */
+.valt-survey-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.valt-survey-field {
+	padding: 22px 0;
+	border-bottom: 1px solid var(--valt-gold-light, #F2D9A9);
+}
+.valt-survey-field:first-of-type { padding-top: 4px; }
+.valt-survey-inline .valt-survey-field h3 {
+	font-size: 18px;
+	font-weight: 700;
+	margin: 0 0 8px;
+	color: var(--valt-navy, #3D3C56);
+}
+/* Left-align the scales in a form context (the modal centres them) */
+.valt-survey-inline .valt-nps-buttons,
+.valt-survey-inline .valt-stars { justify-content: flex-start; }
+.valt-survey-inline .valt-stars { margin-top: 4px; }
+.valt-survey-inline .valt-use-case-grid,
+.valt-survey-inline .valt-radio-group,
+.valt-survey-inline .valt-survey-textarea { margin-bottom: 0; }
+
+.valt-survey-inline button.valt-survey-submit {
+	margin-top: 24px;
+	padding: 13px 34px;
+	font-size: 15px;
+}
+.valt-survey-inline button.valt-survey-submit:disabled { opacity: 0.6; cursor: default; }
+
+.valt-survey-inline-error {
+	color: #a3352f;
+	background: #fbeaea;
+	border: 1px solid #f0cccc;
+	border-radius: 8px;
+	padding: 10px 14px;
+	margin: 18px 0 0;
+	font-size: 14px;
+}
+
+.valt-survey-inline-thanks { text-align: center; padding: 26px 0 10px; }
+.valt-survey-inline-thanks h3 { font-size: 24px; margin: 0 0 10px; color: var(--valt-navy, #3D3C56); }
+.valt-survey-inline-thanks p { color: #6b6980; margin: 0; }
+
+@media (max-width: 480px) {
+	.valt-survey-inline { padding: 22px 18px 26px; }
+}
