@@ -30,7 +30,7 @@ Built on WordPress, powered by Cardano, and funded by **Project Catalyst Fund 11
 - **Server-side NFT token-gating** - content is released only to wallets that hold the artist's song NFT, checked against the CardanoPress asset cache on the server
 - **Holder-only media** - private video stored outside the web root and streamed only to wallets that hold that artist's NFT
 - **Artist Valts** - per-artist gated fan-club zones, configurable from the artist dashboard
-- **Collect songs as Cardano NFTs** - an in-page wallet checkout for featured releases (built on the Anvil transaction API, 1 to 5 editions per order, payment and mint in one transaction) plus NMKR Pay for the rest of the catalogue
+- **Collect songs as Cardano NFTs** - an in-page wallet checkout for featured releases (built on the Anvil transaction API, 1 to 5 editions per order, payment and mint in one transaction) plus NMKR Pay for the rest of the catalog
 - **Artist Dashboard** - a frontend profile editor and release manager with media uploaders
 - **In-product feedback survey** - a persisted NPS and ownership-model survey (the M3 feedback deliverable), live at [/feedback](https://www.valt.digital/feedback/)
 - **REST API** - namespaced discovery and ownership-status endpoints (`/wp-json/valt/v1/`)
@@ -86,7 +86,7 @@ Valt is funded by a **100,000 ADA** grant from [Cardano Project Catalyst Fund 11
 | M2 | Development - core platform & launch partners | Delivered (approved) - [evidence](docs/M2_Development/) |
 | M3 | Implementation & Prelaunch - testing, security, feedback | Evidence published - [evidence](docs/M3_Implementation/) |
 | M4 | Launch & Rollout - public launch, announcements, rollout support | Evidence published, PoA submitted 30 Sep 2026 - [evidence](docs/M4_LaunchRollout/) |
-| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | Evidence published - [evidence](docs/M5_Closeout/), [close-out video](https://awen.online/valt-closeout) (final cut being finalised) |
+| M5 | Closeout & Evaluation - feedback, artist evaluation, final report, closeout video | Evidence published - [evidence](docs/M5_Closeout/), [close-out video](docs/M5_Closeout/M5_Closeout_Video.mp4) |
 
 ## Getting Started
 

@@ -74,7 +74,7 @@ Here you can find links to all necessary documentation for each of the milestone
 >
 >[Proof of Achievement](M4_LaunchRollout/M4_Proof_of_Achievement.pdf) - submitted 30 Sep 2026; the milestone summary: the public launch, the launch announcements, the initial adoption phase, and how a reviewer can verify each acceptance criterion
 >
->[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from 7 August to 30 September 2026 with its root cause, resolution and commit or deploy record (38 resolved, each mapped to the public code), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
+>[Rollout Bug Log](M4_LaunchRollout/M4_Rollout_Bug_Log.pdf) - every defect found on the live site from August 7 to September 30, 2026 with its root cause, resolution and commit or deploy record (38 resolved, each mapped to the public code), observations that needed no code change, the disclosed multi-wallet checkout test, and the items still open
 >
 >[Project Status Report (M4)](M4_LaunchRollout/M4_Project_Status.pdf) - current project status
 >
@@ -109,7 +109,7 @@ Here you can find links to all necessary documentation for each of the milestone
 >
 >[Project Close-out Report](M5_Closeout/M5_Project_Closeout_Report.pdf) - the Catalyst close-out summary: challenge and project KPIs, key achievements, learnings and next steps
 >
->[Close-out video](https://awen.online/valt-closeout) - the close-out video (the final cut is being finalised)
+>[Close-out video](M5_Closeout/M5_Closeout_Video.mp4) - the close-out video
 >
 >[Close-out video script](M5_Closeout/M5_Closeout_Video_Script.md) - the script and shot list for the close-out video
 >

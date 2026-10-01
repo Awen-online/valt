@@ -7,12 +7,12 @@ Project Catalyst Fund 11, project 1100019. Written to the Catalyst PCV rules
 - [ ] Length **2 to 5 minutes**. Treat 5:00 as a hard ceiling; target **about 4:30**.
 - [ ] **720p or 1080p**, English audio commentary.
 - [ ] **Public** YouTube or Vimeo link. Not unlisted, not a Drive link. Check it signed out (in a private window the video plays, and YouTube does not show "Unlisted").
-- [ ] Covers the **four elements in this order**: (1) why this challenge and the funded approach; (2) progress, learnings, milestones/KPIs and results, gaps named; (3) demonstration of the outputs on the live site; (4) commercialisation plans and future funding intentions.
+- [ ] Covers the **four elements in this order**: (1) why this challenge and the funded approach; (2) progress, learnings, milestones/KPIs and results, gaps named; (3) demonstration of the outputs on the live site; (4) commercialization plans and future funding intentions.
 - [ ] Say aloud (Part 1 does this): **the project name, project 1100019, Project Catalyst Fund 11, Cardano Use Cases: Concept.**
 - [ ] Every figure on screen equals the Project Close-out Report (`M5_Project_Closeout_Report.pdf`).
 - [ ] Say "testnet preview", never "live on mainnet". No Afrocharts beyond the historical project name.
 
-**Estimated runtime about 4 min 10 s** (about 510 spoken words). One take is fine; cut between parts if needed, and trim to stay under 5:00.
+**Estimated runtime about 4 min** (about 490 spoken words). One take is fine; cut between parts if needed, and trim to stay under 5:00.
 
 ## Before you record
 - Browser at 1280 px, not signed in as admin, notifications off. **No admin screens.** The fresh testnet wallet is installed, on Preprod, funded, and not yet connected to the site. If you have other wallet extensions (e.g. the Awen wallet), disconnect them from valt.digital first, or disable them for the recording, so Connect can't pick the wrong one.
@@ -20,7 +20,7 @@ Project Catalyst Fund 11, project 1100019. Written to the Catalyst PCV rules
 
 | Tab | Page | URL | Used in |
 |---|---|---|---|
-| 1 | Homepage | https://www.valt.digital/ | Shot 1, 3a, 4 |
+| 1 | Homepage | https://www.valt.digital/ | Shot 1, 4 |
 | 2 | London by Hazzy Jo (collect page) | https://www.valt.digital/song/london/ | Shot 3b |
 | 3 | How to collect | https://www.valt.digital/how-to-collect/ | Shot 3d |
 | 4 | Hazzy Jo's Valt (opens after collecting) | https://www.valt.digital/artist/hazzy-jo/ | Shot 3c |
@@ -62,9 +62,6 @@ On screen: *Critical CardanoPress flaw found, fixed upstream v1.36.1, credited*
 On screen (quote card): *"The most interesting part to me is the potential to make digital music feel valuable and ownable again without asking fans to become crypto users first." Mie, artist on Valt*
 
 ### Part 3: the demo (1:15 to 3:15)
-**Shot 3a.** Tab 1, homepage. Press play on a song; the player stays at the bottom as you move.
-> Let me show you. Every song streams in full, for free, and the player stays with you as you browse.
-
 **Shot 3b.** Tab 2, London by Hazzy Jo. Connect the right wallet first, then collect ONE edition (never signed in as admin).
 1. Press **Connect** (top right) and choose the **fresh testnet wallet** by name. Approve the connection in the wallet.
 2. Check it's the right one before going on: the wallet shows **Preprod** and the fresh wallet's address (starts `addr_test1`), and the site shows you connected. If it picked another wallet, disconnect and choose again.
@@ -109,15 +106,14 @@ End card: *valt.digital · github.com/Awen-online/valt · Project Catalyst Fund 
 |---|---|---|---|
 | 1 | 1 | Intro card, homepage | 35 s |
 | 2 | 2 | Final Report, results grid | 40 s |
-| 3a | 3 | Homepage, play a song | 10 s |
 | 3b | 3 | /song/london/, collect 1 edition (wait cut) | 40 s |
 | 3c | 3 | Hazzy Jo's Valt, unlocked, video plays | 25 s |
 | 3d | 3 | /how-to-collect/ | 10 s |
 | 3e | 3 | GitHub repo, bug log | 40 s |
 | 4 | 4 | Mie, homepage, end card | 55 s |
-| | | **Total** | **about 4 min 10 s** (cut the confirmation wait) |
+| | | **Total** | **about 4 min** (cut the confirmation wait) |
 
-Pacing tip: about 510 spoken words. Speak at a relaxed pace (about 150 words a minute) and let the demo breathe; if you run long, trim the CardanoPress paragraph to one sentence and shorten the thank-yous.
+Pacing tip: about 490 spoken words. Speak at a relaxed pace (about 150 words a minute) and let the demo breathe; if you run long, trim the CardanoPress paragraph to one sentence and shorten the thank-yous.
 
 ## After recording
 - Export 1080p (H.264). Upload to YouTube as **Public**. Title: "Valt: Project Catalyst Fund 11 close-out (project 1100019)".

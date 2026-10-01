@@ -51,7 +51,7 @@ Every change is recorded with its root cause in [docs/M4_LaunchRollout/M4_Rollou
 | Front-end | `valt-theme` (Hello Elementor child) + Elementor Pro + Alpine.js |
 | Wallet / CIP-30 | CardanoPress |
 | Collect checkout (since M4) | Anvil API (featured releases): one transaction pays and mints to the buyer; the server verifies it and co-signs with the project policy key |
-| Minting / NFT mgmt / IPFS | NMKR (pre-production): NMKR Pay checkout for the rest of the catalogue, song uploads; Pinata for IPFS |
+| Minting / NFT mgmt / IPFS | NMKR (pre-production): NMKR Pay checkout for the rest of the catalog, song uploads; Pinata for IPFS |
 | On-chain queries | Blockfrost (pre-production), through CardanoPress's wallet asset sync |
 | Content modeling | Pods: `artist`, `album`, `song` custom post types |
 
@@ -104,7 +104,7 @@ chosen per song:
 - **In-page Anvil checkout** (featured releases, London and Freakshow): the server reserves edition
   numbers, Anvil builds one transaction that pays the price and mints the editions to the buyer, the
   server verifies it and adds the policy signature, and the fan's wallet signs. See `anvil.php`.
-- **NMKR Pay** (the rest of the catalogue): editions are uploaded to the NMKR project and NMKR mints
+- **NMKR Pay** (the rest of the catalog): editions are uploaded to the NMKR project and NMKR mints
   the edition to the buyer on payment. The original M2 flow (`UploadNft` then `MintAndSendSpecific`,
   with status polling) is described in the Development Report
   (`docs/M2_Development/M2_Development_Report.pdf`, §6).

@@ -217,9 +217,9 @@ Renders a small inline badge showing a Song CPT's current release status.
 
 **Status values:**
 
-| Value | Label | Badge colour | Set by |
+| Value | Label | Badge color | Set by |
 |-------|-------|-------------|--------|
-| `1` | Uploaded | Grey | Automatic on Song creation |
+| `1` | Uploaded | Gray | Automatic on Song creation |
 | `2` | In NFT Collection | Amber | Admin via Song meta box |
 | `3` | Minted (N copies) | Gold | Admin via Song meta box + Mint Count field |
 

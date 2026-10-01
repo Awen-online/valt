@@ -129,7 +129,10 @@ function valt_render_nav(): void {
 						<span class="valt-nav__wallet-dot"></span>
 					</a>
 				<?php else : ?>
-					<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-nav__connect-btn">
+					<?php // Open the CardanoPress connect modal in place (the nav sits inside its Alpine scope); after
+					// connecting, CardanoPress reloads the current page, so visitors stay where they were.
+					// Without JS the link still falls back to the dashboard. ?>
+					<a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="valt-nav__connect-btn" role="button" x-on:click.prevent="showModal = true">
 						<?php echo valt_svg_wallet( 18 ); ?>
 						<span>Connect</span>
 					</a>
