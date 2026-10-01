@@ -822,6 +822,8 @@ p { color: var(--valt-tan); margin-bottom: 1em; }
 .valt-vault__status--open .valt-icon { stroke: var(--valt-green); }
 
 /* Unlocked content area */
+.valt-vault__close-btn { display: inline-flex; align-items: center; gap: 0.4rem; float: right; margin: 0 0 0.75rem 1rem; padding: 0.4rem 0.85rem; font: inherit; font-size: var(--valt-fs-small); font-weight: 600; color: var(--valt-tan); background: transparent; border: 1px solid rgba(232,196,139,0.45); border-radius: 999px; cursor: pointer; }
+.valt-vault__close-btn:hover, .valt-vault__close-btn:focus-visible { color: var(--valt-gold); border-color: var(--valt-gold); }
 .valt-vault__content {
 	margin-top: 2rem; text-align: left;
 	animation: valt-reveal 0.6s ease-out;

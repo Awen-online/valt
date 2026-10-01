@@ -437,14 +437,45 @@
 					// Scroll to the revealed content
 					$( 'html, body' ).animate( { scrollTop: $content.offset().top - 100 }, 400 );
 				} );
-				// Remember it's been opened (skip animation next visit)
-				try { localStorage.setItem( 'valt_opened_' + $section.data( 'state' ), '1' ); } catch(e) {}
+				// Remember it's been opened for THIS artist (skip the animation on later visits).
+				try { localStorage.setItem( 'valt_opened_' + ( $section.data( 'artist' ) || 'x' ), '1' ); } catch(e) {}
 			}, 600 );
 		} );
 
-		// Auto-open if previously opened (skip animation on return visits)
+		// ── Close Valt: reverse the reveal so the door (and its animation) can be replayed ──
+		$( document ).on( 'click', '[data-action="close-valt"]', function () {
+			var $section = $( this ).closest( '.valt-vault' );
+			var $door    = $section.find( '.valt-vault__door-inner' );
+			$section.find( '[data-valt-content]' ).slideUp( 400 );
+			$section.find( 'video' ).each( function () { try { this.pause(); } catch ( e ) {} } );
+			$section.find( '.valt-vault__door' ).slideDown( 400, function () {
+				$door.css( { transition: 'transform 0.7s cubic-bezier(0.34,1.56,0.64,1), opacity 0.5s ease', transform: 'scale(1)', opacity: '1' } );
+				$door.find( '.valt-spokes, .valt-outer, .valt-groove' ).css( 'animation', '' );
+				$section.find( '[data-action="open-valt"]' ).fadeIn( 300 );
+				$( 'html, body' ).animate( { scrollTop: $section.offset().top - 100 }, 400 );
+			} );
+			try { localStorage.removeItem( 'valt_opened_' + ( $section.data( 'artist' ) || 'x' ) ); } catch ( e ) {}
+		} );
+
+		// Arrived straight from a collect (?collected=1): always play the unlock animation.
+		var justCollected = /[?&]collected=1/.test( window.location.search );
+
+		// Just collected but the Valt still looks locked: the wallet's asset list predates the
+		// collect. Sync it in place (CardanoPress) and reload once, instead of sending the fan away.
+		if ( justCollected && ! /[?&]synced=1/.test( window.location.search ) && window.cardanoPress && cardanoPress.logged ) {
+			var $lockedVault = $( '.valt-vault[data-state="needs-sync"], .valt-vault[data-state="locked"]' ).first();
+			if ( $lockedVault.length ) {
+				$lockedVault.find( '.valt-vault__status' ).html( '<p>Syncing your wallet so this Valt can see your new edition…</p>' );
+				fetch( cardanoPress.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: new URLSearchParams( { _wpnonce: cardanoPress._nonce, action: 'cardanopress_sync_assets' } ) } )
+					.then( function () { window.location.search = window.location.search + '&synced=1'; } )
+					.catch( function () { window.location.search = window.location.search + '&synced=1'; } );
+			}
+		}
+
+		// Auto-open if previously opened for this artist (skip animation on return visits).
 		$( '.valt-vault[data-state="unlocked"]' ).each( function () {
-			var key = 'valt_opened_' + $( this ).data( 'state' );
+			if ( justCollected ) return; // fresh collect: let the door animation play
+			var key = 'valt_opened_' + ( $( this ).data( 'artist' ) || 'x' );
 			try {
 				if ( localStorage.getItem( key ) ) {
 					$( this ).find( '[data-action="open-valt"]' ).hide();

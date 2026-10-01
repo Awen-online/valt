@@ -104,7 +104,7 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 
 			<?php // ── THE VALT — token-gated section ────────────────────── ?>
 			<?php if ( $policy_id ) : ?>
-			<section class="valt-vault" data-state="<?php echo esc_attr( $gate_state ); ?>">
+			<section class="valt-vault" data-state="<?php echo esc_attr( $gate_state ); ?>" data-artist="<?php echo (int) $artist_id; ?>">
 				<div class="valt-vault__header">
 					<h2 class="valt-vault__title">The Valt</h2>
 					<p class="valt-vault__sub">Exclusive content for NFT holders</p>
@@ -176,6 +176,10 @@ if ( current_user_can( 'manage_options' ) && isset( $_GET['valt_preview'] ) ) {
 					$user_assets = $artist_assets;
 				?>
 				<div class="valt-vault__content" data-valt-content style="display:none;">
+					<button type="button" class="valt-vault__close-btn" data-action="close-valt" aria-label="Close the Valt">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+						Close Valt
+					</button>
 					<div class="valt-vault__inner">
 						<h3>Welcome to <?php echo esc_html( $name ); ?>'s Valt</h3>
 						<p>You hold the key. You own <?php echo count( $user_assets ); ?> song<?php echo count( $user_assets ) !== 1 ? 's' : ''; ?> from this artist.</p>
