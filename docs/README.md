@@ -109,7 +109,7 @@ Here you can find links to all necessary documentation for each of the milestone
 >
 >[Project Close-out Report](M5_Closeout/M5_Project_Closeout_Report.pdf) - the Catalyst close-out summary: challenge and project KPIs, key achievements, learnings and next steps
 >
->[Close-out video](M5_Closeout/M5_Closeout_Video.mp4) - the close-out video
+>[Close-out video](https://youtu.be/BKOk0YrLKkU) - the close-out video on YouTube (4:23); [MP4 copy](M5_Closeout/M5_Closeout_Video.mp4) in the repo
 >
 >[Close-out video script](M5_Closeout/M5_Closeout_Video_Script.md) - the script and shot list for the close-out video
 >
